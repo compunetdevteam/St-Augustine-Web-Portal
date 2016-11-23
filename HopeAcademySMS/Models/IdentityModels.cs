@@ -29,5 +29,12 @@ namespace HopeAcademySMS.Models
         {
             return new ApplicationDbContext();
         }
+
+        public DbSet<Student> Students { get; set; }
+        public DbSet<Staff> Staffs { get; set; }
+
+        public System.Data.Entity.DbSet<HopeAcademySMS.Models.Course> Courses { get; set; }
+
+        public System.Data.Entity.DbSet<HopeAcademySMS.Models.Grade> Grades { get; set; }
     }
 }

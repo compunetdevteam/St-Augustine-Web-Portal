@@ -9,12 +9,15 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using HopeAcademySMS.Models;
+using Excel = Microsoft.Office.Interop.Excel;
+using System.Collections.Generic;
 
 namespace HopeAcademySMS.Controllers
 {
     [Authorize]
     public class AccountController : Controller
     {
+        private ApplicationDbContext db = new ApplicationDbContext();
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
 
@@ -134,11 +137,69 @@ namespace HopeAcademySMS.Controllers
             }
         }
 
+        // GET: /Account/Register
+        [AllowAnonymous]
+        public ActionResult RegisterStaff()
+        {
+            ViewBag.Name = new SelectList(db.Roles.ToList(), "Name", "Name");
+            //ViewBag.Department = new SelectList(db.Departments.ToList(), "DeptCode", "DeptName");
+            return View();
+        }
+
+        //
+        // POST: /Account/Register
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> RegisterStaff(EditUserViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+                var result = await UserManager.CreateAsync(user, model.Password);
+                if (result.Succeeded)
+                {
+                    var db = new ApplicationDbContext();
+                    var staff = new Staff
+                    {
+                        Surname = model.Surname,
+                        OtherName = model.OtherName,
+                        Salutation = model.Salutation,
+                        Email = model.Email,
+                        PhoneNumber = model.PhoneNumber,
+                        Address = model.Address,
+                        Id = user.Id
+                    };
+                    db.Staffs.Add(staff);
+                    db.SaveChanges();
+
+                    //Assign Role to user Here 
+                    await this.UserManager.AddToRoleAsync(user.Id, model.Name);
+
+                    //Disabled to avoid login in Automatically
+                    //await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
+
+                    // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
+                    // Send an email with this link
+                    // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
+                    // var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
+                    // await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
+
+                    return RedirectToAction("Index", "Staffs");
+                }
+                AddErrors(result);
+            }
+
+            // If we got this far, something failed, redisplay form
+            return View(model);
+        }
+
+
         //
         // GET: /Account/Register
         [AllowAnonymous]
         public ActionResult Register()
-        {
+        {            
             return View();
         }
 
@@ -151,11 +212,32 @@ namespace HopeAcademySMS.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+                var user = new ApplicationUser { UserName = model.Username, Email = model.Email };
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
-                    await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
+                    var db = new ApplicationDbContext();
+                    var student = new Student
+                    {
+                        FirstName = model.FirstName,
+                        MiddleName = model.MiddleName,
+                        LastName = model.LastName,                        
+                        StudentNumber = model.StudentNumber,
+                        Email = model.Email,
+                        PhoneNumber = model.PhoneNumber,
+                        Address = model.Address,
+                        Class = model.Class,
+                        Gender = model.Gender,
+                        ID = user.Id
+                    };
+                    db.Students.Add(student);
+                    db.SaveChanges();
+
+                    //Assign Role to user Here 
+                    await this.UserManager.AddToRoleAsync(user.Id, "Student");
+
+                    // To avoid automatic login
+                    //await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
                     
                     // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
                     // Send an email with this link
@@ -170,6 +252,95 @@ namespace HopeAcademySMS.Controllers
 
             // If we got this far, something failed, redisplay form
             return View(model);
+        }
+
+        [AllowAnonymous]
+        public ActionResult UploadStudent()
+        {
+            return View();
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<ActionResult> UploadStudent(HttpPostedFileBase excelfile)
+        {
+            if (excelfile == null || excelfile.ContentLength == 0)
+            {
+                ViewBag.Error = "Please Select a excel file <br/>";
+                return View("Index");
+            }
+            else
+            {
+                if (excelfile.FileName.EndsWith("xls") || excelfile.FileName.EndsWith("xlsx"))
+                {
+                    string path = Server.MapPath("~/Content/ExcelUploadedFile/" + excelfile.FileName);
+                    if (System.IO.File.Exists(path))
+                        System.IO.File.Delete(path);
+                    excelfile.SaveAs(path);
+
+                    // Read data from excel file
+                    Excel.Application application = new Excel.Application();
+                    Excel.Workbook workbook = application.Workbooks.Open(path);
+                    Excel.Worksheet worksheet = workbook.ActiveSheet;
+                    Excel.Range range = worksheet.UsedRange;
+
+                    List<ApplicationUser> listApplicationUser = new List<ApplicationUser>();
+
+                    for (int row = 2; row <= range.Rows.Count; row++)
+                    {
+                        var user = new ApplicationUser
+                        {
+                            UserName = ((Excel.Range)range.Cells[row, 1]).Text,
+                            Email = ((Excel.Range)range.Cells[row, 6]).Text
+                        };
+                        var password = ((Excel.Range)range.Cells[row, 11]).Text;
+                        var result = await UserManager.CreateAsync(user, password);
+                        if (result.Succeeded)
+                        {
+                            var db = new ApplicationDbContext();
+                            var student = new Student
+                            {
+                                FirstName = ((Excel.Range)range.Cells[row, 3]).Text,
+                                MiddleName = ((Excel.Range)range.Cells[row, 4]).Text,
+                                LastName = ((Excel.Range)range.Cells[row, 5]).Text,
+                                StudentNumber = ((Excel.Range)range.Cells[row, 2]).Text,
+                                Email = ((Excel.Range)range.Cells[row, 6]).Text,
+                                PhoneNumber = ((Excel.Range)range.Cells[row, 7]).Text,
+                                Address = ((Excel.Range)range.Cells[row, 9]).Text,
+                                Class = ((Excel.Range)range.Cells[row, 10]).Text,
+                                Gender = ((Excel.Range)range.Cells[row, 8]).Text,
+                                ID = user.Id
+                            };
+                            db.Students.Add(student);
+                            db.SaveChanges();
+
+                            await this.UserManager.AddToRoleAsync(user.Id, "Student");
+
+                            //    //var mySavingMaintenance = new SavingsMaintenance
+                            //{
+                            //    MemberNumber = ((Excel.Range)range.Cells[row, 1]).Text,
+                            //    SavingName = ((Excel.Range)range.Cells[row, 2]).Text,
+                            //    Amount = decimal.Parse(((Excel.Range)range.Cells[row, 3]).Text),
+                            //    Description = ((Excel.Range)range.Cells[row, 4]).Text,
+                            //    PostDate = DateTime.Parse(((Excel.Range)range.Cells[row, 5]).Text),
+                            //};
+                            // db.SavingsMaintenances.Add(mySavingMaintenance);
+                            //listSavingsMaintenance.Add(mySavingMaintenance);
+                        }
+                        //db.SavingsMaintenances.Add(listSavingsMaintenance);
+                        //db.SaveChanges();
+
+                        //ViewBag.ListSavingsMaintenance = listSavingsMaintenance;                        
+                    }
+                    return View("Success");
+                }
+
+                else
+                {
+                    ViewBag.Error = "File type is Incorrect <br/>";
+                    return View("Index");
+                }
+            }
         }
 
         //
