@@ -1,8 +1,8 @@
 ﻿using Microsoft.Owin;
 using Owin;
 
-[assembly: OwinStartupAttribute(typeof(HopeAcademySMS.Startup))]
-namespace HopeAcademySMS
+[assembly: OwinStartupAttribute(typeof(StAugustine.Startup))]
+namespace StAugustine
 {
     public partial class Startup
     {

@@ -1,4 +1,4 @@
-﻿@model IEnumerable<HopeAcademySMS.Models.Grade>
+﻿@model IEnumerable<StAugustine.Models.Grade>
 
 @{
     ViewBag.Title = "Index";
@@ -12,28 +12,19 @@
 <table class="table">
     <tr>
         <th>
-            @Html.DisplayNameFor(model => model.Course.CourseName)
+            @Html.DisplayNameFor(model => model.GradeName)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Student.ID)
+            @Html.DisplayNameFor(model => model.MinimumValue)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Assignment)
+            @Html.DisplayNameFor(model => model.MaximumValue)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.FirstTest)
+            @Html.DisplayNameFor(model => model.GradePoint)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.SecondTest)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.ExamScore)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Term)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.StaffName)
+            @Html.DisplayNameFor(model => model.Remark)
         </th>
         <th></th>
     </tr>
@@ -41,33 +32,24 @@
 @foreach (var item in Model) {
     <tr>
         <td>
-            @Html.DisplayFor(modelItem => item.Course.CourseName)
+            @Html.DisplayFor(modelItem => item.GradeName)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.Student.ID)
+            @Html.DisplayFor(modelItem => item.MinimumValue)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.Assignment)
+            @Html.DisplayFor(modelItem => item.MaximumValue)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.FirstTest)
+            @Html.DisplayFor(modelItem => item.GradePoint)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.SecondTest)
+            @Html.DisplayFor(modelItem => item.Remark)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.ExamScore)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Term)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.StaffName)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.GradeID }) |
-            @Html.ActionLink("Details", "Details", new { id=item.GradeID }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.GradeID })
+            @Html.ActionLink("Edit", "Edit", new { id=item.GradeId }) |
+            @Html.ActionLink("Details", "Details", new { id=item.GradeId }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.GradeId })
         </td>
     </tr>
 }

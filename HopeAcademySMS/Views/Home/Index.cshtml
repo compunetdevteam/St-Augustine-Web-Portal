@@ -1,31 +1,77 @@
-﻿@{
-    ViewBag.Title = "Home Page";
+﻿
+@{
+    ViewBag.Title = "Dashboard";
 }
 
-<div class="jumbotron">
-    <h1>ASP.NET</h1>
-    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-    <p><a href="http://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
-</div>
+<h2>Dashboard</h2>
 
+
+
+
+<div class="section-body">
 <div class="row">
-    <div class="col-md-4">
-        <h2>Getting started</h2>
-        <p>
-            ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-            enables a clean separation of concerns and gives you full control over markup
-            for enjoyable, agile development.
-        </p>
-        <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Get more libraries</h2>
-        <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-        <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Web Hosting</h2>
-        <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-        <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
-    </div>
+
+    <!-- BEGIN ALERT - REVENUE -->
+    <div class="col-md-3 col-sm-6">
+        <div class="card">
+            <div class="card-body no-padding">
+                <div class="alert alert-callout alert-info no-margin">
+                    <strong class="pull-right text-success text-lg">@ViewBag.BoysPercentage %<i class="md md-trending-up"></i></strong>
+                    <strong class="text-xl">@ViewBag.MaleStudent</strong><br />
+                    <span class="opacity-50">Total Boys</span>
+                    <div class="stick-bottom-left-right">
+                        <div class="height-2 sparkline-revenue" data-line-color="#bdc1c1"></div>
+                    </div>
+                </div>
+            </div><!--end .card-body -->
+        </div><!--end .card -->
+    </div><!--end .col -->
+    <!-- END ALERT - REVENUE -->
+    <!-- BEGIN ALERT - VISITS -->
+    <div class="col-md-3 col-sm-6">
+        <div class="card">
+            <div class="card-body no-padding">
+                <div class="alert alert-callout alert-warning no-margin">
+                    <strong class="pull-right text-warning text-lg">@ViewBag.FemalePercentage % <i class="md md-swap-vert"></i></strong>
+                    <strong class="text-xl">@ViewBag.Femalestudent</strong><br />
+                    <span class="opacity-50">Total Girls</span>
+                    <div class="stick-bottom-right">
+                        <div class="height-1 sparkline-visits" data-bar-color="#e5e6e6"></div>
+                    </div>
+                </div>
+            </div><!--end .card-body -->
+        </div><!--end .card -->
+    </div><!--end .col -->
+    <!-- END ALERT - VISITS -->
+    @*<!-- BEGIN ALERT - BOUNCE RATES -->
+        <div class="col-md-3 col-sm-6">
+            <div class="card">
+                <div class="card-body no-padding">
+                    <div class="alert alert-callout alert-danger no-margin">
+                        <strong class="pull-right text-danger text-lg">0,18% <i class="md md-trending-down"></i></strong>
+                        <strong class="text-xl">@ViewBag.TotalStudent</strong><br />
+                        <span class="opacity-50">Total Student</span>
+                        <div class="stick-bottom-left-right">
+
+                        </div>
+                    </div>
+                </div><!--end .card-body -->
+            </div><!--end .card -->
+        </div><!--end .col -->
+        <!-- END ALERT - BOUNCE RATES -->
+        <!-- BEGIN ALERT - TIME ON SITE -->
+        <div class="col-md-3 col-sm-6">
+            <div class="card">
+                <div class="card-body no-padding">
+                    <div class="alert alert-callout alert-success no-margin">
+                        <h1 class="pull-right text-success"><i class="md md-timer"></i></h1>
+                        <strong class="text-xl">@ViewBag.TotalStaff</strong><br />
+                        <span class="opacity-50">Total Staff</span>
+                    </div>
+                </div><!--end .card-body -->
+            </div><!--end .card -->
+        </div><!--end .col -->
+        <!-- END ALERT - TIME ON SITE -->*@
+
 </div>
+    </div>

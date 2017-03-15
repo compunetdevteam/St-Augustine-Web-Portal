@@ -1,0 +1,178 @@
+﻿@*@model IEnumerable<StAugustine.Models.ContinuousAssessment>*@
+@model PagedList.IPagedList<StAugustine.Models.ContinuousAssessment>
+@using PagedList.Mvc;
+<link href="~/Content/PagedList.css" rel="stylesheet" type="text/css" />
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+
+<form action="@Href("~/ContinuousAssessments/CAQuery")" method="post" id="postForm">
+    <h6>Tips: The Subject and Class of Student is Required</h6>
+    <div class="row">
+        <div class="col-md-3">
+            <div class="control-label col-md-3">
+                <label>Subject</label>
+            </div>
+            <div class="col-md-9">
+                @Html.DropDownList("SubjectCode", null, htmlAttributes: new { @class = "form-control", @placeholder = "Select A Subject" })
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="control-label col-md-3">
+                <label>Class</label>
+            </div>
+            <div class="col-md-9">
+                @Html.DropDownList("ClassName", null, htmlAttributes: new { @class = "form-control", @placeholder = "Select Class Name" })
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="control-label col-md-3">
+                <label>Term</label>
+            </div>
+            <div class="col-md-9">
+                <input form-control list="terms" name="term" class="form-control" placeholder="Select A Term" required>
+                <datalist id="terms">
+                    <option value="First">
+                    <option value="Second">
+                    <option value="Third">
+                </datalist>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="control-label col-md-3">
+                <label>Session</label>
+            </div>
+            <div class="col-md-9">
+                @Html.DropDownList("SessionName", null, htmlAttributes: new { @class = "form-control", @placeholder = "Select Session" })
+            </div>
+        </div>
+        <div class="col-md-2">
+            <input type="submit" value="Process" class="btn-primary btn-success" />
+        </div>
+
+    </div>
+</form>
+
+
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.ActionLink("Student ID", "Index", new { sortOrder = ViewBag.NameSortParm })
+        </th>
+        <th>
+            Term
+        </th>
+        <th>
+            Session
+        </th>
+        <th>
+            subject Code
+        </th>
+        <th>
+            Class Name
+        </th>
+        <th>
+            Assign 1
+        </th>
+        <th>
+            Assign 2
+        </th>
+        <th>
+            First Test
+        </th>
+        <th>
+            Second Test
+        </th>
+        <th>
+            Exam Score
+        </th>
+        <th>
+            Staff Name
+        </th>
+        <th>
+            @Html.ActionLink("Total", "Index", new { sortOrder = ViewBag.NameSortParm })
+        </th>
+        <th>
+            Grading
+        </th>
+        <th>
+            Remark
+        </th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.StudentId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TermName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.SessionName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.SubjectCode)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ClassName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Assignment1)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Assignment2)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FirstTest)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.SecondTest)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ExamScore)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.StaffName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Total)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Grading)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Remark)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { id = item.ContinuousAssessmentId }) |
+                @Html.ActionLink("Details", "Details", new { id = item.ContinuousAssessmentId }) |
+                @Html.ActionLink("Delete", "Delete", new { id = item.ContinuousAssessmentId })
+            </td>
+        </tr>
+    }
+
+</table>
+
+<br />
+<div class="btn-group pull-right">
+    Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
+    @Html.PagedListPager(Model, page => Url.Action("CAQuery", new
+{
+    page,
+    sortOrder = ViewBag.CurrentSort,
+    currentFilter =
+    ViewBag.CurrentFilter
+}))
+</div>

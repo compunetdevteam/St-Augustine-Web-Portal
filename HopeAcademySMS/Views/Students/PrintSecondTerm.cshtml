@@ -1,0 +1,226 @@
+﻿@model StAugustine.ViewModel.ReportViewModel
+@{
+	ViewBag.Title = "Print Result";
+}
+<style>
+	
+.vertical-text {
+	display: inline-block;
+	overflow: hidden;
+	width: 1.5em;
+}
+.vertical-text__inner {
+	display: inline-block;
+	white-space: nowrap;
+	line-height: 1.5;
+	transform: translate(0,100%) rotate(-90deg);
+	transform-origin: 0 0;
+}
+/* This element stretches the parent to be square
+   by using the mechanics of vertical margins  */
+.vertical-text__inner:after {
+	content: "";
+	display: block;
+	margin: -1.5em 0 100%;
+}
+
+
+
+/* Just for more pretty example */
+
+
+table {
+	margin-top: 2em;
+}
+th,td {
+	
+	text-align:justify;
+	font-weight: normal;
+	
+}
+
+</style>
+
+@*<img src="~/Content/images/logo.PNG" width="900" />*@
+<img src="~/Content/images/templatemo_logo.jpg" />
+<h3 class="text-center"> REPORT SHEET FOR @ViewBag.Term TERM @ViewBag.Session ACADEMIC SESSION </h3>
+
+<div>
+
+		<div class="card">
+			<div class="card-body">
+				<table class="table table-banded no-margin table-responsive">
+					<tbody>
+						<tr>
+							<td><strong>FULLNAME:</strong> @Html.DisplayFor(model => model.Student.FullName)</td>
+							<td><strong>SEX:</strong> @Html.DisplayFor(model => model.Student.Gender)</td>
+							<td><strong>AGE:</strong> @Html.DisplayFor(model => model.Student.Age)</td>
+							<td><strong>CLASS:</strong> @ViewBag.ClassName</td>
+						</tr>
+						<tr>
+							<td><strong>ADMISSION NO:</strong> @Html.DisplayFor(model => model.Student.StudentId)</td>
+							<td><strong>HOUSE:</strong> @Html.DisplayFor(model => model.Student.Gender)</td>
+							<td><strong>No of Times Sch. Opened:</strong> xxx</td>
+							<td><strong>ABSENT:</strong> xxx</td>
+						</tr>
+						<tr>
+							<td><strong>Next Term Begins:</strong>xxx</td>
+							<td><strong>Next Term Ends:</strong> xxx</td>
+							<td><strong>No in Class:</strong> @Html.DisplayFor(model => model.NoOfStudentPerClass)</td>
+							<td><strong>Position:</strong> @Html.DisplayFor(model => model.AggregatePosition)</td>
+						</tr>
+					</tbody>
+				</table>
+			</div><!--end .card-body -->
+		</div><!--end .card -->
+
+</div>
+
+
+
+<table class="table  table-bordered no-margin">
+	<tr>
+
+		<th>
+			Subject
+		</th>
+		<th><div class="vertical-text"><div class="vertical-text__inner">1ST ASSIGN(5%)</div></div></th>
+		<th><div class="vertical-text"><div class="vertical-text__inner">2ND ASSIGN(5%)</div></div></th>
+		<th><div class="vertical-text"><div class="vertical-text__inner"> 1ST CA (10%)</div></div></th>
+		<th><div class="vertical-text"><div class="vertical-text__inner">2ND CA (10%)</div></div></th>
+		<th><div class="vertical-text"><div class="vertical-text__inner">EXAM (70%)</div></div></th>
+		<th><div class="vertical-text"><div class="vertical-text__inner">TOTAL</div></div></th>
+		<th><div class="vertical-text"><div class="vertical-text__inner">Class Highest</div></div></th>
+		<th><div class="vertical-text"><div class="vertical-text__inner">Class Lowest</div></div></th>
+		<th><div class="vertical-text"><div class="vertical-text__inner">Class Average</div></div></th>
+		<th><div class="vertical-text"><div class="vertical-text__inner">Position </div></div></th>
+		<th><div class="vertical-text"><div class="vertical-text__inner">Grade </div></div></th>
+		<th> Remark </th>
+		@*<th class="verticalTableHeader"> 1ST ASSIGN(5%) </th>
+	<th class="verticalTableHeader"> 2ND ASSIGN(5%) </th>
+	<th class="verticalTableHeader"> 1ST CA (10%) </th>
+	<th class="verticalTableHeader"> 2ND CA (10%) </th>
+	<th class="verticalTableHeader"> EXAM (70%) </th>
+	<th class="verticalTableHeader"> TOTAL </th>
+	<th class="verticalTableHeader"> Class Highest </th>
+	<th class="verticalTableHeader"> Class Lowest </th>
+	<th class="verticalTableHeader"> Class Average </th>
+	<th class="verticalTableHeader"> Position </th>
+	<th class="verticalTableHeader"> Grade </th>
+	<th class="verticalTableHeader"> Remark </th>*@
+	</tr>
+
+	@foreach (var item in Model.ContinuousAssessments)
+	{
+		<tr>
+			<td>
+				@Html.DisplayFor(modelItem => item.SubjectCode)
+			</td>
+			<td>
+				@Html.DisplayFor(modelItem => item.Assignment1)
+			</td>
+			<td>
+				@Html.DisplayFor(modelItem => item.Assignment2)
+			</td>
+			<td>
+				@Html.DisplayFor(modelItem => item.FirstTest)
+			</td>
+			<td>
+				@Html.DisplayFor(modelItem => item.SecondTest)
+			</td>   
+			<td>
+				@Html.DisplayFor(modelItem => item.ExamScore)
+			</td>
+			<td>
+				@Html.DisplayFor(modelItem => item.Total)
+			</td>
+			<td>
+				x
+			</td>
+
+			<td>
+				x
+			</td>
+		   
+			@foreach (var resultItem in Model.Results.Where(c => c.SubjectName.Contains(item.SubjectCode)))
+			{
+				<td>
+					@Html.DisplayFor(modelItem => resultItem.ClassAverage)
+				</td>
+				<td>
+					@Html.DisplayFor(modelItem => resultItem.SubjectPosition)
+				</td>
+				
+			}
+			<td>
+				@Html.DisplayFor(modelItem => item.Grading)
+			</td>
+			<td>
+				@Html.DisplayFor(modelItem => item.Remark)
+			</td>
+		  
+		</tr>
+	}
+
+</table>
+<br/>
+
+<div class="card">
+	<div class="card-body">
+		<table class="table table-banded no-margin table-responsive">
+			<tbody>
+				<tr>
+					<td><strong>No of Subject Offered:</strong> xxx</td>
+					<td><strong>Total:</strong>xxx</td>
+					<td><strong>Distinctions:</strong> xxx</td>
+					<td><strong>Good:</strong>xxx</td>
+					<td><strong>Credit:</strong>xxx</td>
+					<td><strong>Pass:</strong>xxx</td>
+					<td><strong>Fail:</strong>xxx</td>
+				</tr>
+				<tr>
+					<td><strong>Terminal Performance:</strong> xxx</td>
+					<td><strong>Total Mark:</strong> @Html.DisplayFor(model => model.TotalScore)</td>
+					<td><strong>Average:</strong> @Html.DisplayFor(model => model.Average)</td>
+					<td><strong>GPA:</strong> @Html.DisplayFor(model => model.GradePointAverage)</td>
+					<td><strong>CGPA:</strong> xxx</td>
+				</tr>
+			</tbody>
+		</table>
+	</div><!--end .card-body -->
+</div><!--end .card -->
+<br/>
+
+<table class="table table-bordered no-margin table-responsive">
+<tbody>
+<tr>
+	<td>
+		<table>
+			<tr><th>Header 1</th></tr>
+			<tr><td>Row:1 Cell:1</td></tr>
+			<tr><td>Row:2 Cell:1</td></tr>
+			<tr><td>Row:3 Cell:1</td></tr>
+			<tr><td>Row:4 Cell:1</td></tr>
+			<tr><td>Row:5 Cell:1</td></tr>
+			<tr><td>Row:6 Cell:1</td></tr>
+		</table>
+	</td>
+	<td>
+		<table>
+			<tr><th>Header 1</th></tr>
+			<tr><td>Row:1 Cell:1</td></tr>
+			<tr><td>Row:2 Cell:1</td></tr>
+			<tr><td>Row:3 Cell:1</td></tr>
+		</table>
+	</td>
+</tr>
+</tbody>
+	</table>
+
+	  
+			<h2>Total credit Unit is @Html.DisplayFor(model => model.TotalCreditUnit)</h2>
+			<h2>Total Quality point is @Html.DisplayFor(model => model.TotalQualityPoint)</h2>
+
+
+
+

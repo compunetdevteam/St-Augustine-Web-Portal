@@ -1,0 +1,104 @@
+﻿@model StAugustine.Models.Expression
+
+@{
+    ViewBag.Title = "Delete";
+}
+
+<h2>Delete</h2>
+
+<h3>Are you sure you want to delete this?</h3>
+<div>
+    <h4>Expression</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.StudentId)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.StudentId)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.TermName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.TermName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.SessionName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.SessionName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ClassName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ClassName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.QualityofHandwriting)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.QualityofHandwriting)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.GrammaticalSkills)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.GrammaticalSkills)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.OralExpression)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.OralExpression)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ImaginationCreativity)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ImaginationCreativity)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.VocabularyLexicalSkills)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.VocabularyLexicalSkills)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.OrganizationOfIdeas)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.OrganizationOfIdeas)
+        </dd>
+
+    </dl>
+
+    @using (Html.BeginForm()) {
+        @Html.AntiForgeryToken()
+
+        <div class="form-actions no-color">
+            <input type="submit" value="Delete" class="btn btn-default" /> |
+            @Html.ActionLink("Back to List", "Index")
+        </div>
+    }
+</div>

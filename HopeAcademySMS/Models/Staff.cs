@@ -1,49 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Web;
 
-namespace HopeAcademySMS.Models
+namespace StAugustine.Models
 {
     public class Staff
     {
         public string Id { get; set; }
-
-        [Display(Name = "Salutation")]
-        public PopUp.Salutation Salutation { get; set; }
-
-        [Display(Name = "Surname")]
-        [Required(ErrorMessage = "Your Surname is required")]
-        [StringLength(50, ErrorMessage = "Your Surname is too long")]
-        public string Surname { get; set; }
-
-        [Display(Name = "Other Names")]
-        [Required(ErrorMessage = "Your Other Name is required")]
-        [StringLength(50, ErrorMessage = "Your Other Name is too long")]
-        public string OtherName { get; set; }
-        [Display(Name = "Mobile Number")]
-        [Required(ErrorMessage = "Enter the Correct Phone Number")]
-        [DataType(DataType.PhoneNumber)]
+        public string Salutation { get; set; }
+        public string FirstName { get; set; }
+        public string MiddleName { get; set; }
+        public string LastName { get; set; }
         public string PhoneNumber { get; set; }
-
-        [Display(Name = "Address")]
-        [DataType(DataType.MultilineText)]
-        [Required(ErrorMessage = "Your Address is required")]
-        [StringLength(50, ErrorMessage = "Your Address name is too long")]
-        public string Address { get; set; }
-
-        [Required(AllowEmptyStrings = false)]
-        [Display(Name = "Email")]
-        [EmailAddress]
         public string Email { get; set; }
+        public string Gender { get; set; }
+        public string Address { get; set; }
+        public string StateOfOrigin { get; set; }
+        public string Designation { get; set; }
+        public byte[] StaffPassport { get; set; }
+        public DateTime DateOfBirth { get; set; }
+        public string MaritalStatus { get; set; }
+        public string Qualifications { get; set; }
 
-        public string Username
-        {
-            get
-            {
-                return string.Format("{0} {1}", this.Surname, this.OtherName);
-            }
-        }
+        public string Username => $"{FirstName} {LastName}";
+
+        public virtual ICollection<AssignedClass> AssignedClasses { get; set; }
+        public virtual ICollection<Subject> Subjects { get; set; }
+        public virtual ICollection<Class> Classes { get; set; }
     }
 }

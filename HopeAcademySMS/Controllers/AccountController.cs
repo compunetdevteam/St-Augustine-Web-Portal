@@ -1,18 +1,17 @@
-﻿using System;
-using System.Globalization;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using System.Web;
-using System.Web.Mvc;
+﻿using StAugustine.Models;
+using StAugustine.ViewModel;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
-using HopeAcademySMS.Models;
-using Excel = Microsoft.Office.Interop.Excel;
-using System.Collections.Generic;
+using OfficeOpenXml;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Web;
+using System.Web.Mvc;
 
-namespace HopeAcademySMS.Controllers
+
+namespace StAugustine.Controllers
 {
     [Authorize]
     public class AccountController : Controller
@@ -25,7 +24,7 @@ namespace HopeAcademySMS.Controllers
         {
         }
 
-        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager )
+        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager)
         {
             UserManager = userManager;
             SignInManager = signInManager;
@@ -37,9 +36,9 @@ namespace HopeAcademySMS.Controllers
             {
                 return _signInManager ?? HttpContext.GetOwinContext().Get<ApplicationSignInManager>();
             }
-            private set 
-            { 
-                _signInManager = value; 
+            private set
+            {
+                _signInManager = value;
             }
         }
 
@@ -77,12 +76,17 @@ namespace HopeAcademySMS.Controllers
             }
 
             // This doesn't count login failures towards account lockout
-            // To enable password failures to trigger account lockout, change to shouldLockout: true
-            var result = await SignInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, shouldLockout: false);
+            // To enable password failures to trigger account lockout, change to shouldLockout: 
+            var user = db.Users.SingleOrDefault(c => c.Email.Equals(model.Email));
+            if (user == null)
+            {
+                return View("Error1");
+            }
+            var result = await SignInManager.PasswordSignInAsync(user.UserName, model.Password, model.RememberMe, shouldLockout: false);
             switch (result)
             {
                 case SignInStatus.Success:
-                    return RedirectToLocal(returnUrl);
+                    return RedirectToAction("DashBoard", "Students");
                 case SignInStatus.LockedOut:
                     return View("Lockout");
                 case SignInStatus.RequiresVerification:
@@ -123,7 +127,7 @@ namespace HopeAcademySMS.Controllers
             // If a user enters incorrect codes for a specified amount of time then the user account 
             // will be locked out for a specified amount of time. 
             // You can configure the account lockout settings in IdentityConfig
-            var result = await SignInManager.TwoFactorSignInAsync(model.Provider, model.Code, isPersistent:  model.RememberMe, rememberBrowser: model.RememberBrowser);
+            var result = await SignInManager.TwoFactorSignInAsync(model.Provider, model.Code, isPersistent: model.RememberMe, rememberBrowser: model.RememberBrowser);
             switch (result)
             {
                 case SignInStatus.Success:
@@ -137,11 +141,11 @@ namespace HopeAcademySMS.Controllers
             }
         }
 
-        // GET: /Account/Register
+        // GET: /Account/RegisterStaff
         [AllowAnonymous]
         public ActionResult RegisterStaff()
         {
-            ViewBag.Name = new SelectList(db.Roles.ToList(), "Name", "Name");
+            ViewBag.Name = new SelectList(db.Roles.ToList(), "Name", "Name").ToList();
             //ViewBag.Department = new SelectList(db.Departments.ToList(), "DeptCode", "DeptName");
             return View();
         }
@@ -151,23 +155,31 @@ namespace HopeAcademySMS.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> RegisterStaff(EditUserViewModel model)
+        public async Task<ActionResult> RegisterStaff(StaffViewModel model)
         {
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+                var user = new ApplicationUser { UserName = model.Username, Email = model.Email };
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
                     var db = new ApplicationDbContext();
                     var staff = new Staff
                     {
-                        Surname = model.Surname,
-                        OtherName = model.OtherName,
-                        Salutation = model.Salutation,
+                        Salutation = model.Salutation.ToString(),
+                        FirstName = model.FirstName,
+                        MiddleName = model.MiddleName,
+                        LastName = model.LastName,
                         Email = model.Email,
                         PhoneNumber = model.PhoneNumber,
                         Address = model.Address,
+                        MaritalStatus = model.MaritalStatus.ToString(),
+                        DateOfBirth = model.DateOfBirth,
+                        Designation = model.Designation,
+                        Qualifications = model.Qualifications.ToString(),
+                        StaffPassport = model.StaffPassport,
+                        StateOfOrigin = model.StateOfOrigin.ToString(),
+                        Gender = model.Gender.ToString(),
                         Id = user.Id
                     };
                     db.Staffs.Add(staff);
@@ -191,6 +203,138 @@ namespace HopeAcademySMS.Controllers
             }
 
             // If we got this far, something failed, redisplay form
+            ViewBag.Name = new SelectList(db.Roles.ToList(), "Name", "Name").ToList();
+            return View(model);
+        }
+
+
+        [AllowAnonymous]
+        public ActionResult UpLoadGuardian()
+        {
+            return View();
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<ActionResult> UpLoadGuardian(HttpPostedFileBase excelfile)
+        {
+            if (excelfile == null || excelfile.ContentLength == 0)
+            {
+                ViewBag.Error = "Please Select a excel file <br/>";
+                return View("UpLoadGuardian");
+            }
+            else
+            {
+                HttpPostedFileBase file = Request.Files["excelfile"];
+                if (excelfile.FileName.EndsWith("xls") || excelfile.FileName.EndsWith("xlsx"))
+                {
+                    string fileContentType = file.ContentType;
+                    byte[] fileBytes = new byte[file.ContentLength];
+                    var data = file.InputStream.Read(fileBytes, 0, Convert.ToInt32(file.ContentLength));
+
+                    // Read data from excel file
+                    using (var package = new ExcelPackage(file.InputStream))
+                    {
+                        var currentSheet = package.Workbook.Worksheets;
+                        var workSheet = currentSheet.First();
+                        var noOfCol = workSheet.Dimension.End.Column;
+                        var noOfRow = workSheet.Dimension.End.Row;
+
+                        for (int row = 2; row <= noOfRow; row++)
+                        {
+                            string salutation = workSheet.Cells[row, 1].Value.ToString();
+                            string firstName = workSheet.Cells[row, 2].Value.ToString();
+                            string middleName = workSheet.Cells[row, 3].Value.ToString();
+                            string lastName = workSheet.Cells[row, 4].Value.ToString();
+                            string email = workSheet.Cells[row, 5].Value.ToString();
+                            string gender = workSheet.Cells[row, 6].Value.ToString();
+                            string phoneNumber = workSheet.Cells[row, 7].Value.ToString();
+                            string address = workSheet.Cells[row, 8].Value.ToString();
+                            string occupation = workSheet.Cells[row, 9].Value.ToString();
+                            string relationship = workSheet.Cells[row, 10].Value.ToString();
+                            string password = workSheet.Cells[row, 11].Value.ToString();
+                            string username = firstName.Trim() + " " + lastName.Trim();
+
+                            var user = new ApplicationUser { UserName = username, Email = email };
+                            var result = await UserManager.CreateAsync(user, password);
+                            if (result.Succeeded)
+                            {
+                                var db = new ApplicationDbContext();
+
+                                var guardian = new Guardian(user.Id, salutation.Trim(), firstName.Trim(),
+                                    middleName.Trim(), lastName.Trim(),
+                                    gender.Trim(), address.Trim(), phoneNumber.Trim(), email.Trim(), relationship.Trim(),
+                                    occupation.Trim());
+                                db.Guardians.Add(guardian);
+
+                                //Assign Role to user Here 
+                                await this.UserManager.AddToRoleAsync(user.Id, "Guardian");
+                                db.SaveChanges();
+                            }
+                        }
+
+                        return RedirectToAction("Index", "Guardians");
+                    }
+                }
+                else
+                {
+                    ViewBag.Error = "File type is Incorrect <br/>";
+                    return View("UpLoadGuardian");
+                }
+            }
+
+
+
+        }
+
+        //
+        // GET: /Account/Register
+        [AllowAnonymous]
+        public ActionResult RegisterGuardian()
+        {
+            ViewBag.StudentId = new SelectList(db.Students, "StudentId", "FullName");
+            return View();
+        }
+
+        //
+        // POST: /Account/Register
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> RegisterGuardian(GuardianViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = new ApplicationUser { UserName = model.Username, Email = model.Email };
+                var result = await UserManager.CreateAsync(user, model.Password);
+                if (result.Succeeded)
+                {
+                    var db = new ApplicationDbContext();
+                    var guardian = new Guardian(user.Id, model.Salutation.ToString(),
+                                            model.FirstName, model.MiddleName, model.LastName, model.Gender.ToString(),
+                                            model.PhoneNumber, model.Address, model.Email, model.Relationship.ToString(), model.Occupation);
+
+                    db.Guardians.Add(guardian);
+                    db.SaveChanges();
+
+                    //Assign Role to user Here 
+                    await this.UserManager.AddToRoleAsync(user.Id, "Guardian");
+
+                    // To avoid automatic login
+                    //await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
+
+                    // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
+                    // Send an email with this link
+                    // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
+                    // var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
+                    // await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
+
+                    return RedirectToAction("Index", "Guardians");
+                }
+                AddErrors(result);
+            }
+            ViewBag.StudentId = new SelectList(db.Students, "StudentId", "FullName");
+            // If we got this far, something failed, redisplay form
             return View(model);
         }
 
@@ -199,7 +343,8 @@ namespace HopeAcademySMS.Controllers
         // GET: /Account/Register
         [AllowAnonymous]
         public ActionResult Register()
-        {            
+        {
+            ViewBag.Class = new SelectList(db.Classes, "MyClassName", "MyClassName");
             return View();
         }
 
@@ -212,33 +357,17 @@ namespace HopeAcademySMS.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = model.Username, Email = model.Email };
+                var user = new ApplicationUser { UserName = model.Username, Email = model.Email, Id = model.StudentId };
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
-                    var db = new ApplicationDbContext();
-                    var student = new Student
-                    {
-                        FirstName = model.FirstName,
-                        MiddleName = model.MiddleName,
-                        LastName = model.LastName,                        
-                        StudentNumber = model.StudentNumber,
-                        Email = model.Email,
-                        PhoneNumber = model.PhoneNumber,
-                        Address = model.Address,
-                        Class = model.Class,
-                        Gender = model.Gender,
-                        ID = user.Id
-                    };
-                    db.Students.Add(student);
-                    db.SaveChanges();
 
                     //Assign Role to user Here 
                     await this.UserManager.AddToRoleAsync(user.Id, "Student");
 
                     // To avoid automatic login
                     //await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
-                    
+
                     // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
                     // Send an email with this link
                     // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
@@ -254,98 +383,74 @@ namespace HopeAcademySMS.Controllers
             return View(model);
         }
 
-        [AllowAnonymous]
-        public ActionResult UploadStudent()
-        {
-            return View();
-        }
+        //[AllowAnonymous]
+        //public ActionResult UploadStudent()
+        //{
+        //    return View();
+        //}
 
-        [AllowAnonymous]
-        [HttpPost]
-        public async Task<ActionResult> UploadStudent(HttpPostedFileBase excelfile)
-        {
-            if (excelfile == null || excelfile.ContentLength == 0)
-            {
-                ViewBag.Error = "Please Select a excel file <br/>";
-                return View("Index");
-            }
-            else
-            {
-                if (excelfile.FileName.EndsWith("xls") || excelfile.FileName.EndsWith("xlsx"))
-                {
-                    string path = Server.MapPath("~/Content/ExcelUploadedFile/" + excelfile.FileName);
-                    if (System.IO.File.Exists(path))
-                        System.IO.File.Delete(path);
-                    excelfile.SaveAs(path);
+        //[AllowAnonymous]
+        //[HttpPost]
+        //public async Task<ActionResult> UploadStudent(HttpPostedFileBase excelfile)
+        //{
+        //    if (excelfile == null || excelfile.ContentLength == 0)
+        //    {
+        //        ViewBag.Error = "Please Select a excel file <br/>";
+        //        return View("Index");
+        //    }
+        //    else
+        //    {
+        //        HttpPostedFileBase file = Request.Files["excelfile"];
+        //        if (excelfile.FileName.EndsWith("xls") || excelfile.FileName.EndsWith("xlsx"))
+        //        {
+        //            string fileContentType = file.ContentType;
+        //            byte[] fileBytes = new byte[file.ContentLength];
+        //            var data = file.InputStream.Read(fileBytes, 0, Convert.ToInt32(file.ContentLength));
 
-                    // Read data from excel file
-                    Excel.Application application = new Excel.Application();
-                    Excel.Workbook workbook = application.Workbooks.Open(path);
-                    Excel.Worksheet worksheet = workbook.ActiveSheet;
-                    Excel.Range range = worksheet.UsedRange;
+        //            // Read data from excel file
+        //            using (var package = new ExcelPackage(file.InputStream))
+        //            {
+        //                var currentSheet = package.Workbook.Worksheets;
+        //                var workSheet = currentSheet.First();
+        //                var noOfCol = workSheet.Dimension.End.Column;
+        //                var noOfRow = workSheet.Dimension.End.Row;
 
-                    List<ApplicationUser> listApplicationUser = new List<ApplicationUser>();
+        //                for (int row = 2; row <= noOfRow; row++)
+        //                {
 
-                    for (int row = 2; row <= range.Rows.Count; row++)
-                    {
-                        var user = new ApplicationUser
-                        {
-                            UserName = ((Excel.Range)range.Cells[row, 1]).Text,
-                            Email = ((Excel.Range)range.Cells[row, 6]).Text
-                        };
-                        var password = ((Excel.Range)range.Cells[row, 11]).Text;
-                        var result = await UserManager.CreateAsync(user, password);
-                        if (result.Succeeded)
-                        {
-                            var db = new ApplicationDbContext();
-                            var student = new Student
-                            {
-                                FirstName = ((Excel.Range)range.Cells[row, 3]).Text,
-                                MiddleName = ((Excel.Range)range.Cells[row, 4]).Text,
-                                LastName = ((Excel.Range)range.Cells[row, 5]).Text,
-                                StudentNumber = ((Excel.Range)range.Cells[row, 2]).Text,
-                                Email = ((Excel.Range)range.Cells[row, 6]).Text,
-                                PhoneNumber = ((Excel.Range)range.Cells[row, 7]).Text,
-                                Address = ((Excel.Range)range.Cells[row, 9]).Text,
-                                Class = ((Excel.Range)range.Cells[row, 10]).Text,
-                                Gender = ((Excel.Range)range.Cells[row, 8]).Text,
-                                ID = user.Id
-                            };
-                            db.Students.Add(student);
-                            db.SaveChanges();
+        //                    string lastName = workSheet.Cells[row, 2].Value.ToString();
+        //                    string firstName = workSheet.Cells[row, 3].Value.ToString();
+        //                    string username = lastName.Trim() + " " + firstName.Trim();
 
-                            await this.UserManager.AddToRoleAsync(user.Id, "Student");
+        //                    string currentClass = workSheet.Cells[row, 8].Value.ToString();
 
-                            //    //var mySavingMaintenance = new SavingsMaintenance
-                            //{
-                            //    MemberNumber = ((Excel.Range)range.Cells[row, 1]).Text,
-                            //    SavingName = ((Excel.Range)range.Cells[row, 2]).Text,
-                            //    Amount = decimal.Parse(((Excel.Range)range.Cells[row, 3]).Text),
-                            //    Description = ((Excel.Range)range.Cells[row, 4]).Text,
-                            //    PostDate = DateTime.Parse(((Excel.Range)range.Cells[row, 5]).Text),
-                            //};
-                            // db.SavingsMaintenances.Add(mySavingMaintenance);
-                            //listSavingsMaintenance.Add(mySavingMaintenance);
-                        }
-                        //db.SavingsMaintenances.Add(listSavingsMaintenance);
-                        //db.SaveChanges();
+        //                    string StudentId = workSheet.Cells[row, 1].Value.ToString();
+        //                    string LastName = lastName.Trim();
+        //                    string FirstName = firstName.Trim();
+        //                    string MiddleName = workSheet.Cells[row, 4].Value.ToString();
+        //                    string Email = workSheet.Cells[row, 5].Value.ToString();
+        //                    string PhoneNumber = workSheet.Cells[row, 6].Value.ToString();
+        //                    string Address = workSheet.Cells[row, 7].Value.ToString();
+        //                    string MyClassName = currentClass.Trim();
+        //                    string Gender = workSheet.Cells[row, 9].Value.ToString();
+        //                }
 
-                        //ViewBag.ListSavingsMaintenance = listSavingsMaintenance;                        
-                    }
-                    return View("Success");
-                }
+        //                return RedirectToAction("Index", "Students");
+        //            }
+        //        }
+        //        else
+        //        {
+        //            ViewBag.Error = "File type is Incorrect <br/>";
+        //            return View("Index");
 
-                else
-                {
-                    ViewBag.Error = "File type is Incorrect <br/>";
-                    return View("Index");
-                }
-            }
-        }
+        //        }
+        //    }
+        //}
 
-        //
-        // GET: /Account/ConfirmEmail
-        [AllowAnonymous]
+
+        //GET: /Account/ConfirmEmail
+        [
+        AllowAnonymous]
         public async Task<ActionResult> ConfirmEmail(string userId, string code)
         {
             if (userId == null || code == null)
@@ -563,7 +668,7 @@ namespace HopeAcademySMS.Controllers
         public ActionResult LogOff()
         {
             AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Login", "Account");
         }
 
         //

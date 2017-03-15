@@ -1,7 +1,6 @@
-﻿using System.Web;
-using System.Web.Optimization;
+﻿using System.Web.Optimization;
 
-namespace HopeAcademySMS
+namespace StAugustine
 {
     public class BundleConfig
     {
@@ -26,6 +25,7 @@ namespace HopeAcademySMS
             bundles.Add(new StyleBundle("~/Content/css").Include(
                       "~/Content/bootstrap.css",
                       "~/Content/site.css"));
+
         }
     }
 }

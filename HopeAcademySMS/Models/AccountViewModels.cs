@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace HopeAcademySMS.Models
+namespace StAugustine.Models
 {
     public class ExternalLoginConfirmationViewModel
     {
@@ -124,16 +124,14 @@ namespace HopeAcademySMS.Models
         [Display(Name = "Student ID")]
         [Required(ErrorMessage = "Your Student ID Number is required")]
         [StringLength(10, ErrorMessage = "Your Student ID is too long")]
-        public string StudentNumber { get; set; }
+        public string StudentId { get; set; }
 
         [Display(Name = "First Name")]
         [Required(ErrorMessage = "Your First Name is required")]
         [StringLength(50, ErrorMessage = "Your First Name is too long")]
         public string FirstName { get; set; }
 
-        [Display(Name = "Middle Name")]
-        [Required(ErrorMessage = "Your Middle Name is required")]
-        [StringLength(50, ErrorMessage = "Your Middle Name is too long")]
+        [Display(Name = "Middle Name")]    
         public string MiddleName { get; set; }
 
         [Display(Name = "Last Name")]

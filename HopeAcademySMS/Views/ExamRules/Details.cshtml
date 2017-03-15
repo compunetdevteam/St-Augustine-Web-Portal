@@ -1,0 +1,50 @@
+﻿@model StAugustine.Models.CBT.ExamRule
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>ExamRule</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.ClassName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ClassName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.CorrectMark)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.CorrectMark)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.TotalQuestion)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.TotalQuestion)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.MaximunTime)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.MaximunTime)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

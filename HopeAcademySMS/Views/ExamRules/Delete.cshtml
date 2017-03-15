@@ -1,0 +1,56 @@
+﻿@model StAugustine.Models.CBT.ExamRule
+
+@{
+    ViewBag.Title = "Delete";
+}
+
+<h2>Delete</h2>
+
+<h3>Are you sure you want to delete this?</h3>
+<div>
+    <h4>ExamRule</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.ClassName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ClassName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.CorrectMark)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.CorrectMark)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.TotalQuestion)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.TotalQuestion)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.MaximunTime)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.MaximunTime)
+        </dd>
+
+    </dl>
+
+    @using (Html.BeginForm()) {
+        @Html.AntiForgeryToken()
+
+        <div class="form-actions no-color">
+            <input type="submit" value="Delete" class="btn btn-default" /> |
+            @Html.ActionLink("Back to List", "Index")
+        </div>
+    }
+</div>

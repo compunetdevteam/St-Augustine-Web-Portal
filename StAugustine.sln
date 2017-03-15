@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StAugustine", "HopeAcademySMS\StAugustine.csproj", "{329B451B-1CC9-48BD-8903-906C3BFEA51D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StAugustineTests", "HopeAcademySMSTests\StAugustineTests.csproj", "{7878513D-237B-4599-941F-52ADE176615B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{329B451B-1CC9-48BD-8903-906C3BFEA51D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{329B451B-1CC9-48BD-8903-906C3BFEA51D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{329B451B-1CC9-48BD-8903-906C3BFEA51D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{329B451B-1CC9-48BD-8903-906C3BFEA51D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7878513D-237B-4599-941F-52ADE176615B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7878513D-237B-4599-941F-52ADE176615B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7878513D-237B-4599-941F-52ADE176615B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7878513D-237B-4599-941F-52ADE176615B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

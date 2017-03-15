@@ -1,0 +1,123 @@
+﻿@model IEnumerable<StAugustine.Models.Affective>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.StudentId)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.TermName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.SessionName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ClassName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Punctuality)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.BehaviourInClass)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.AttentivenessInClass)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ClassAssignmentsProjects)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Neatness)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.SelfControl)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.RelationshipWithOthers)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.RelationshipWithTeachersAndStaff)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.SenseOfResponsibility)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.AttendanceInClass)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Politeness)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.HonestyAndReliability)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.StudentId)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.TermName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.SessionName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ClassName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Punctuality)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.BehaviourInClass)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.AttentivenessInClass)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ClassAssignmentsProjects)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Neatness)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.SelfControl)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.RelationshipWithOthers)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.RelationshipWithTeachersAndStaff)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.SenseOfResponsibility)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.AttendanceInClass)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Politeness)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.HonestyAndReliability)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.Id }) |
+            @Html.ActionLink("Details", "Details", new { id=item.Id }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.Id })
+        </td>
+    </tr>
+}
+
+</table>

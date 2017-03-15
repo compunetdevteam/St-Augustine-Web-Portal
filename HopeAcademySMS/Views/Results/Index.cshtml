@@ -1,0 +1,111 @@
+﻿@model IEnumerable<StAugustine.Models.Result>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.StudentId)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.SubjectName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Term)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.SessionName)
+        </th>
+        <th>
+            SP
+        </th>
+        <th>
+            AggretateScore
+        </th>
+        <th>
+            Aggretate P
+        </th>
+        <th>
+           Subject Offered
+        </th>
+        <th>
+           Student in class
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Average)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ClassAverage)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.TotalQualityPoint)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.TotalCreditUnit)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.GPA)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.StudentId)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.SubjectName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Term)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.SessionName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.SubjectPosition)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.AggretateScore)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.AggregatePosition)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.NoOfSubjectOffered)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.NoOfStudentPerClass)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Average)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ClassAverage)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.TotalQualityPoint)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.TotalCreditUnit)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.GPA)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.ResultId }) |
+            @Html.ActionLink("Details", "Details", new { id=item.ResultId }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.ResultId })
+        </td>
+    </tr>
+}
+
+</table>

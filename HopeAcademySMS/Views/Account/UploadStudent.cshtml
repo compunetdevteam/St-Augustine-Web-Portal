@@ -5,7 +5,7 @@
 
 <h2>UploadFile</h2>
 
-@using (Html.BeginForm("UploadStudent", "Account", FormMethod.Post, new { enctype = "multipart/form-data" }))
+@using (Html.BeginForm("UploadStudent", "Students", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
     @Html.Raw(ViewBag.Error)
     <span>Excel File </span> <input type="file" name="excelfile" />

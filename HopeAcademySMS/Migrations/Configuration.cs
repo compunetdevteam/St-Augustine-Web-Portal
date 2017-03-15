@@ -1,18 +1,16 @@
 namespace HopeAcademySMS.Migrations
 {
-    using System;
-    using System.Data.Entity;
     using System.Data.Entity.Migrations;
-    using System.Linq;
 
-    internal sealed class Configuration : DbMigrationsConfiguration<HopeAcademySMS.Models.ApplicationDbContext>
+    internal sealed class Configuration : DbMigrationsConfiguration<StAugustine.Models.ApplicationDbContext>
     {
         public Configuration()
         {
             AutomaticMigrationsEnabled = true;
+            AutomaticMigrationDataLossAllowed = true;
         }
 
-        protected override void Seed(HopeAcademySMS.Models.ApplicationDbContext context)
+        protected override void Seed(StAugustine.Models.ApplicationDbContext context)
         {
             //  This method will be called after migrating to the latest version.
 

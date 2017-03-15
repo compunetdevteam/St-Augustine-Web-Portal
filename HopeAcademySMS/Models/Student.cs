@@ -1,72 +1,96 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Web;
 
-namespace HopeAcademySMS.Models
+namespace StAugustine.Models
 {
     public class Student
     {
-        public string ID { get; set; }
 
-        [Key]
-        [Display(Name = "Student ID")]
-        [Required(ErrorMessage = "Your Student ID Number is required")]
-        [StringLength(10, ErrorMessage = "Your Student ID is too long")]
-        public string StudentNumber { get; set; }
-
-        [Display(Name = "First Name")]
-        [Required(ErrorMessage = "Your First Name is required")]
-        [StringLength(50, ErrorMessage = "Your First Name is too long")]
-        public string FirstName { get; set; }
-
-        [Display(Name = "Middle Name")]
-        [Required(ErrorMessage = "Your Middle Name is required")]
-        [StringLength(50, ErrorMessage = "Your Middle Name is too long")]
-        public string MiddleName { get; set; }
-
-        [Display(Name = "Last Name")]
-        [Required(ErrorMessage = "Your Last Name is required")]
-        [StringLength(50, ErrorMessage = "Your Last Name is too long")]
-        public string LastName { get; set; }     
-
-        public string Username
+        private Student()
         {
-            get
-            {
-                return string.Format("{0} {1}", this.LastName, this.FirstName);
-            }
+
         }
 
-        [Required]
-        [EmailAddress]
-        [Display(Name = "Email")]
-        public string Email { get; set; }
+        public Student(string studentId, string guardianId, string firstname, string middleName, string lastname, string gender, DateTime dob,
+            DateTime addmissionDate, byte[] passport)
+        {
+            if (!string.IsNullOrEmpty(studentId) && !string.IsNullOrEmpty(firstname) && !string.IsNullOrEmpty(lastname) && !string.IsNullOrEmpty(middleName)
+                && !string.IsNullOrEmpty(gender) && !string.IsNullOrEmpty(guardianId))
+            {
+                StudentId = studentId;
+                FirstName = firstname;
+                MiddleName = middleName;
+                LastName = lastname;
+                Gender = gender;
+                GuardianEmail = guardianId;
+                StudentPassport = passport;
+                DateOfBirth = dob;
+                AdmissionDate = addmissionDate;
+                var t = DateTime.Now - DateOfBirth;
+                Age = (int)t.Days / 365;
+            }
+            else
+            {
+                throw new ArgumentException("Invalid values were provided to create student");
+            }
 
-        [Display(Name = "Mobile Number")]
-        [DataType(DataType.PhoneNumber)]
-        public string PhoneNumber { get; set; }
+            //GenerateAddmissionNumber();
 
-        public string Gender { get; set; }
+        }
 
-        [Display(Name = "Current Address")]
-        [DataType(DataType.MultilineText)]
-        [Required(ErrorMessage = "Your Current Address is required")]
-        [StringLength(150, ErrorMessage = "Your Current Address name is too long")]
-        public string Address { get; set; }
+        public Student(string studentId, string guardianId, string firstname, string middleName, string lastname, string gender, DateTime dob,
+           DateTime addmissionDate)
+        {
+            StudentId = studentId;
+            FirstName = firstname;
+            MiddleName = middleName;
+            LastName = lastname;
+            Gender = gender;
+            GuardianEmail = guardianId;
+            // StudentPassport = passport;
+            DateOfBirth = dob;
+            AdmissionDate = addmissionDate;
+            var t = DateTime.Now - DateOfBirth;
+            Age = (int)t.Days / 365;
 
-        [Display(Name = "Current Class")]
-        public string Class { get; set; }
+        }
 
-        public virtual List<Course> Courses { get; set; }
+        //private void GenerateAddmissionNumber()
+        //{
+        //    throw new NotImplementedException();
+        //}
+        [Key]
+        public string StudentId { get; private set; }
 
-        public virtual List<Grade> Grades { get; set; }
+        public string FirstName { get; private set; }
 
-        public virtual List<ParentGuardianInfo> ParentGuardianInfos { get; set; }
+        public string LastName { get; private set; }
 
-        //public virtual List<SavingsMaintenance> SavingsMaintenances { get; set; }
+        public string MiddleName { get; private set; }
 
-        //public virtual List<LoanRequest> LoanRequests { get; set; }
+        public string GuardianEmail { get; private set; }
+
+        public string FullName => string.Format($"{FirstName} {LastName}");
+
+        public int Age { get; private set; }
+
+
+        public DateTime DateOfBirth { get; private set; }
+
+        public DateTime AdmissionDate { get; private set; }
+
+        public string Gender { get; private set; }
+
+        public byte[] StudentPassport { get; private set; }
+
+        public bool Active { get; private set; }
+
+        public virtual ICollection<Guardian> Guardians { get; set; }
+        public virtual ICollection<FeePayment> FeePayments { get; set; }
+
+        public virtual ICollection<ContinuousAssessment> ContinuousAssessments { get; set; }
+
+        public virtual ICollection<AssignedClass> AssignedClasses { get; set; }
     }
 }

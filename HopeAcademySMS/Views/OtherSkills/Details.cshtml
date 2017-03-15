@@ -1,0 +1,98 @@
+﻿@model StAugustine.Models.OtherSkills
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>OtherSkills</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.StudentId)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.StudentId)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.TermName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.TermName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.SessionName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.SessionName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ClassName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ClassName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.TeamWorkTeamLeading)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.TeamWorkTeamLeading)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.PhysicalDexterity)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.PhysicalDexterity)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ClubAndSocieties)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ClubAndSocieties)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ArtisticOrMusicalSkills)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ArtisticOrMusicalSkills)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.LabAndWorkshopSkills)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.LabAndWorkshopSkills)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Sports)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Sports)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

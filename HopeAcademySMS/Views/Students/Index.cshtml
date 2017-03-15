@@ -1,63 +1,88 @@
-﻿@model IEnumerable<HopeAcademySMS.Models.Student>
+﻿@*@model IEnumerable<StAugustine.Models.Student>*@
+@model PagedList.IPagedList<StAugustine.Models.Student>
+@using PagedList.Mvc;
+<link href="~/Content/PagedList.css" rel="stylesheet" type="text/css" />
 
 @{
     ViewBag.Title = "Index";
 }
 
-<h2>Index</h2>
+<h2>Student List</h2>
 
-<p>
+@*<p>
     @Html.ActionLink("Create New", "Create")
-</p>
+</p>*@
+
+@using (Html.BeginForm("Index", "Students", FormMethod.Get))
+{ 
+    <div class="form-group">
+        <input type="text" class="form-control" name="search" placeholder="Enter your keyword">
+    </div>
+    <button type="submit" class="btn btn-icon-toggle ink-reaction"><i class="fa fa-search"></i></button>
+}
 <table class="table">
     <tr>
         <th>
-            @Html.DisplayNameFor(model => model.StudentNumber)
+            Student ID
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.FirstName)
+            @Html.ActionLink("Full Name", "Index", new { sortOrder = ViewBag.NameSortParm })
+            @*@Html.DisplayNameFor(model => model.FirstName)*@
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.MiddleName)
+          Age
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.LastName)
+            @Html.ActionLink("Addmission Date", "Index", new { sortOrder = ViewBag.NameSortParm })
+            @*@Html.DisplayNameFor(model => model.LastName)*@
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Gender)
+           Gender
         </th>      
-        <th>
-            @Html.DisplayNameFor(model => model.Class)
-        </th>
+     
         <th></th>
     </tr>
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.StudentNumber)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.FirstName)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.MiddleName)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.LastName)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Gender)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Class)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.StudentNumber }) |
-            @Html.ActionLink("Details", "Details", new { id=item.StudentNumber }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.StudentNumber })
-        </td>
-    </tr>
-}
+    @foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.StudentId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FullName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Age)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AdmissionDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Gender)
+            </td>
+      
+            <td>
+                @*@Html.ActionLink("Print", "Print", new { id = item.StudentId }) |*@
+                @Html.ActionLink("Edit", "Edit", new { id=item.StudentId }) |
+                @Html.ActionLink("Details", "Details", new { id=item.StudentId }) |
+                @if (Request.IsAuthenticated && User.IsInRole("Admin"))
+                {
+                    @Html.ActionLink("Delete", "Delete", new { id = item.StudentId })
+                }
+            </td>
+        </tr>
+    }
 
 </table>
+
+<br />
+<div class="btn-group pull-right">
+    Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
+    @Html.PagedListPager(Model, page => Url.Action("Index", new
+{
+    page,
+    sortOrder = ViewBag.CurrentSort,
+    currentFilter =
+    ViewBag.CurrentFilter
+}))
+    </div>
