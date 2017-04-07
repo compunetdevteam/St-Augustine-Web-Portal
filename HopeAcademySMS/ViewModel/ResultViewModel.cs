@@ -1,5 +1,4 @@
-﻿using StAugustine.Models;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace StAugustine.ViewModel
 {
@@ -13,7 +12,7 @@ namespace StAugustine.ViewModel
 
         [Display(Name = "Term")]
         [Required(ErrorMessage = "Term is required")]
-        public PopUp.Term TermName { get; set; }
+        public string TermName { get; set; }
 
         [Display(Name = "Session")]
         [Required(ErrorMessage = "Session is required")]

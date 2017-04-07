@@ -5,7 +5,7 @@ namespace StAugustine.Models
 {
     public class ContinuousAssessment
     {
-        GradeRemark myGradeRemark = new GradeRemark();
+        private readonly GradeRemark _myGradeRemark = new GradeRemark();
         public int ContinuousAssessmentId { get; set; }
 
         [Display(Name = "Student ID")]
@@ -29,30 +29,26 @@ namespace StAugustine.Models
         [Required(ErrorMessage = "Class Name is required")]
         public string ClassName { get; set; }
 
-        [Display(Name = "Score for Assignment 1")]
+        [Display(Name = "Score for Project")]
         [Required(ErrorMessage = "Assignment is required")]
-        public double Assignment1 { get; set; }
+        public double ProjectScore { get; set; }
 
-        [Display(Name = "Score for Assignment 2")]
+        [Display(Name = "Score for Assignment")]
         [Required(ErrorMessage = "Assignment is required")]
-        public double Assignment2 { get; set; }
+        public double Assignment { get; set; }
 
-        [Display(Name = "First Test")]
-        [Required(ErrorMessage = "First Test is required")]
-        public double FirstTest { get; set; }
+        [Display(Name = "CA Score")]
+        [Required(ErrorMessage = "CA score is required")]
+        public double Test { get; set; }
 
-        [Display(Name = "Second Test")]
-        [Required(ErrorMessage = "Second Test is required")]
-        public double SecondTest { get; set; }
 
         [Display(Name = "Exam Score")]
         [Required(ErrorMessage = "Exam Score is required")]
         public double ExamScore { get; set; }
+
         [Display(Name = "Staff Name")]
         [Required(ErrorMessage = "Staff name is required")]
         public string StaffName { get; set; }
-
-        public virtual Student Student { get; set; }
 
         public virtual List<Subject> Subjects { get; set; }
         public virtual Result Result { get; set; }
@@ -62,7 +58,7 @@ namespace StAugustine.Models
         {
             get
             {
-                double sum = Assignment1 + Assignment2 + FirstTest + SecondTest + ExamScore;
+                double sum = ProjectScore + Assignment + Test + ExamScore;
                 return sum;
             }
             private set { }
@@ -74,7 +70,7 @@ namespace StAugustine.Models
 
             get
             {
-                return myGradeRemark.Grading(Total);
+                return _myGradeRemark.Grading(Total, ClassName);
             }
             private set { }
 
@@ -88,7 +84,7 @@ namespace StAugustine.Models
 
             get
             {
-                return myGradeRemark.Remark(Total);
+                return _myGradeRemark.Remark(Total, ClassName);
             }
             private set { }
 
@@ -101,7 +97,7 @@ namespace StAugustine.Models
 
             get
             {
-                return myGradeRemark.GradingPoint(Total);
+                return _myGradeRemark.GradingPoint(Total, ClassName);
             }
             private set { }
 

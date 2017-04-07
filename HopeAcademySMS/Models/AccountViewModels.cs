@@ -49,8 +49,8 @@ namespace StAugustine.Models
     public class LoginViewModel
     {
         [Required]
-        [Display(Name = "Email")]
-        [EmailAddress]
+        [Display(Name = "Email or Phone Number")]
+        //[EmailAddress]
         public string Email { get; set; }
 
         [Required]
@@ -120,7 +120,7 @@ namespace StAugustine.Models
 
 
     public class RegisterViewModel
-    {       
+    {
         [Display(Name = "Student ID")]
         [Required(ErrorMessage = "Your Student ID Number is required")]
         [StringLength(10, ErrorMessage = "Your Student ID is too long")]
@@ -131,7 +131,7 @@ namespace StAugustine.Models
         [StringLength(50, ErrorMessage = "Your First Name is too long")]
         public string FirstName { get; set; }
 
-        [Display(Name = "Middle Name")]    
+        [Display(Name = "Middle Name")]
         public string MiddleName { get; set; }
 
         [Display(Name = "Last Name")]

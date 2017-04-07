@@ -7,7 +7,7 @@ using Microsoft.AspNet.Identity;
     <div class="jumbotron">
         <div>
             <h2>
-                <a href="@Href("~/Posts/Details/" + post.ID)"> @post.Title>
+                <a href="@Href("~/Posts/Details/" + post.ID)"> @post.Title </a>
             </h2>
         </div>
         <div>
@@ -36,7 +36,7 @@ using Microsoft.AspNet.Identity;
                     string encodedUrl = HttpUtility.UrlEncode(url);
                     string encodedTitle = HttpUtility.UrlEncode(post.Title);
                 }
-                <a href="http://reddit.com/submit?url=@encodedUrl&title=@encodedTitle"><image or link goes here></a>
+                <a href="http://reddit.com/submit?url=@encodedUrl&title=@encodedTitle">image or link goes here></a>
                 <a href="http://digg.com/submit?url=@encodedUrl&amp;title=@encodedTitle"></a>
                 <a href="http://twitter.com/share" class="twitter-share-button" data-url="@encodedUrl" data-text="@encodedTitle" data-count="none">Tweet</a>
                 <script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script>

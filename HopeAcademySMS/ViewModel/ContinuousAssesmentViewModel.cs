@@ -1,5 +1,4 @@
-﻿using StAugustine.Models;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace StAugustine.ViewModel
 {
@@ -14,7 +13,7 @@ namespace StAugustine.ViewModel
 
         [Display(Name = "Term")]
         [Required(ErrorMessage = "Term is required")]
-        public PopUp.Term TermName { get; set; }
+        public string TermName { get; set; }
 
         [Display(Name = "Session")]
         [Required(ErrorMessage = "Session is required")]
@@ -30,28 +29,24 @@ namespace StAugustine.ViewModel
         [Required(ErrorMessage = "Class Name is required")]
         public string ClassName { get; set; }
 
-        [Display(Name = "Score for Assignment 1")]
+        [Display(Name = "Score for Project")]
+        [Range(1, 10)]
+        [Required(ErrorMessage = "Project score is required")]
+        public double ProjectScore { get; set; }
+
+        [Display(Name = "Score for Assignment")]
         [Range(1, 10)]
         [Required(ErrorMessage = "Assignment is required")]
-        public double Assignment1 { get; set; }
+        public double Assignment { get; set; }
 
-        [Display(Name = "Score for Assignment 2")]
-        [Range(1, 10)]
-        [Required(ErrorMessage = "Assignment is required")]
-        public double Assignment2 { get; set; }
-
-        [Display(Name = "First Test")]
+        [Display(Name = "CA Score")]
         [Range(1, 20)]
-        [Required(ErrorMessage = "First Test is required")]
-        public double FirstTest { get; set; }
+        [Required(ErrorMessage = "CA Score is required")]
+        public double Test { get; set; }
 
-        [Display(Name = "Second Test")]
-        [Range(1, 20)]
-        [Required(ErrorMessage = "Second Test is required")]
-        public double SecondTest { get; set; }
 
         [Display(Name = "Exam Score")]
-        [Range(1, 40)]
+        [Range(1, 60)]
         [Required(ErrorMessage = "Exam Score is required")]
         public double ExamScore { get; set; }
         [Display(Name = "Staff Name")]

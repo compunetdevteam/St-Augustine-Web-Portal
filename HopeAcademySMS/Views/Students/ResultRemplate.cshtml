@@ -12,17 +12,15 @@
         </th>
       
         <th>
-            Assignment 1
+            Project
         </th>
         <th>
-            Assignment 2
+            Assignment
         </th>
         <th>
-           First Test
+           Test
         </th>
-        <th>
-            Second Test
-        </th>
+      
         <th>
             Exam
         </th>
@@ -56,17 +54,15 @@
             </td>
         
             <td>
-                @Html.DisplayFor(modelItem => item.Assignment1)
+                @Html.DisplayFor(modelItem => item.ProjectScore)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Assignment2)
+                @Html.DisplayFor(modelItem => item.Assignment)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.FirstTest)
+                @Html.DisplayFor(modelItem => item.Test)
             </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.SecondTest)
-            </td>
+
             <td>
                 @Html.DisplayFor(modelItem => item.ExamScore)
             </td>
@@ -82,7 +78,7 @@
             <td>
                 @Html.DisplayFor(modelItem => item.Remark)
             </td>
-            <td>
+            @*<td>
                 @Html.Action("RenderRemplate", "Students", new
            {
                studentNumber = item.StudentId,
@@ -90,7 +86,7 @@
                sessionName = item.SessionName,
                subjectcode = item.SubjectCode
            })
-            </td>
+            </td>*@
         
         </tr>
     }

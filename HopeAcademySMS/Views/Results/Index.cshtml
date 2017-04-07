@@ -1,10 +1,60 @@
-﻿@model IEnumerable<StAugustine.Models.Result>
+﻿@*@model IEnumerable<StAugustine.Models.Result>*@
+@model PagedList.IPagedList<StAugustine.Models.Result>
+@using PagedList.Mvc;
+<link href="~/Content/PagedList.css" rel="stylesheet" type="text/css" />
 
 @{
     ViewBag.Title = "Index";
 }
 
-<h2>Index</h2>
+@using (Html.BeginForm("Index", "Results", FormMethod.Get, new { @class = "form-inline" }))
+{
+    <!-- BEGIN INLINE FORM -->
+    <div class="row">
+        <div class="col-lg-7">
+            <article class="margin-bottom-xxl">
+                <p class="lead">
+                    Please use the following parameters to perform Query
+                </p>
+            </article>
+        </div><!--end .col -->
+        <div class="col-lg-12">
+            <form class="form-inline">
+                <div class="card">
+                    <div class="card-body">
+
+                        <div class="form-group">
+                            @Html.DropDownList("SubjectCode", (SelectList)ViewBag.SubjectCode, "", new { @class = "form-control" })
+                            <label for="SubjectCode">Subject Name</label>
+                        </div>
+                        <div class="form-group">
+                            @Html.DropDownList("ClassName", (SelectList)ViewBag.ClassName, "", new { @class = "form-control" })
+                            <label for="ClassName">ClassName</label>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.DropDownList("TermName", (SelectList)ViewBag.TermName, "", new { @class = "form-control" })
+                            <label for="TermName">Term Name</label>
+                        </div>
+                        <div class="form-group">
+                            @Html.DropDownList("SessionName", (SelectList)ViewBag.SessionName, "", new { @class = "form-control" })
+
+                            @*@Html.DropDownList("SessionName", new SelectList(ViewBag.SessionName), "-select- ", new { @class = "form-control" })*@
+                            <label for="SessionName">SessionName</label>
+                        </div>
+
+                        <button type="submit" class="btn btn-raised btn-warning-light ink-reaction"><i class="fa fa-search"></i> Search</button>
+                    </div><!--end .card-body -->
+                </div><!--end .card -->
+
+            </form>
+        </div><!--end .col -->
+    </div>
+
+    <!--end .row -->
+    <!-- END INLINE FORM -->
+}
+
 
 <p>
     @Html.ActionLink("Create New", "Create")
@@ -12,16 +62,16 @@
 <table class="table">
     <tr>
         <th>
-            @Html.DisplayNameFor(model => model.StudentId)
+            Student ID
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.SubjectName)
+           Subject
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Term)
+           Term
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.SessionName)
+            Session)
         </th>
         <th>
             SP
@@ -29,7 +79,7 @@
         <th>
             AggretateScore
         </th>
-        <th>
+        @*<th>
             Aggretate P
         </th>
         <th>
@@ -37,21 +87,21 @@
         </th>
         <th>
            Student in class
+        </th>*@
+        <th>
+           Average
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Average)
+            Class Average
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.ClassAverage)
+            Total Quality Point
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.TotalQualityPoint)
+            Total Credit Unit
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.TotalCreditUnit)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.GPA)
+           GPA
         </th>
         <th></th>
     </tr>
@@ -76,7 +126,7 @@
         <td>
             @Html.DisplayFor(modelItem => item.AggretateScore)
         </td>
-        <td>
+        @*<td>
             @Html.DisplayFor(modelItem => item.AggregatePosition)
         </td>
         <td>
@@ -84,7 +134,7 @@
         </td>
         <td>
             @Html.DisplayFor(modelItem => item.NoOfStudentPerClass)
-        </td>
+        </td>*@
         <td>
             @Html.DisplayFor(modelItem => item.Average)
         </td>
@@ -101,11 +151,29 @@
             @Html.DisplayFor(modelItem => item.GPA)
         </td>
         <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.ResultId }) |
+            <span>
+                <a href="@Url.Action("Edit", new {id = item.ResultId, @class = "btn btn-success" })"><span class="md-mode-edit"></span> Edit</a>
+            </span> |
+            <span>
+                <a href="@Url.Action("Details", new {id = item.ResultId, @class = "btn btn-success" })"><span class="md-details"></span> Delete</a>
+            </span>
+            @*@Html.ActionLink("Edit", "Edit", new { id=item.ResultId }) |
             @Html.ActionLink("Details", "Details", new { id=item.ResultId }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.ResultId })
+            @Html.ActionLink("Delete", "Delete", new { id=item.ResultId })*@
         </td>
     </tr>
 }
 
 </table>
+
+<br />
+<div class="btn-group pull-right">
+    Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
+    @Html.PagedListPager(Model, page => Url.Action("Index", new
+{
+    page,
+    sortOrder = ViewBag.CurrentSort,
+    currentFilter =
+    ViewBag.CurrentFilter
+}))
+</div>

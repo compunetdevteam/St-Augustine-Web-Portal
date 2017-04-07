@@ -18,7 +18,7 @@ namespace StAugustine.Models
 
         [Display(Name = "Term")]
         [Required(ErrorMessage = "Term is required")]
-        public PopUp.Term Term { get; set; }
+        public string Term { get; set; }
 
         [Display(Name = "Session")]
         [Required(ErrorMessage = "Session is required")]

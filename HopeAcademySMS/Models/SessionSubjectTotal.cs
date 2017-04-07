@@ -5,8 +5,8 @@ namespace StAugustine.Models
 {
     public class SessionSubjectTotal
     {
-        private GradeRemark myGradeRemark = new GradeRemark();
-        private ApplicationDbContext db = new ApplicationDbContext();
+        private readonly GradeRemark _myGradeRemark = new GradeRemark();
+        private readonly ApplicationDbContext _db = new ApplicationDbContext();
         private SessionSubjectTotal()
         {
 
@@ -23,6 +23,7 @@ namespace StAugustine.Models
                 FirstTermScore = Math.Round(GetFirstTermScoreForSubject(studentId, sessionName, subjectCode, className), 2);
                 SecondTermScore = Math.Round(GetSecondTermScoreForSubject(studentId, sessionName, subjectCode, className), 2);
                 ThirdTermScore = Math.Round(GetThirdTermScoreForSubject(studentId, sessionName, subjectCode, className), 2);
+
             }
             else
             {
@@ -37,6 +38,8 @@ namespace StAugustine.Models
         public double FirstTermScore { get; private set; }
         public double SecondTermScore { get; private set; }
         public double ThirdTermScore { get; private set; }
+
+
 
         public double SummaryTotal
         {
@@ -65,7 +68,7 @@ namespace StAugustine.Models
         {
             get
             {
-                return myGradeRemark.Grading(SummaryTotal);
+                return _myGradeRemark.Grading(SummaryTotal, ClassName).ToString();
             }
             private set { }
         }
@@ -75,7 +78,7 @@ namespace StAugustine.Models
         {
             get
             {
-                return myGradeRemark.Remark(SummaryTotal);
+                return _myGradeRemark.Remark(SummaryTotal, ClassName).ToString();
             }
             private set { }
         }
@@ -83,42 +86,13 @@ namespace StAugustine.Models
 
         private double GetFirstTermScoreForSubject(string studentId, string sessionName, string subjectCode, string className)
         {
-            var firstTermScore = db.ContinuousAssessments.Where(x => x.StudentId.Equals(studentId)
+            var firstTermScore = _db.ContinuousAssessments.Where(x => x.StudentId.Equals(studentId)
                                                                      && x.TermName.Equals("First")
                                                                      && x.SessionName.Equals(sessionName)
                                                                      && x.ClassName.Equals(className));
-            var newSubjectName = db.Subjects.Where(x => x.CourseName.Equals(subjectCode))
+            var newSubjectName = _db.Subjects.Where(x => x.CourseName.Equals(subjectCode))
                 .Select(c => c.CourseName).FirstOrDefault();
 
-            //var mysubjectCategory = db.Subjects.Where(x => x.CourseName.Equals(subjectCode))
-            //    .Select(c => c.CategoriesId).FirstOrDefault();
-
-            //if (mysubjectCategory == "Mathematics")
-            //{
-            //    SubjectName = "Mathematics";
-            //}
-            //else if (mysubjectCategory == "English")
-            //{
-            //    SubjectName = "English";
-            //}
-            //else
-            //{
-            //    SubjectName = newSubjectName;
-            //}
-            //var subjectCategory = firstTermScore.Where(x => x.SubjectCategory.Equals(mysubjectCategory));
-            //var countSubjectCategory = subjectCategory.Count();
-            //double myTotal = 0;
-            //if (countSubjectCategory > 1)
-            //{
-            //    foreach (var item in subjectCategory)
-            //    {
-            //        myTotal += item.Total;
-            //    }
-            //    return myTotal / countSubjectCategory;
-
-            //}
-            //else
-            //{
             var myFirstScore = firstTermScore.Where(x => x.SubjectCode.Equals(subjectCode))
                 .Select(y => y.Total).FirstOrDefault();
 
@@ -130,11 +104,11 @@ namespace StAugustine.Models
         private double GetSecondTermScoreForSubject(string studentId, string sessionName, string subjectCode,
             string className)
         {
-            var secondTermScore = db.ContinuousAssessments.Where(x => x.StudentId.Equals(studentId)
+            var secondTermScore = _db.ContinuousAssessments.Where(x => x.StudentId.Equals(studentId)
                                                                       && x.TermName.Equals("Second")
                                                                       && x.SessionName.Equals(sessionName)
                                                                       && x.ClassName.Equals(className));
-            var newSubjectName = db.Subjects.Where(x => x.CourseName.Equals(subjectCode))
+            var newSubjectName = _db.Subjects.Where(x => x.CourseName.Equals(subjectCode))
                 .Select(c => c.CourseName).FirstOrDefault();
 
             //var mysubjectCategory = db.Subjects.Where(x => x.CourseName.Equals(subjectCode))
@@ -180,12 +154,12 @@ namespace StAugustine.Models
             string className)
         {
 
-            var secondTermScore = db.ContinuousAssessments.Where(x => x.StudentId.Equals(studentId)
+            var secondTermScore = _db.ContinuousAssessments.Where(x => x.StudentId.Equals(studentId)
                                                                       && x.TermName.Equals("Third")
                                                                       && x.SessionName.Equals(sessionName)
                                                                       && x.ClassName.Equals(className));
 
-            var newSubjectName = db.Subjects.Where(x => x.CourseName.Equals(subjectCode))
+            var newSubjectName = _db.Subjects.Where(x => x.CourseName.Equals(subjectCode))
               .Select(c => c.CourseName).FirstOrDefault();
 
             //var mysubjectCategory = db.Subjects.Where(x => x.CourseName.Equals(subjectCode))
@@ -225,5 +199,6 @@ namespace StAugustine.Models
             // }
 
         }
+
     }
 }

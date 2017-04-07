@@ -10,11 +10,26 @@
     <meta name="description" content="Short explanation about this website">
     <!-- END META -->
     <!-- BEGIN STYLESHEETS -->
+    @Styles.Render("~/Content/css")
+    @Styles.Render("~/Content/fullcalendarcss")
+   
+    @Scripts.Render("~/bundles/scripts")
+    @Scripts.Render("~/bundles/modernizr")
+
+    
+
     <link href='http://fonts.googleapis.com/css?family=Roboto:300italic,400italic,300,400,500,700,900' rel='stylesheet' type='text/css' />
-    <link type="text/css" rel="stylesheet" href="~/assets/css/theme-default/bootstrap.css?1422792965" />
-    <link type="text/css" rel="stylesheet" href="~/assets/css/theme-default/materialadmin.css?1425466319" />
-    <link type="text/css" rel="stylesheet" href="~/assets/css/theme-default/font-awesome.min.css?1422529194" />
-    <link type="text/css" rel="stylesheet" href="~/assets/css/theme-default/material-design-iconic-font.min.css?1421434286" />
+    <link type="text/css" rel="stylesheet" href="~/assets/css/theme-1/bootstrap.css?1422792965" />
+    <link type="text/css" rel="stylesheet" href="~/assets/css/theme-1/materialadmin.css?1425466319" />
+    <link type="text/css" rel="stylesheet" href="~/assets/css/theme-1/font-awesome.min.css?1422529194" />
+    <link type="text/css" rel="stylesheet" href="~/assets/css/theme-1/material-design-iconic-font.min.css?1421434286" />
+    <link type="text/css" rel="stylesheet" href="~/assets/css/theme-default/libs/summernote/summernote.css?1425218701" />
+    
+   
+    <link type="text/css" rel="stylesheet" href="~/assets/css/theme-1/libs/rickshaw/rickshaw.css?1422792967" />
+    <link type="text/css" rel="stylesheet" href="~/assets/css/theme-1/libs/morris/morris.core.css?1420463396" />
+
+    @*<link href="~/Content/chosen.css" rel="stylesheet" />*@
 
     
     <!-- END STYLESHEETS -->
@@ -50,16 +65,44 @@
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="headerbar-right">
                 <ul class="header-nav header-nav-options">
-                    <li><a href="@Url.Action("About","Home")"><strong>About Us</strong></a></li>
+                  
+                    <li class="dropdown hidden-xs">
+                        <a href="javascript:void(0);" class="btn btn-icon-toggle btn-default" data-toggle="dropdown">
+                            <i class="fa fa-bell"></i><sup class="badge style-danger">4</sup>
+                        </a>
+                        <ul class="dropdown-menu animation-expand">
+                            <li class="dropdown-header">Today's messages</li>
+                            <li>
+                                <a class="alert alert-callout alert-warning" href="javascript:void(0);">
+                                    <img class="pull-right img-circle dropdown-avatar" src="../../assets/img/avatar2.jpg?1404026449" alt="" />
+                                    <strong>Alex Anistor</strong><br />
+                                    <small>Testing functionality...</small>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="alert alert-callout alert-info" href="javascript:void(0);">
+                                    <img class="pull-right img-circle dropdown-avatar" src="../../assets/img/avatar3.jpg?1404026799" alt="" />
+                                    <strong>Alicia Adell</strong><br />
+                                    <small>Reviewing last changes...</small>
+                                </a>
+                            </li>
+                            <li class="dropdown-header">Options</li>
+                            <li><a href="../../html/pages/login.html">View all messages <span class="pull-right"><i class="fa fa-arrow-right"></i></span></a></li>
+                            <li><a href="../../html/pages/login.html">Mark as read <span class="pull-right"><i class="fa fa-arrow-right"></i></span></a></li>
+                        </ul><!--end .dropdown-menu -->
+                    </li><!--end .dropdown -->
                 </ul>
-                <ul class="header-nav header-nav-options">
-                    <li><a href="#"><strong>Services</strong></a></li>
-                </ul>
-                <ul class="header-nav header-nav-options">
-                    @Html.Partial("_LoginPartial")
-                </ul><!--end .header-nav-options -->
-                <!--end .header-nav-options -->
-            </div><!--end #header-navbar-collapse -->
+                    <ul class="header-nav header-nav-options">
+                        <li><a href="@Url.Action("About", "Home")"><strong>About Us</strong></a></li>
+                    </ul>
+                    <ul class="header-nav header-nav-options">
+                        <li><a href="#"><strong>Services</strong></a></li>
+                    </ul>
+                    <ul class="header-nav header-nav-options">
+                        @Html.Partial("_LoginPartial")
+                    </ul><!--end .header-nav-options -->
+                    <!--end .header-nav-options -->
+</div><!--end #header-navbar-collapse -->
         </div>
 
     </header>
@@ -78,13 +121,50 @@
             <section>
                 @*<div class="section-header">
                     <ol class="breadcrumb">
-                        <li><a href="../../html/.html">home</a></li>
+                        <li><a href="~/html/.html">home</a></li>
                         <li class="active">Blank page</li>
                     </ol>
                                 </div>*@<!--end .section-header -->
                 <div class="section-body">
+                    <!-- BEGIN SIMPLE MODAL MARKUP -->
+                    <div class="modal fade" id="simpleModal" tabindex="-1" role="dialog" aria-labelledby="simpleModalLabel" aria-hidden="false">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                    <h4 class="modal-title" id="simpleModalLabel">@TempData["Title"]</h4>
+                                </div>
+                                <div class="modal-body">
+                                    @if (TempData["Title"] != null && TempData["Title"].ToString() == "Success.")
+                                    {
+                                        <p class="alert alert-success">@TempData["UserMessage"]</p>
+                                    }
+                                    else
+                                    {
+                                        <p class="alert alert-danger">@TempData["UserMessage"]</p>
+                                    }
+
+                                    
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    @*<button type="button" class="btn btn-primary">Save changes</button>*@
+                                </div>
+                            </div><!-- /.modal-content -->
+                        </div><!-- /.modal-dialog -->
+                    </div><!-- /.modal -->
+                    <!-- END SIMPLE MODAL MARKUP -->
+                 @*@if (TempData["UserMessage"] != null)
+                 {
+                    <div class="alert alert-success">
+                        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                        <strong>@TempData["UserMessage"]</strong>
+                    </div>
+                 }*@
+              
                     @RenderBody()
-                    <hr />
+
+                    <hr/>
                 </div><!--end .section-body -->
             </section>
 
@@ -125,7 +205,7 @@
                         <!-- BEGIN Student Management -->
                         <li class="gui-folder">
                             <a>
-                                <div class="gui-icon"><i class="md md-account-box"></i></div>
+                                <div class="gui-icon"><i class="md md-person"></i></div>
                                 <span class="title">Manage Student</span>
                             </a>
                             <!--start submenu -->
@@ -143,13 +223,13 @@
                         <!-- BEGIN Student Management -->
                         <li class="gui-folder">
                             <a>
-                                <div class="gui-icon"><i class="md md-account-box"></i></div>
+                                <div class="gui-icon"><i class="md md-verified-user"></i></div>
                                 <span class="title">Manage Guardian</span>
                             </a>
                             <!--start submenu -->
                             <ul>
                                 <li>@Html.ActionLink("Add Guardian", "RegisterGuardian", "Account")</li>
-                                <li>@Html.ActionLink("List Guardians", "Index", "Guardians")</li>
+                                <li>@Html.ActionLink("List Guardians", "GuardianIndex", "Account")</li>
                                 <li>@Html.ActionLink("Excel Upload", "UpLoadGuardian", "Account")</li>
                                 @*<li>@Html.ActionLink("Assign Student", "UploadStudent", "Students")</li>
                                     <li>@Html.ActionLink("Add Parent's Info", "RegisterGuardian", "Account")</li>
@@ -161,7 +241,7 @@
                         <!-- BEGIN CLASS -->
                         <li class="gui-folder">
                             <a>
-                                <div class="gui-icon"><i class="md md-account-box"></i></div>
+                                <div class="gui-icon"><i class="md md-class"></i></div>
                                 <span class="title">Manage Class</span>
                             </a>
                             <!--start submenu -->
@@ -176,7 +256,7 @@
                         <!-- BEGIN SUBJECT -->
                         <li class="gui-folder">
                             <a>
-                                <div class="gui-icon"><i class="md md-account-box"></i></div>
+                                <div class="gui-icon"><i class="md md-subject"></i></div>
                                 <span class="title">Manage Subject</span>
                             </a>
                             <!--start submenu -->
@@ -210,11 +290,14 @@
                                     <ul>
                                         <li>@Html.ActionLink("Assign Subject to Class", "Create", "AssignSubjects")</li>
                                         <li>@Html.ActionLink("View Assigned Subjects", "Index", "AssignSubjects")</li>
+                                        <li><a href="#"><strong></strong></a></li>
+                                        <li>@Html.ActionLink("Assign Subject to Student", "Create", "SubjectRegistrations")</li>
+                                        <li>@Html.ActionLink("View Assigned Student Subjects", "Index", "SubjectRegistrations")</li>
                                     </ul><!--end /Subject -->
                                 </li>
 
 
-                                <li>@Html.ActionLink("Subject Teacher", "Index", "Subjects")</li>
+                                <li>@Html.ActionLink("Subject Teacher", "Index", "AssignSubjectTeachers")</li>
                             </ul>
                         </li><!--end /menu-li -->
                         <!-- END SUBJECT -->
@@ -228,9 +311,11 @@
                             <ul>
                                 <li>@Html.ActionLink("Add Teacher", "RegisterStaff", "Account")</li>
                                 <li>@Html.ActionLink("Teacher Master", "Index", "Staffs")</li>
-                                <li>@Html.ActionLink("Edit Teacher", "Index", "Staffs")</li>
-                                <li>@Html.ActionLink("Assign Subject", "Index", "Staffs")</li>
-                                <li>@Html.ActionLink("Become A Form Teacheer", "UploadStudent", "Students")</li>
+                                @*<li>@Html.ActionLink("Edit Teacher", "Index", "Staffs")</li>*@
+                               <li>@Html.ActionLink("Assign Subject Teacher", "Create", "AssignSubjectTeachers")</li>
+                                @*<li>@Html.ActionLink("List Subject Teacher", "Create", "AssignSubjectTeachers")</li>*@
+                                <li>@Html.ActionLink("List Form-Teacher", "Index", "AssignFormTeacherToClasses")</li>
+                                <li>@Html.ActionLink("Teacher Excel Upload", "UploadTeacher", "Account")</li>
 
                             </ul><!--end /submenu -->
                         </li><!--end /menu-li -->
@@ -262,7 +347,7 @@
                                         <li>@Html.ActionLink("Fee Payment", "Create", "FeePayments")</li>
                                         <li>@Html.ActionLink("Update Payment", "Index", "FeePayments")</li>
                                         <li>@Html.ActionLink("Debtors List", "DebtorsList", "FeePayments")</li>
-                                        <li>@Html.ActionLink("Total Income", "DeliveredList", "FeePayments")</li>
+                                        @*<li>@Html.ActionLink("Total Income", "DeliveredList", "FeePayments")</li>*@
                                     </ul><!--end /submenu -->
                                 </li>
 
@@ -272,21 +357,23 @@
                         <!-- BEGIN TABLES -->
                         <li class="gui-folder">
                             <a>
-                                <div class="gui-icon"><i class="fa fa-table"></i></div>
+                                <div class="gui-icon"><i class="md md-assessment"></i></div>
                                 <span class="title">Manage Result</span>
                             </a>
                             <!--start submenu -->
                             <ul>
+                                
                                 <li class="gui-folder">
                                     <a href="javascript:void(0);">
-                                        <span class="title">Grade Settings</span>
+                                        <span class="title">Behavioral</span>
                                     </a>
                                     <!--start Continuous Assessments -->
                                     <ul>
-                                        <li>@Html.ActionLink("Add Grade", "Create", "Grades")</li>
-                                        <li>@Html.ActionLink("Check Grade", "Index", "Grades")</li>
+                                        <li>@Html.ActionLink("Add Behavioral", "Create", "AssignBehaviors")</li>
+                                        <li>@Html.ActionLink("List  Behavioral Assesment", "Index", "AssignBehaviors")</li>
                                     </ul><!--end /Continuous Assessments -->
                                 </li>
+
                                 <li class="gui-folder">
                                     <a href="javascript:void(0);">
                                         <span class="title">Continuous Assessments</span>
@@ -337,7 +424,7 @@
                             </ul>
                         </li><!--end /menu-li -->
                         <!-- END TABLES -->
-                        @*<!-- BEGIN ARTICLES -->
+                        <!-- BEGIN ARTICLES -->
                             <li class="gui-folder">
                                 <a>
                                     <div class="gui-icon"><i class="fa fa-table"></i></div>
@@ -345,19 +432,19 @@
                                 </a>
                                 <!--start submenu -->
                                 <ul>
-                                   <li>@Html.ActionLink("Schedule", "Create", "SavingsMaintenances")</li>
+                                   @*<li>@Html.ActionLink("Schedule", "Create", "SavingsMaintenances")</li>*@
                                     <li>@Html.ActionLink("Add News", "Create", "Posts")</li>
                                     <li>@Html.ActionLink("Search News", "Index", "Posts")</li>
 
-                                    <li>@Html.ActionLink("Upload Pictures", "Index", "SavingsMaintenances")</li>
-                                    <li>@Html.ActionLink("Upload Videos", "Index", "SavingsMaintenances")</li>
+                                    @*<li>@Html.ActionLink("Upload Pictures", "Index", "SavingsMaintenances")</li>
+                                    <li>@Html.ActionLink("Upload Videos", "Index", "SavingsMaintenances")</li>*@
                                 </ul><!--end /submenu -->
                             </li><!--end /menu-li -->
-                            <!-- END ARTICLES -->*@
+                            <!-- END ARTICLES -->
                         <!-- BEGIN LIBRARY -->
                         <li class="gui-folder">
                             <a>
-                                <div class="gui-icon"><i class="fa fa-table"></i></div>
+                                <div class="gui-icon"><i class="md md-my-library-add"></i></div>
                                 <span class="title">Library Management</span>
                             </a>
                             <!--start submenu -->
@@ -374,14 +461,14 @@
                         <!-- BEGIN SMS -->
                         <li class="gui-folder">
                             <a>
-                                <div class="gui-icon"><i class="fa fa-table"></i></div>
+                                <div class="gui-icon"><i class="md md-message"></i></div>
                                 <span class="title">SMS Management</span>
                             </a>
                             <!--start submenu -->
                             <ul>
                                 <li>@Html.ActionLink("Send to Class", "SendSMS", "Sms")</li>
                                 <li>@Html.ActionLink("Send to Staff", "SendToStaff", "Sms")</li>
-                                <li>@Html.ActionLink("Send to All Student", "SendtoAll", "Sms")</li>
+                                <li>@Html.ActionLink("Send to Parents", "SendToAllStudent", "Sms")</li>
                                 @*<li>@Html.ActionLink("Search Book", "Index", "Books")</li>*@
 
 
@@ -391,21 +478,21 @@
                         <!-- BEGIN MANAGE SCHOOL -->
                         <li class="gui-folder">
                             <a>
-                                <div class="gui-icon"><i class="fa fa-table"></i></div>
+                                <div class="gui-icon"><i class="md md-school"></i></div>
                                 <span class="title">Manage School</span>
                             </a>
                             <!--start submenu -->
                             <ul>
                                 <li class="gui-folder">
                                     <a href="javascript:void(0);">
-                                        <span class="title">School Settings</span>
+                                        <span class="title">School Class</span>
                                     </a>
-                                    <!--start School Settings -->
+                                    <!--start Session -->
                                     <ul>
-                                        <li>@Html.ActionLink("Settings", "Create", "ContinuousAssessments")</li>
-                                        <li>@Html.ActionLink("View Details", "Index", "ContinuousAssessments")</li>
-                                        <li>@Html.ActionLink("View Active Session", "UploadResult", "ContinuousAssessments")</li>
-                                    </ul><!--end /School settings -->
+                                        <li>@Html.ActionLink("Add School Class", "Create", "SchoolClasses")</li>
+                                        <li>@Html.ActionLink("List School Class", "Index", "SchoolClasses")</li>
+
+                                    </ul><!--end /Session -->
                                 </li>
                                 <li class="gui-folder">
                                     <a href="javascript:void(0);">
@@ -418,21 +505,84 @@
 
                                     </ul><!--end /Session -->
                                 </li>
+                                <li class="gui-folder">
+                                    <a href="javascript:void(0);">
+                                        <span class="title">School Term</span>
+                                    </a>
+                                    <!--start Session -->
+                                    <ul>
+                                        <li>@Html.ActionLink("Add Term", "Create", "Terms")</li>
+                                        <li>@Html.ActionLink("List Term", "Index", "Terms")</li>
 
+                                    </ul><!--end /Session -->
+                                </li>
+                                <li class="gui-folder">
+                                    <a href="javascript:void(0);">
+                                        <span class="title">Behavior Category</span>
+                                    </a>
+                                    <!--start Session -->
+                                    <ul>
+                                        <li>@Html.ActionLink("Add Behavior Category", "Create", "BehaviorSkillCategories")</li>
+                                        <li>@Html.ActionLink("List Behavioral Category", "Index", "BehaviorSkillCategories")</li>
+
+                                    </ul><!--end /Session -->
+                                </li>
+                                <li class="gui-folder">
+                                    <a href="javascript:void(0);">
+                                        <span class="title">Behaviors</span>
+                                    </a>
+                                    <!--start Session -->
+                                    <ul>
+                                        <li>@Html.ActionLink("Add Behavioural Skills", "Create", "BehaviouralSkills")</li>
+                                        <li>@Html.ActionLink("List Behavioural Skills", "Index", "BehaviouralSkills")</li>
+
+                                    </ul><!--end /Session -->
+                                </li>
+                                <li class="gui-folder">
+                                    <a href="javascript:void(0);">
+                                        <span class="title">Grade Settings</span>
+                                    </a>
+                                    <!--start Continuous Assessments -->
+                                    <ul>
+                                        <li>@Html.ActionLink("Add Grade", "Create", "Grades")</li>
+                                        <li>@Html.ActionLink("Check Grade", "Index", "Grades")</li>
+                                    </ul><!--end /Continuous Assessments -->
+                                </li>
+                            
+                                <li class="gui-folder">
+                                    <a href="javascript:void(0);">
+                                        <span class="title">Termly Report Settings</span>
+                                    </a>
+                                    <!--start Continuous Assessments -->
+                                    <ul>
+                                        <li>@Html.ActionLink("Add Report", "Create", "ReportCards")</li>
+                                        <li>@Html.ActionLink("List/Edit Report", "Index", "ReportCards")</li>
+                                    </ul><!--end /Continuous Assessments -->
+                                </li>
+                                <li class="gui-folder">
+                                    <a href="javascript:void(0);">
+                                        <span class="title">Principal Remarks</span>
+                                    </a>
+                                    <!--start Continuous Assessments -->
+                                    <ul>
+                                        <li>@Html.ActionLink("Add Principal Remark", "Create", "PrincipalComments")</li>
+                                        <li>@Html.ActionLink("Check Principal Remark", "Index", "PrincipalComments")</li>
+                                    </ul><!--end /Continuous Assessments -->
+                                </li>
                             </ul><!--end /submenu -->
                         </li><!--end /menu-li -->
                         <!-- END TABLES -->
                         <!-- BEGIN LEVELS -->
                         <li class="gui-folder">
                             <a>
-                                <div class="gui-icon"><i class="fa fa-folder-open fa-fw"></i></div>
+                                <div class="gui-icon"><i class="md md-settings-applications"></i></div>
                                 <span class="title">Profile</span>
                             </a>
                             <!--start submenu -->
                             <ul>
                                 <li>@Html.ActionLink("Add User Role", "Create", "RolesAdmin")</li>
                                 <li>@Html.ActionLink("Add New User", "RegisterStaff", "Account")</li>
-                                <li>@Html.ActionLink("Staff Master", "Index", "Staffs")</li>
+                                <li>@Html.ActionLink("Manage User Role", "ManageUserRoles", "RolesAdmin")</li>
                                 <li class="gui-folder">
 
                                 <li class="gui-folder">
@@ -441,9 +591,9 @@
                                     </a>
                                     <!--start Continuous Assessments -->
                                     <ul>
-                                        <li>@Html.ActionLink("Settings", "Create", "ContinuousAssessments")</li>
-                                        <li>@Html.ActionLink("Change Password", "Index", "ContinuousAssessments")</li>
-                                        <li>@Html.ActionLink("Log Out", "UploadResult", "ContinuousAssessments")</li>
+                                        <li>@Html.ActionLink("Settings", "Index", "Manage")</li>
+                                        <li>@Html.ActionLink("Change Password", "ChangePassword", "Manage")</li>
+                                        <li>@Html.ActionLink("Log Out", "LogOff", "Account")</li>
                                     </ul><!--end /Continuous Assessments -->
 
                             </ul><!--end /submenu -->
@@ -453,7 +603,11 @@
                     </ul><!--end .main-menu -->
                     <!-- END MAIN MENU -->
 
-
+                    <div class="menubar-foot-panel">
+                        <small class="no-linebreak hidden-folded">
+                            <span class="opacity-75">Copyright &copy; @DateTime.Now.Year</span> <strong class="text-danger"> CompunetLimited</strong>
+                        </small>
+                    </div>
                 </div><!--end .menubar-scroll-panel-->
             </div><!--end #menubar-->
         <!-- END MENUBAR -->
@@ -484,7 +638,7 @@
                         <li>
                             <a href="@Url.Action("Index","Home")">
                                 <div class="gui-icon"><i class="md md-home"></i></div>
-                                <span class="title">Student Dashboard</span>
+                                <span class="title">Parent/Guardian Dashboard</span>
                             </a>
                         </li><!--end /menu-li -->
                         <!-- END DASHBOARD -->
@@ -496,21 +650,20 @@
                             </a>
                             <!--start submenu -->
                             <ul>
-                                <li>@Html.ActionLink("Student List", "Index", "Students")</li>
-                                <li>@Html.ActionLink("Details", "StudentDetails", "Students")</li>
-                                <li>@Html.ActionLink("Update Parent's Info", "Create", "ParentGuardianInfoes")</li>
+                                <li>@Html.ActionLink("List of Students", "Index", "Students")</li>
+                               
                             </ul>
 
 
                             <!-- BEGIN DASHBOARD -->
-                        <li class="gui-folder">
+                        @*<li class="gui-folder">
                             <a>
                                 <div class="gui-icon"><i class="md md-account-box"></i></div>
                                 <span class="title">Subject Master</span>
                             </a>
                             <!--start submenu -->
                             <ul>
-                                <li>@Html.ActionLink("Subject Teacher", "Index", "Courses")</li>
+                                <li>@Html.ActionLink("Subject Teacher", "Index", "Subjects")</li>
                             </ul>
                         </li><!--end /menu-li -->
                         <!-- END DASHBOARD -->
@@ -535,7 +688,7 @@
                                     </ul><!--end /submenu -->
                                 </li>
                             </ul>
-                        </li><!--end /menu-li -->
+                        </li>*@<!--end /menu-li -->
                         <!-- END TABLES -->
                         <!-- BEGIN TABLES -->
                         <li class="gui-folder">
@@ -546,26 +699,11 @@
                             <!--start submenu -->
                             <ul>
                                 <li>@Html.ActionLink("Current News", "Index", "Posts")</li>
-                                <li>@Html.ActionLink("Upload Pictures", "Index", "SavingsMaintenances")</li>
+                               
                             </ul><!--end /submenu -->
                         </li><!--end /menu-li -->
                         <!-- END TABLES -->
-                        <!-- BEGIN TABLES -->
-                        <li class="gui-folder">
-                            <a>
-                                <div class="gui-icon"><i class="fa fa-table"></i></div>
-                                <span class="title">Library Management</span>
-                            </a>
-                            <!--start submenu -->
-                            <ul>
-                                <li>@Html.ActionLink("Search Book", "Index", "Books")</li>
-                                <li>@Html.ActionLink("Make A Request", "Create", "Books")</li>
-                                <li>@Html.ActionLink("Borrowed Book", "Index", "BookIssues")</li>
-                                <li>@Html.ActionLink("Returned Book", "Index", "BookIssues")</li>
-
-                            </ul><!--end /submenu -->
-                        </li><!--end /menu-li -->
-                        <!-- END TABLES -->
+                       
                         <!-- BEGIN LEVELS -->
                         <li class="gui-folder">
                             <a>
@@ -574,46 +712,10 @@
                             </a>
                             <!--start submenu -->
                             <ul>
-                                <li>@Html.ActionLink("Manage Account", "Create", "Role")</li>
-                                <li>@Html.ActionLink("Confirm Email", "RegisterStaff", "Account")</li>
-                                <li class="gui-folder">
-                                    <a href="javascript:void(0);">
-                                        <span class="title">Open level 2</span>
-                                    </a>
-                                    <!--start submenu -->
-                                    <ul>
-                                        <li><a href="#"><span class="title">Item 2</span></a></li>
-                                        <li class="gui-folder">
-                                            <a href="javascript:void(0);">
-                                                <span class="title">Open level 3</span>
-                                            </a>
-                                            <!--start submenu -->
-                                            <ul>
-                                                <li><a href="#"><span class="title">Item 3</span></a></li>
-                                                <li><a href="#"><span class="title">Item 3</span></a></li>
-                                                <li class="gui-folder">
-                                                    <a href="javascript:void(0);">
-                                                        <span class="title">Open level 4</span>
-                                                    </a>
-                                                    <!--start submenu -->
-                                                    <ul>
-                                                        <li><a href="#"><span class="title">Item 4</span></a></li>
-                                                        <li class="gui-folder">
-                                                            <a href="javascript:void(0);">
-                                                                <span class="title">Open level 5</span>
-                                                            </a>
-                                                            <!--start submenu -->
-                                                            <ul>
-                                                                <li><a href="#"><span class="title">Item 5</span></a></li>
-                                                                <li><a href="#"><span class="title">Item 5</span></a></li>
-                                                            </ul><!--end /submenu -->
-                                                        </li><!--end /submenu-li -->
-                                                    </ul><!--end /submenu -->
-                                                </li><!--end /submenu-li -->
-                                            </ul><!--end /submenu -->
-                                        </li><!--end /submenu-li -->
-                                    </ul><!--end /submenu -->
-                                </li><!--end /submenu-li -->
+                                <li>@Html.ActionLink("Settings", "Index", "Manage")</li>
+                                <li>@Html.ActionLink("Change Password", "ChangePassword", "Manage")</li>
+                                <li>@Html.ActionLink("Log Out", "LogOff", "Account")</li>
+                               
                             </ul><!--end /submenu -->
                         </li><!--end /menu-li -->
                         <!-- END LEVELS -->
@@ -626,9 +728,9 @@
             </div><!--end #menubar-->
         <!-- END MENUBAR -->
         }
-        else if (Request.IsAuthenticated && User.IsInRole("Staff"))
+        else if (Request.IsAuthenticated && User.IsInRole("Form-Teacher"))
         {
-             <!-- BEGIN MENUBAR-->
+            <!-- BEGIN MENUBAR-->
             <div id="menubar" class="menubar-inverse ">
                 <div class="menubar-fixed-panel">
                     <div>
@@ -638,7 +740,7 @@
                     </div>
                     <div class="expanded">
                         <a href="#">
-                            <span class="text-lg text-bold text-primary ">HOPE ACADEMY SCHOOLS)</span>
+                            <span class="text-lg text-bold text-primary ">)ST AUGUSTINE COLLEGE DU</span>
                         </a>
                     </div>
                 </div>
@@ -650,149 +752,157 @@
 
                         <!-- BEGIN DASHBOARD -->
                         <li>
-                            <a href="@Url.Action("Index","Home")">
+                            <a href="@Url.Action("DashBoard","Students")">
                                 <div class="gui-icon"><i class="md md-home"></i></div>
-                                <span class="title">Admin Dashboard</span>
+                                <span class="title">Form Teacher's Dashboard</span>
                             </a>
                         </li><!--end /menu-li -->
                         <!-- END DASHBOARD -->
-                        <!-- BEGIN EMAIL -->
+                      
+                        <!-- BEGIN CLASS -->
                         <li class="gui-folder">
                             <a>
-                                <div class="gui-icon"><i class="md md-account-box"></i></div>
-                                <span class="title">Student Management</span>
+                                <div class="gui-icon"><i class="md md-class"></i></div>
+                                <span class="title">Manage Class</span>
                             </a>
                             <!--start submenu -->
                             <ul>
-                                <li>@Html.ActionLink("Add Student", "Register", "Account")</li>
-                                <li>@Html.ActionLink("Search Student List", "Index", "Students")</li>
-                            </ul><!--end /submenu -->
-                        </li><!--end /menu-li -->
-                        <!-- END EMAIL -->
-                        <!-- BEGIN DASHBOARD -->
-                        <li class="gui-folder">
-                            <a>
-                                <div class="gui-icon"><i class="md md-account-box"></i></div>
-                                <span class="title">Subject Master</span>
-                            </a>
-                            <!--start submenu -->
-                            <ul>
-                                <li>@Html.ActionLink("Subject List", "Index", "Courses")</li>
-                                <li>@Html.ActionLink("Subject Teacher", "Index", "Courses")</li>
+                                <li>@Html.ActionLink("Assign Student to Class", "Create", "AssignedClasses")</li>
+                                <li>@Html.ActionLink("View Student in Class", "Index", "AssignedClasses")</li>
                             </ul>
                         </li><!--end /menu-li -->
-                        <!-- END DASHBOARD -->
+                        <!-- END CLASS -->
+                        <!-- BEGIN SUBJECT -->
+                        <li class="gui-folder">
+                            <a>
+                                <div class="gui-icon"><i class="md md-subject"></i></div>
+                                <span class="title">Manage Subject</span>
+                            </a>
+                            <!--start submenu -->
+                            <ul>
+                              
+                                @*<li class="gui-folder">
+                    <a href="javascript:void(0);">
+                        <span class="title">Subject Category</span>
+                    </a>
+                    <!--start Subject Category -->
+                    <ul>
+                        <li>@Html.ActionLink("Add Subject Category", "Create", "SubjectCategories")</li>
+                        <li>@Html.ActionLink("View Categories", "Index", "SubjectCategories")</li>
+                    </ul><!--end /Subject Category -->
+                </li>*@
+
+                                <li class="gui-folder">
+                                    <a href="javascript:void(0);">
+                                        <span class="title">Assign Subject</span>
+                                    </a>
+                                    <!--start Subject  -->
+                                    <ul>
+                                        <li>@Html.ActionLink("Assign Subject to Student", "Create", "SubjectRegistrations")</li>
+                                        <li>@Html.ActionLink("View Assigned Student Subjects", "Index", "SubjectRegistrations")</li>
+                                    </ul><!--end /Subject -->
+                                </li>
+
+                                <li>@Html.ActionLink("Subject Teacher", "Index", "AssignSubjectTeachers")</li>
+                            </ul>
+                        </li><!--end /menu-li -->
+                        <!-- END SUBJECT -->
+                  
+                        <!-- BEGIN FEE MANAGER -->
+                        <li class="gui-folder">
+                            <a>
+                                <div class="gui-icon"><i class="md md-account-balance-wallet "></i></div>
+                                <span class="title">Manage Fees</span>
+                            </a>
+                            <!--start submenu -->
+                            <ul>
+                                <li class="gui-folder">
+                                    <a href="javascript:void(0);">
+                                        <span class="title">Fee Payment</span>
+                                    </a>
+                                    <!--start submenu -->
+                                    <ul>
+                                        <li>@Html.ActionLink("Debtors List", "DebtorsList", "FeePayments")</li>
+                                    </ul><!--end /submenu -->
+                                </li>
+
+                            </ul><!--end /submenu -->
+                        </li><!--end /menu-li -->
+                        <!-- END FEE MANAGER -->
                         <!-- BEGIN TABLES -->
                         <li class="gui-folder">
                             <a>
                                 <div class="gui-icon"><i class="fa fa-table"></i></div>
-                                <span class="title">Result Pool</span>
+                                <span class="title">Manage Result</span>
                             </a>
                             <!--start submenu -->
                             <ul>
-                                <li>@Html.ActionLink("Add Student Result", "Create", "Grades")</li>
-                                <li>@Html.ActionLink("Search Result", "Index", "Grades")</li>
-                                <li>@Html.ActionLink("Upload Result", "UploadResult", "Grades")</li>
+                               
                                 <li class="gui-folder">
                                     <a href="javascript:void(0);">
-                                        <span class="title">Positions</span>
+                                        <span class="title">Continuous Assessments</span>
+                                    </a>
+                                    <!--start Continuous Assessments -->
+                                    <ul>
+                                        <li>@Html.ActionLink("Add Continuous Assessments", "Create", "ContinuousAssessments")</li>
+                                        <li>@Html.ActionLink("List Continuous Assessments", "Index", "ContinuousAssessments")</li>
+                                        <li>@Html.ActionLink("Excel Upload", "UploadResult", "ContinuousAssessments")</li>
+                                    </ul><!--end /Continuous Assessments -->
+                                </li>
+                                <li class="gui-folder">
+                                    <a href="javascript:void(0);">
+                                        <span class="title">Compute Result</span>
                                     </a>
                                     <!--start submenu -->
                                     <ul>
-                                        <li>@Html.ActionLink("Subject Positions", "SubjectPostion", "Grades")</li>
-                                        <li>@Html.ActionLink("Aggregate Total", "AgregateTotal", "Grades")</li>
-                                        <li>@Html.ActionLink("Aggregate Position", "TotalPostion", "Grades")</li>
-                                        <li>@Html.ActionLink("Upload Result", "UploadResult", "Grades")</li>
+                                        <li>@Html.ActionLink("Create Result", "Create", "Results")</li>
+                                        <li>@Html.ActionLink("View Result", "Index", "Results")</li>
+                                        @*<li>@Html.ActionLink("Aggregate Position", "TotalPostion", "Grades")</li>
+                                            <li>@Html.ActionLink("Upload Result", "UploadResult", "Grades")</li>*@
+                                    </ul><!--end /submenu -->
+                                </li>
+                                <li class="gui-folder">
+                                    <a href="javascript:void(0);">
+                                        <span class="title">Compute Summary Total</span>
+                                    </a>
+                                    <!--start submenu -->
+                                    <ul>
+                                        <li>@Html.ActionLink("Compute Summary", "Create", "SummaryScore")</li>
+                                        <li>@Html.ActionLink("View Summary", "Index", "SummaryScore")</li>
+                                        @*<li>@Html.ActionLink("Aggregate Position", "TotalPostion", "Grades")</li>
+                                            <li>@Html.ActionLink("Upload Result", "UploadResult", "Grades")</li>*@
+                                    </ul><!--end /submenu -->
+                                </li>
+                                <li class="gui-folder">
+                                    <a href="javascript:void(0);">
+                                        <span class="title">Compute Summary Report</span>
+                                    </a>
+                                    <!--start submenu -->
+                                    <ul>
+                                        <li>@Html.ActionLink("Compute Report", "Create", "ResultSummary")</li>
+                                        <li>@Html.ActionLink("View Reports", "Index", "ResultSummary")</li>
+                                        @*<li>@Html.ActionLink("Aggregate Position", "TotalPostion", "Grades")</li>
+                                            <li>@Html.ActionLink("Upload Result", "UploadResult", "Grades")</li>*@
                                     </ul><!--end /submenu -->
                                 </li>
                             </ul>
                         </li><!--end /menu-li -->
-                        <!-- END TABLES -->
-                        <!-- BEGIN TABLES -->
+                       
+                       
+                        <!-- BEGIN SMS -->
                         <li class="gui-folder">
                             <a>
                                 <div class="gui-icon"><i class="fa fa-table"></i></div>
-                                <span class="title">Article/News</span>
+                                <span class="title">SMS Management</span>
                             </a>
                             <!--start submenu -->
                             <ul>
-                                @*<li>@Html.ActionLink("Schedule", "Create", "SavingsMaintenances")</li>*@
-                                <li>@Html.ActionLink("Add News", "Create", "Posts")</li>
-                                <li>@Html.ActionLink("Search News", "Index", "Posts")</li>
-
-                                <li>@Html.ActionLink("Upload Pictures", "Index", "SavingsMaintenances")</li>
-                                <li>@Html.ActionLink("Upload Videos", "Index", "SavingsMaintenances")</li>
+                                <li>@Html.ActionLink("Send to Class", "SendSMS", "Sms")</li>
                             </ul><!--end /submenu -->
                         </li><!--end /menu-li -->
-                        <!-- END TABLES -->
-                        <!-- BEGIN TABLES -->
-                        <li class="gui-folder">
-                            <a>
-                                <div class="gui-icon"><i class="fa fa-table"></i></div>
-                                <span class="title">Library Management</span>
-                            </a>
-                            <!--start submenu -->
-                            <ul>
-                                <li>@Html.ActionLink("make Book Request", "Create", "Books")</li>
-                                <li>@Html.ActionLink("Search Book", "Index", "Books")</li>
-                                <li>@Html.ActionLink("Borrowed Book", "Index", "BookIssues")</li>
-                                <li>@Html.ActionLink("Returned Book", "Index", "BookIssues")</li>
-
-                            </ul><!--end /submenu -->
-                        </li><!--end /menu-li -->
-                        <!-- END TABLES -->
-                        <!-- BEGIN LEVELS -->
-                        <li class="gui-folder">
-                            <a>
-                                <div class="gui-icon"><i class="fa fa-folder-open fa-fw"></i></div>
-                                <span class="title">Profile</span>
-                            </a>
-                            <!--start submenu -->
-                            <ul>
-                                <li>@Html.ActionLink("Change Password", "Create", "Role")</li>
-                                <li>@Html.ActionLink("Edit Profile", "RegisterStaff", "Account")</li>
-                                <li>@Html.ActionLink("Confirm Email", "Index", "Staffs")</li>
-                                <li class="gui-folder">
-                                    <a href="javascript:void(0);">
-                                        <span class="title">Open level 2</span>
-                                    </a>
-                                    <!--start submenu -->
-                                    <ul>
-                                        <li><a href="#"><span class="title">Item 2</span></a></li>
-                                        <li class="gui-folder">
-                                            <a href="javascript:void(0);">
-                                                <span class="title">Open level 3</span>
-                                            </a>
-                                            <!--start submenu -->
-                                            <ul>
-                                                <li><a href="#"><span class="title">Item 3</span></a></li>
-                                                <li><a href="#"><span class="title">Item 3</span></a></li>
-                                                <li class="gui-folder">
-                                                    <a href="javascript:void(0);">
-                                                        <span class="title">Open level 4</span>
-                                                    </a>
-                                                    <!--start submenu -->
-                                                    <ul>
-                                                        <li><a href="#"><span class="title">Item 4</span></a></li>
-                                                        <li class="gui-folder">
-                                                            <a href="javascript:void(0);">
-                                                                <span class="title">Open level 5</span>
-                                                            </a>
-                                                            <!--start submenu -->
-                                                            <ul>
-                                                                <li><a href="#"><span class="title">Item 5</span></a></li>
-                                                                <li><a href="#"><span class="title">Item 5</span></a></li>
-                                                            </ul><!--end /submenu -->
-                                                        </li><!--end /submenu-li -->
-                                                    </ul><!--end /submenu -->
-                                                </li><!--end /submenu-li -->
-                                            </ul><!--end /submenu -->
-                                        </li><!--end /submenu-li -->
-                                    </ul><!--end /submenu -->
-                                </li><!--end /submenu-li -->
-                            </ul><!--end /submenu -->
-                        </li><!--end /menu-li -->
-                        <!-- END LEVELS -->
+                        <!-- END SMS -->
+                     
+                       
 
                     </ul><!--end .main-menu -->
                     <!-- END MAIN MENU -->
@@ -802,9 +912,154 @@
             </div><!--end #menubar-->
         <!-- END MENUBAR -->
         }
-        else if (Request.IsAuthenticated && User.IsInRole("Record Personnel"))
+        else if (Request.IsAuthenticated && User.IsInRole("Teacher"))
         {
+             <!-- BEGIN MENUBAR-->
+            <div id="menubar" class="menubar-inverse ">
+                <div class="menubar-fixed-panel">
+                    <div>
+                        <a class="btn btn-icon-toggle btn-default menubar-toggle" data-toggle="menubar" href="javascript:void(0);">
+                            <i class="fa fa-bars"></i>
+                        </a>
+                    </div>
+                    <div class="expanded">
+                        <a href="#">
+                            <span class="text-lg text-bold text-primary ">)ST AUGUSTINE COLLEGE DU</span>
+                        </a>
+                    </div>
+                </div>
 
+                <div class="menubar-scroll-panel">
+
+                    <!-- BEGIN MAIN MENU -->
+                    <ul id="main-menu" class="gui-controls">
+
+                        <!-- BEGIN DASHBOARD -->
+                        <li>
+                            <a href="@Url.Action("DashBoard","Students")">
+                                <div class="gui-icon"><i class="md md-home"></i></div>
+                                <span class="title">Teacher's Dashboard</span>
+                            </a>
+                        </li><!--end /menu-li -->
+                        <!-- END DASHBOARD -->
+                       
+                       
+                        <!-- BEGIN CLASS -->
+                        <li class="gui-folder">
+                            <a>
+                                <div class="gui-icon"><i class="md md-account-box"></i></div>
+                                <span class="title">Manage Class</span>
+                            </a>
+                            <!--start submenu -->
+                            <ul>
+                                <li>@Html.ActionLink("View Student in Class", "Index", "AssignedClasses")</li>
+                            </ul>
+                        </li><!--end /menu-li -->
+                        <!-- END CLASS -->
+                        <!-- BEGIN SUBJECT -->
+                        <li class="gui-folder">
+                            <a>
+                                <div class="gui-icon"><i class="md md-account-box"></i></div>
+                                <span class="title">Manage Subject</span>
+                            </a>
+                            <!--start submenu -->
+                            <ul>
+                                <li>@Html.ActionLink("My Subjects", "Index", "AssignSubjectTeachers")</li>
+                            </ul>
+                        </li><!--end /menu-li -->
+                        <!-- END SUBJECT -->
+                       
+                        <!-- BEGIN TABLES -->
+                        <li class="gui-folder">
+                            <a>
+                                <div class="gui-icon"><i class="fa fa-table"></i></div>
+                                <span class="title">Manage Result</span>
+                            </a>
+                            <!--start submenu -->
+                            <ul>
+                                <li>@Html.ActionLink("Add Continuous Assessments", "Create", "ContinuousAssessments")</li>
+                                <li>@Html.ActionLink("List Continuous Assessments", "Index", "ContinuousAssessments")</li>
+                                <li>@Html.ActionLink("Excel Upload", "UploadResult", "ContinuousAssessments")</li>
+                             
+                               
+                            </ul>
+                        </li><!--end /menu-li -->
+                    
+                        <!-- BEGIN ASSIGNMENT -->
+                        <li class="gui-folder">
+                            <a>
+                                <div class="gui-icon"><i class="fa fa-table"></i></div>
+                                <span class="title">Student Assignment</span>
+                            </a>
+                            <!--start submenu -->
+                            <ul>
+
+                                <li><a href="#">View Student Assignment</a></li>
+                               
+                            </ul><!--end /submenu -->
+                        </li><!--end /menu-li -->
+                        <!-- END ASSIGNMENT -->
+                    
+                    
+                        <!-- BEGIN CBTE -->
+                        <li class="gui-folder">
+                            <a>
+                                <div class="gui-icon"><i class="fa fa-table"></i></div>
+                                <span class="title">CBTE</span>
+                            </a>
+                            <!--start submenu -->
+                            <ul>
+
+                                <li><a href="#">Set Questions</a></li>
+                                <li><a href="#">Upload Questions</a></li>
+
+                            </ul><!--end /submenu -->
+                        </li><!--end /menu-li -->
+                        <!-- END ASSIGNMENT -->
+                    
+                        <!-- BEGIN ARTICLES -->
+        <li class="gui-folder">
+            <a>
+                <div class="gui-icon"><i class="fa fa-table"></i></div>
+                <span class="title">Article/News</span>
+            </a>
+            <!--start submenu -->
+            <ul>
+              
+                <li>@Html.ActionLink("Create Article", "Create", "Posts")</li>
+                <li>@Html.ActionLink("Search Article", "Index", "Posts")</li>
+
+                <li>@Html.ActionLink("Upload Pictures", "Index", "SavingsMaintenances")</li>
+                <li>@Html.ActionLink("Upload Videos", "Index", "SavingsMaintenances")</li>
+            </ul><!--end /submenu -->
+        </li><!--end /menu-li -->
+                        <!-- END ARTICLES -->
+                    
+
+                        
+                        <!-- BEGIN PROFILE -->
+                        <li class="gui-folder">
+                            <a>
+                                <div class="gui-icon"><i class="md md-settings-applications"></i></div>
+                                <span class="title">Profile</span>
+                            </a>
+                            <!--start submenu -->
+                            <ul>
+                                <li>@Html.ActionLink("Settings", "Index", "Manage")</li>
+                                <li>@Html.ActionLink("Change Password", "ChangePassword", "Manage")</li>
+                                <li>@Html.ActionLink("Log Out", "LogOff", "Account")</li>
+                                </ul><!--end /submenu -->
+                        </li><!--end /menu-li -->
+                        <!-- END PROFILE -->
+
+
+                    </ul><!--end .main-menu -->
+                    <!-- END MAIN MENU -->
+
+
+                </div><!--end .menubar-scroll-panel-->
+            </div><!--end #menubar-->
+        <!-- END MENUBAR -->
         }
         else
         {
@@ -815,241 +1070,6 @@
         <!-- BEGIN OFFCANVAS RIGHT -->
         <div class="offcanvas">
 
-            <!-- BEGIN OFFCANVAS SEARCH -->
-            <div id="offcanvas-search" class="offcanvas-pane width-8">
-                <div class="offcanvas-head">
-                    <header class="text-primary">Search</header>
-                    <div class="offcanvas-tools">
-                        <a class="btn btn-icon-toggle btn-default-light pull-right" data-dismiss="offcanvas">
-                            <i class="md md-close"></i>
-                        </a>
-                    </div>
-                </div>
-                <div class="offcanvas-body no-padding">
-                    <ul class="list ">
-                        <li class="tile divider-full-bleed">
-                            <div class="tile-content">
-                                <div class="tile-text"><strong>A</strong></div>
-                            </div>
-                        </li>
-                        <li class="tile">
-                            <a class="tile-content ink-reaction" href="#offcanvas-chat" data-toggle="offcanvas" data-backdrop="false">
-                                <div class="tile-icon">
-                                    <img src="~/assets/img/avatar4.jpg?1404026791" alt="" />
-                                </div>
-                                <div class="tile-text">
-                                    Alex Nelson
-                                    <small>123-123-3210</small>
-                                </div>
-                            </a>
-                        </li>
-                        <li class="tile">
-                            <a class="tile-content ink-reaction" href="#offcanvas-chat" data-toggle="offcanvas" data-backdrop="false">
-                                <div class="tile-icon">
-                                    <img src="~/assets/img/avatar9.jpg?1404026744" alt="" />
-                                </div>
-                                <div class="tile-text">
-                                    Ann Laurens
-                                    <small>123-123-3210</small>
-                                </div>
-                            </a>
-                        </li>
-                        <li class="tile divider-full-bleed">
-                            <div class="tile-content">
-                                <div class="tile-text"><strong>J</strong></div>
-                            </div>
-                        </li>
-                        <li class="tile">
-                            <a class="tile-content ink-reaction" href="#offcanvas-chat" data-toggle="offcanvas" data-backdrop="false">
-                                <div class="tile-icon">
-                                    <img src="~/assets/img/avatar2.jpg?1404026449" alt="" />
-                                </div>
-                                <div class="tile-text">
-                                    Jessica Cruise
-                                    <small>123-123-3210</small>
-                                </div>
-                            </a>
-                        </li>
-                        <li class="tile">
-                            <a class="tile-content ink-reaction" href="#offcanvas-chat" data-toggle="offcanvas" data-backdrop="false">
-                                <div class="tile-icon">
-                                    <img src="~/assets/img/avatar8.jpg?1404026729" alt="" />
-                                </div>
-                                <div class="tile-text">
-                                    Jim Peters
-                                    <small>123-123-3210</small>
-                                </div>
-                            </a>
-                        </li>
-                        <li class="tile divider-full-bleed">
-                            <div class="tile-content">
-                                <div class="tile-text"><strong>M</strong></div>
-                            </div>
-                        </li>
-                        <li class="tile">
-                            <a class="tile-content ink-reaction" href="#offcanvas-chat" data-toggle="offcanvas" data-backdrop="false">
-                                <div class="tile-icon">
-                                    <img src="~/assets/img/avatar5.jpg?1404026513" alt="" />
-                                </div>
-                                <div class="tile-text">
-                                    Mabel Logan
-                                    <small>123-123-3210</small>
-                                </div>
-                            </a>
-                        </li>
-                        <li class="tile">
-                            <a class="tile-content ink-reaction" href="#offcanvas-chat" data-toggle="offcanvas" data-backdrop="false">
-                                <div class="tile-icon">
-                                    <img src="~/assets/img/avatar11.jpg?1404026774" alt="" />
-                                </div>
-                                <div class="tile-text">
-                                    Mary Peterson
-                                    <small>123-123-3210</small>
-                                </div>
-                            </a>
-                        </li>
-                        <li class="tile">
-                            <a class="tile-content ink-reaction" href="#offcanvas-chat" data-toggle="offcanvas" data-backdrop="false">
-                                <div class="tile-icon">
-                                    <img src="~/assets/img/avatar3.jpg?1404026799" alt="" />
-                                </div>
-                                <div class="tile-text">
-                                    Mike Alba
-                                    <small>123-123-3210</small>
-                                </div>
-                            </a>
-                        </li>
-                        <li class="tile divider-full-bleed">
-                            <div class="tile-content">
-                                <div class="tile-text"><strong>N</strong></div>
-                            </div>
-                        </li>
-                        <li class="tile">
-                            <a class="tile-content ink-reaction" href="#offcanvas-chat" data-toggle="offcanvas" data-backdrop="false">
-                                <div class="tile-icon">
-                                    <img src="~/assets/img/avatar6.jpg?1404026572" alt="" />
-                                </div>
-                                <div class="tile-text">
-                                    Nathan Peterson
-                                    <small>123-123-3210</small>
-                                </div>
-                            </a>
-                        </li>
-                        <li class="tile divider-full-bleed">
-                            <div class="tile-content">
-                                <div class="tile-text"><strong>P</strong></div>
-                            </div>
-                        </li>
-                        <li class="tile">
-                            <a class="tile-content ink-reaction" href="#offcanvas-chat" data-toggle="offcanvas" data-backdrop="false">
-                                <div class="tile-icon">
-                                    <img src="~/assets/img/avatar7.jpg?1404026721" alt="" />
-                                </div>
-                                <div class="tile-text">
-                                    Philip Ericsson
-                                    <small>123-123-3210</small>
-                                </div>
-                            </a>
-                        </li>
-                        <li class="tile divider-full-bleed">
-                            <div class="tile-content">
-                                <div class="tile-text"><strong>S</strong></div>
-                            </div>
-                        </li>
-                        <li class="tile">
-                            <a class="tile-content ink-reaction" href="#offcanvas-chat" data-toggle="offcanvas" data-backdrop="false">
-                                <div class="tile-icon">
-                                    <img src="~/assets/img/avatar10.jpg?1404026762" alt="" />
-                                </div>
-                                <div class="tile-text">
-                                    Samuel Parsons
-                                    <small>123-123-3210</small>
-                                </div>
-                            </a>
-                        </li>
-                    </ul>
-                </div><!--end .offcanvas-body -->
-            </div><!--end .offcanvas-pane -->
-            <!-- END OFFCANVAS SEARCH -->
-            <!-- BEGIN OFFCANVAS CHAT -->
-            <div id="offcanvas-chat" class="offcanvas-pane style-default-light width-12">
-                <div class="offcanvas-head style-default-bright">
-                    <header class="text-primary">Chat with Ann Laurens</header>
-                    <div class="offcanvas-tools">
-                        <a class="btn btn-icon-toggle btn-default-light pull-right" data-dismiss="offcanvas">
-                            <i class="md md-close"></i>
-                        </a>
-                        <a class="btn btn-icon-toggle btn-default-light pull-right" href="#offcanvas-search" data-toggle="offcanvas" data-backdrop="false">
-                            <i class="md md-arrow-back"></i>
-                        </a>
-                    </div>
-                    <form class="form">
-                        <div class="form-group floating-label">
-                            <textarea name="sidebarChatMessage" id="sidebarChatMessage" class="form-control autosize" rows="1"></textarea>
-                            <label for="sidebarChatMessage">Leave a message</label>
-                        </div>
-                    </form>
-                </div>
-                <div class="offcanvas-body">
-                    <ul class="list-chats">
-                        <li>
-                            <div class="chat">
-                                <div class="chat-avatar"><img class="img-circle" src="~/assets/img/avatar1.jpg?1403934956" alt="" /></div>
-                                <div class="chat-body">
-                                    Yes, it is indeed very beautiful.
-                                    <small>10:03 pm</small>
-                                </div>
-                            </div><!--end .chat -->
-                        </li>
-                        <li class="chat-left">
-                            <div class="chat">
-                                <div class="chat-avatar"><img class="img-circle" src="~/assets/img/avatar9.jpg?1404026744" alt="" /></div>
-                                <div class="chat-body">
-                                    Did you see the changes?
-                                    <small>10:02 pm</small>
-                                </div>
-                            </div><!--end .chat -->
-                        </li>
-                        <li>
-                            <div class="chat">
-                                <div class="chat-avatar"><img class="img-circle" src="~/assets/img/avatar1.jpg?1403934956" alt="" /></div>
-                                <div class="chat-body">
-                                    I just arrived at work, it was quite busy.
-                                    <small>06:44pm</small>
-                                </div>
-                                <div class="chat-body">
-                                    I will take look in a minute.
-                                    <small>06:45pm</small>
-                                </div>
-                            </div><!--end .chat -->
-                        </li>
-                        <li class="chat-left">
-                            <div class="chat">
-                                <div class="chat-avatar"><img class="img-circle" src="~/assets/img/avatar9.jpg?1404026744" alt="" /></div>
-                                <div class="chat-body">
-                                    The colors are much better now.
-                                </div>
-                                <div class="chat-body">
-                                    The colors are brighter than before.
-                                    I have already sent an example.
-                                    This will make it look sharper.
-                                    <small>Mon</small>
-                                </div>
-                            </div><!--end .chat -->
-                        </li>
-                        <li>
-                            <div class="chat">
-                                <div class="chat-avatar"><img class="img-circle" src="~/assets/img/avatar1.jpg?1403934956" alt="" /></div>
-                                <div class="chat-body">
-                                    Are the colors of the logo already adapted?
-                                    <small>Last week</small>
-                                </div>
-                            </div><!--end .chat -->
-                        </li>
-                    </ul>
-                </div><!--end .offcanvas-body -->
-            </div><!--end .offcanvas-pane -->
-            <!-- END OFFCANVAS CHAT -->
 
         </div><!--end .offcanvas-->
         <!-- END OFFCANVAS RIGHT -->
@@ -1057,12 +1077,15 @@
     </div><!--end #base-->
     <!-- END BASE -->
     <!-- BEGIN JAVASCRIPT -->
-    <script src="~/assets/js/libs/jquery/jquery-1.11.2.min.js"></script>
+    @*<script src="~/assets/js/libs/jquery/jquery-1.11.2.min.js"></script>
     <script src="~/assets/js/libs/jquery/jquery-migrate-1.2.1.min.js"></script>
     <script src="~/assets/js/libs/bootstrap/bootstrap.min.js"></script>
     <script src="~/assets/js/libs/spin.js/spin.min.js"></script>
     <script src="~/assets/js/libs/autosize/jquery.autosize.min.js"></script>
     <script src="~/assets/js/libs/nanoscroller/jquery.nanoscroller.min.js"></script>
+    <script src="~/assets/js/libs/ckeditor/ckeditor.js"></script>
+    <script src="~/assets/js/libs/ckeditor/adapters/jquery.js"></script>
+    <script src="~/assets/js/libs/summernote/summernote.min.js"></script>
     <script src="~/assets/js/core/source/App.js"></script>
     <script src="~/assets/js/core/source/AppNavigation.js"></script>
     <script src="~/assets/js/core/source/AppOffcanvas.js"></script>
@@ -1071,12 +1094,67 @@
     <script src="~/assets/js/core/source/AppNavSearch.js"></script>
     <script src="~/assets/js/core/source/AppVendor.js"></script>
     <script src="~/assets/js/core/demo/Demo.js"></script>
-    <!-- END JAVASCRIPT -->
-    @*@Scripts.Render("~/bundles/jquery")
-        @Scripts.Render("~/bundles/bootstrap")*@
-    @*@RenderSection("scripts", required: false)*@
-    <!-- END JAVASCRIPT -->
-    @Scripts.Render("~/Content/css")
+<script src="~/assets/js/core/demo/DemoFormEditors.js"></script>*@
+    
+    <script src="~/assets/js/libs/jquery/jquery-1.11.2.min.js"></script>
+    <script src="~/assets/js/libs/jquery/jquery-migrate-1.2.1.min.js"></script>
+    <script src="~/assets/js/libs/bootstrap/bootstrap.min.js"></script>
+    <script src="~/assets/js/libs/spin.js/spin.min.js"></script>
+    <script src="~/assets/js/libs/autosize/jquery.autosize.min.js"></script>
+    <script src="~/assets/js/libs/moment/moment.min.js"></script>
+    <script src="~/assets/js/libs/flot/jquery.flot.min.js"></script>
+    <script src="~/assets/js/libs/flot/jquery.flot.time.min.js"></script>
+    <script src="~/assets/js/libs/flot/jquery.flot.resize.min.js"></script>
+    <script src="~/assets/js/libs/flot/jquery.flot.orderBars.js"></script>
+    <script src="~/assets/js/libs/flot/jquery.flot.pie.js"></script>
+    <script src="~/assets/js/libs/flot/curvedLines.js"></script>
+    <script src="~/assets/js/libs/jquery-knob/jquery.knob.min.js"></script>
+    <script src="~/assets/js/libs/sparkline/jquery.sparkline.min.js"></script>
+    <script src="~/assets/js/libs/nanoscroller/jquery.nanoscroller.min.js"></script>
+    <script src="~/assets/js/libs/d3/d3.min.js"></script>
+    <script src="~/assets/js/libs/d3/d3.v3.js"></script>
+    <script src="~/assets/js/libs/rickshaw/rickshaw.min.js"></script>
+    <script src="~/assets/js/core/source/App.js"></script>
+    <script src="~/assets/js/core/source/AppNavigation.js"></script>
+    <script src="~/assets/js/core/source/AppOffcanvas.js"></script>
+    <script src="~/assets/js/core/source/AppCard.js"></script>
+    <script src="~/assets/js/core/source/AppForm.js"></script>
+    <script src="~/assets/js/core/source/AppNavSearch.js"></script>
+    <script src="~/assets/js/core/source/AppVendor.js"></script>
+    <script src="~/assets/js/core/demo/Demo.js"></script>
+    <script src="~/assets/js/core/demo/DemoDashboard.js"></script>
+ 
+  
+<script type="text/javascript">
+
+
+    //Call the method on pageload
+    $(window).load(function () {
+       // window.alert(5 + 6);
+        var i = "@TempData["UserMessage"]";
+        //window.alert(i);
+        //Disply the modal popup
+        if (i) {
+            $('#simpleModal').modal('show');
+        }
+
+    });
+</script>
+    
+
+    
+
+<!-- END JAVASCRIPT -->
+ 
+    @Scripts.Render("~/bundles/jquery")
+@Scripts.Render("~/bundles/fullcalendarjs")
+       
+@*@Scripts.Render("~/bundles/jqueryval")*@
+   
+    @*@Scripts.Render("~/bundles/scripts")*@a
+    
+
+ 
     @RenderSection("scripts", required: false)
 
 </body>

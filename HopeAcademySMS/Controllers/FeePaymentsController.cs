@@ -17,6 +17,7 @@ namespace StAugustine.Controllers
         public async Task<ActionResult> Index()
         {
             var feePayments = db.FeePayments.Include(f => f.Students);
+            ViewBag.Term = new SelectList(db.Terms.AsNoTracking(), "TermName", "TermName");
             return View(await feePayments.ToListAsync());
         }
 
@@ -24,6 +25,7 @@ namespace StAugustine.Controllers
         {
             decimal value = 1m;
             var feePayments = db.FeePayments.Include(f => f.Students).Where(s => s.Remaining > value);
+            ViewBag.Term = new SelectList(db.Terms.AsNoTracking(), "TermName", "TermName");
             return View(await feePayments.ToListAsync());
         }
 
@@ -48,9 +50,10 @@ namespace StAugustine.Controllers
             DateTime datetime = new DateTime();
             datetime = DateTime.Now.Date;
             ViewBag.Date = datetime.ToShortDateString();
-            ViewBag.StudentId = new SelectList(db.Students, "StudentID", "FullName");
-            ViewBag.FeeName = new SelectList(db.FeeTypes, "FeeName", "FeeName");
-            ViewBag.Session = new SelectList(db.Sessions, "SessionName", "SessionName");
+            ViewBag.StudentId = new SelectList(db.Students.AsNoTracking(), "StudentID", "FullName");
+            ViewBag.FeeName = new SelectList(db.FeeTypes.AsNoTracking(), "FeeName", "FeeName");
+            ViewBag.Session = new SelectList(db.Sessions.AsNoTracking(), "SessionName", "SessionName");
+            ViewBag.Term = new SelectList(db.Terms.AsNoTracking(), "TermName", "TermName");
             return View();
         }
 
@@ -70,9 +73,10 @@ namespace StAugustine.Controllers
             DateTime datetime = new DateTime();
             datetime = DateTime.Now.Date;
             ViewBag.Date = datetime.ToShortDateString();
-            ViewBag.StudentId = new SelectList(db.Students, "StudentID", "FullName", feePayment.StudentId);
-            ViewBag.FeeName = new SelectList(db.FeeTypes, "FeeName", "FeeName");
-            ViewBag.Session = new SelectList(db.Sessions, "SessionName", "SessionName");
+            ViewBag.StudentId = new SelectList(db.Students.AsNoTracking(), "StudentID", "FullName");
+            ViewBag.FeeName = new SelectList(db.FeeTypes.AsNoTracking(), "FeeName", "FeeName");
+            ViewBag.Session = new SelectList(db.Sessions.AsNoTracking(), "SessionName", "SessionName");
+            ViewBag.Term = new SelectList(db.Terms.AsNoTracking(), "TermName", "TermName");
             return View(feePayment);
         }
 

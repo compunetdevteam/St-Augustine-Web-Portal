@@ -35,13 +35,13 @@ namespace StAugustine.Controllers
 
 
         // GET: Guardians/Edit/5
-        public ActionResult Edit(string id)
+        public async Task<ActionResult> Edit(string id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Guardian guardian = db.Guardians.FirstOrDefault(x => x.GuardianId.Equals(id));
+            Guardian guardian = await db.Guardians.FirstOrDefaultAsync(x => x.GuardianId.Equals(id));
             if (guardian == null)
             {
                 return HttpNotFound();
@@ -69,9 +69,23 @@ namespace StAugustine.Controllers
         {
             if (ModelState.IsValid)
             {
-                var guardian = new Guardian(model.GuardianId, model.Salutation.ToString(),
-                                           model.FirstName, model.MiddleName, model.LastName, model.Gender.ToString(),
-                                           model.PhoneNumber, model.Address, model.Email, model.Relationship.ToString(), model.Occupation);
+                //var guardian = new Guardian(model.GuardianId, model.StudentId, model.Salutation.ToString(),
+                //                           model.FirstName, model.MiddleName, model.LastName, model.Gender.ToString(),
+                //                           model.PhoneNumber, model.Address, model.Email, model.Relationship.ToString(), model.Occupation);
+                var guardian = new Guardian()
+                {
+                    GuardianId = model.GuardianId,
+                    //StudentId = model.StudentId,
+                    FirstName = model.FirstName,
+                    MiddleName = model.MiddleName,
+                    LastName = model.LastName,
+                    GuardianEmail = model.Email,
+                    PhoneNumber = model.PhoneNumber,
+                    Gender = model.Gender.ToString(),
+                    Address = model.Address,
+                    Relationship = model.Relationship.ToString(),
+                    Occupation = model.Occupation
+                };
                 db.Entry(guardian).State = EntityState.Modified;
                 await db.SaveChangesAsync();
                 return RedirectToAction("Index");

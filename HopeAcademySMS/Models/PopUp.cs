@@ -25,10 +25,6 @@ namespace StAugustine.Models
             GivenOut = 1, Returned
         }
 
-        public enum Term
-        {
-            First = 1, Second, Third
-        }
         public enum ClassType
         {
             UNITAS = 1, VERITAS, CARRITAS
@@ -81,5 +77,16 @@ namespace StAugustine.Models
             [Display(Name = "Loaded")]
             darkcyan
         }
+
+        public enum Extra
+        {
+            A = 1, B, C
+        }
+
+        public enum MyClass
+        {
+            JSS1 = 1, JSS2, JSS3, SS1, SS2, SS3
+        }
+
     }
 }

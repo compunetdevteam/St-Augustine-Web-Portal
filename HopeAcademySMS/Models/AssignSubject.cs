@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace StAugustine.Models
 {
@@ -15,9 +14,9 @@ namespace StAugustine.Models
         [Required(ErrorMessage = "Subject Name cannot be empty")]
         public string SubjectName { get; set; }
 
-        public virtual ICollection<Class> Classes { get; set; }
+        public virtual Class Class { get; set; }
 
-        public virtual ICollection<Subject> Subjects { get; set; }
+        public virtual Subject Subject { get; set; }
 
     }
 }

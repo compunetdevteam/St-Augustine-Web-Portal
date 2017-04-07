@@ -13,7 +13,8 @@ namespace StAugustine.Controllers
         // GET: Staffs
         public async Task<ActionResult> Index()
         {
-            return View(await db.Staffs.ToListAsync());
+            ViewData["ClassName"] = new SelectList(db.Classes, "FullClassName", "FullClassName");
+            return View(await db.Staffs.AsNoTracking().ToListAsync());
         }
 
         // GET: Staffs/Details/5
@@ -28,6 +29,7 @@ namespace StAugustine.Controllers
             {
                 return HttpNotFound();
             }
+            ViewData["ClassName"] = new SelectList(db.Classes.AsNoTracking(), "FullClassName", "FullClassName");
             return View(staff);
         }
 
@@ -106,7 +108,7 @@ namespace StAugustine.Controllers
         public async Task<ActionResult> DeleteConfirmed(string id)
         {
             Staff staff = await db.Staffs.FindAsync(id);
-            db.Staffs.Remove(staff);
+            if (staff != null) db.Staffs.Remove(staff);
             await db.SaveChangesAsync();
             return RedirectToAction("Index");
         }

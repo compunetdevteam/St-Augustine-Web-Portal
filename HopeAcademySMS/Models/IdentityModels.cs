@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
+using StAugustine.Calender;
 using StAugustine.Models.CBT;
 using StAugustine.Models.Objects;
 using System.Data.Entity;
@@ -11,6 +12,10 @@ namespace StAugustine.Models
     // You can add profile data for the user by adding more properties to your ApplicationUser class, please visit http://go.microsoft.com/fwlink/?LinkID=317594 to learn more.
     public class ApplicationUser : IdentityUser
     {
+        public ApplicationUser()
+        {
+
+        }
         public async Task<ClaimsIdentity> GenerateUserIdentityAsync(UserManager<ApplicationUser> manager)
         {
             // Note the authenticationType must match the one defined in CookieAuthenticationOptions.AuthenticationType
@@ -75,6 +80,28 @@ namespace StAugustine.Models
 
         public DbSet<ExamRule> ExamRules { get; set; }
 
+        public DbSet<AssignFormTeacherToClass> AssignFormTeacherToClasses { get; set; }
 
+        public DbSet<AssignSubjectTeacher> AssignSubjectTeachers { get; set; }
+
+        public DbSet<PrincipalComment> PrincipalComments { get; set; }
+
+        public DbSet<TeacherComment> TeacherComments { get; set; }
+
+        public DbSet<Term> Terms { get; set; }
+
+        public DbSet<AppointmentDiary> AppointmentDiary { get; set; }
+
+        public System.Data.Entity.DbSet<HopeAcademySMS.Models.SubjectRegistration> SubjectRegistrations { get; set; }
+
+        public System.Data.Entity.DbSet<StAugustine.Models.SchoolClass> SchoolClasses { get; set; }
+
+        public System.Data.Entity.DbSet<StAugustine.Models.BehaviorSkillCategory> BehaviorSkillCategories { get; set; }
+
+        public System.Data.Entity.DbSet<StAugustine.Models.BehaviouralSkill> BehaviouralSkills { get; set; }
+
+        public System.Data.Entity.DbSet<StAugustine.Models.AssignBehavior> AssignBehaviors { get; set; }
+
+        public System.Data.Entity.DbSet<StAugustine.Models.ReportCard> ReportCards { get; set; }
     }
 }

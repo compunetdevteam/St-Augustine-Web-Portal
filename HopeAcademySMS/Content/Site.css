@@ -1,27 +1,113 @@
 ﻿body {
-    padding-top: 50px;
-    padding-bottom: 20px;
+	padding-top: 50px;
+	padding-bottom: 20px;
 }
 
 /* Set padding to keep content from hitting the edges */
 .body-content {
-    padding-left: 15px;
-    padding-right: 15px;
+	padding-left: 15px;
+	padding-right: 15px;
 }
 
 /* Override the default bootstrap behavior where horizontal description lists 
    will truncate terms that are too long to fit in the left column 
 */
 .dl-horizontal dt {
-    white-space: normal;
+	white-space: normal;
 }
 
 /* Set width on the form input elements since they're 100% wide by default */
 input,
 select,
 textarea {
-    max-width: 280px;
+	max-width: 280px;
 }
 
 
 /*Material Admin Css starts here*/
+<style>
+	
+.vertical-text {
+	display: inline-block;
+	overflow: hidden;
+	width: 1.5em;
+}
+.vertical-text__inner {
+	display: inline-block;
+	white-space: nowrap;
+	line-height: 1.5;
+	transform: translate(0,100%) rotate(-90deg);
+	transform-origin: 0 0;
+}
+/* This element stretches the parent to be square
+   by using the mechanics of vertical margins  */
+.vertical-text__inner:after {
+	content: "";
+	display: block;
+	margin: -1.5em 0 100%;
+
+}
+
+th, td {
+	padding-right: 15px;
+	/*/padding: 15px;*/
+}
+body {
+	 padding-top: 5px;
+	padding-bottom: 5px;
+	font-size: 1.0em;
+}
+
+
+
+/* Just for more pretty example */
+table {
+	margin-top: 2em;
+}
+th,td {
+	
+	text-align:justify-all;
+	font-weight: normal;
+	
+}
+
+
+
+
+
+.ENQUIRY {
+	
+	background-color: #FF9933;
+	border-color: #C0C0C0; 
+	color: White;
+	background-position: 1px 1px;
+	background-repeat: no-repeat;
+	background-image: url('Bubble.png');
+	padding-left: 50px;
+}
+
+.BOOKED {
+	background-color: #33CCFF;
+	border-color: #C0C0C0;
+	color: White; /* text color */
+	background-position: 1px 1px;
+	background-repeat: no-repeat;
+	background-image: url('ok.png');
+	padding-left: 50px;
+}
+
+.CONFIRMED {
+	background-color: #33CC33;
+	border-color: #C0C0C0;
+	color: White; /* text color */
+	background-position: 1px 1px;
+	background-repeat: no-repeat;
+	background-image: url('Money.png');
+	padding-left: 50px;
+}
+
+h2 {
+font-size: 20px !important;  /* !important added to force override of any other h2 in CSS*/
+}
+
+</style>

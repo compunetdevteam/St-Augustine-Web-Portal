@@ -1,18 +1,31 @@
-﻿using System.Linq;
+﻿using System.Data.Entity;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace StAugustine.Models
 {
     public class GradeRemark
     {
-        ApplicationDbContext db = new ApplicationDbContext();
+        private readonly ApplicationDbContext _db = new ApplicationDbContext();
+
+
+        private string GetschoolClass(string className)
+        {
+            var myClass = _db.Classes.AsNoTracking().Where(x => x.FullClassName.Equals(className))
+                                .Select(s => s.SchoolName).FirstOrDefault();
+            return myClass;
+
+        }
+
 
         // This can be private now
-        public string Grading(double summaryTotal)
+        public string Grading(double summaryTotal, string className)
         {
+            string myclassName = GetschoolClass(className);
             string gradeValue = "";
             int mySummaryTotal = (int)summaryTotal;
 
-            var myGrade = db.Grades.ToList();
+            var myGrade = _db.Grades.AsNoTracking().Where(x => x.ClassName.Equals(myclassName)).ToList();
             foreach (var item in myGrade)
             {
                 if (mySummaryTotal <= item.MaximumValue && mySummaryTotal >= item.MinimumValue)
@@ -26,13 +39,14 @@ namespace StAugustine.Models
 
         }
 
-        // This can be private now
-        public string Remark(double summaryTotal)
+
+        public string Remark(double summaryTotal, string className)
         {
+            string myclassName = GetschoolClass(className);
             string remarkValue = "";
 
             int mySummaryTotal = (int)summaryTotal;
-            var myGrade = db.Grades.ToList();
+            var myGrade = _db.Grades.AsNoTracking().Where(x => x.ClassName.Equals(myclassName)).ToList();
             foreach (var item in myGrade)
             {
                 if (mySummaryTotal <= item.MaximumValue && mySummaryTotal >= item.MinimumValue)
@@ -44,12 +58,12 @@ namespace StAugustine.Models
             return !string.IsNullOrEmpty(remarkValue) ? remarkValue : "Enter Value between 1 - 100";
         }
 
-        public int GradingPoint(double summaryTotal)
+        public int GradingPoint(double summaryTotal, string className)
         {
+            string myclassName = GetschoolClass(className);
             int remarkValue = 0;
-
             int mySummaryTotal = (int)summaryTotal;
-            var myGrade = db.Grades.ToList();
+            var myGrade = _db.Grades.AsNoTracking().Where(x => x.ClassName.Equals(myclassName)).ToList();
             foreach (var item in myGrade)
             {
                 if (mySummaryTotal <= item.MaximumValue && mySummaryTotal >= item.MinimumValue)
@@ -68,21 +82,22 @@ namespace StAugustine.Models
             }
         }
 
-        public string PrincipalRemark(double summaryTotal)
+        public string PrincipalRemark(double summaryTotal, string className)
         {
+            string myclassName = GetschoolClass(className);
             string remarkValue = "";
 
-            int mySummaryTotal = (int)summaryTotal;
-            var myGrade = db.Grades.ToList();
+            //int mySummaryTotal = (int)summaryTotal;
+            var myGrade = _db.PrincipalComments.AsNoTracking().Where(x => x.ClassName.Equals(myclassName)).ToList();
             foreach (var item in myGrade)
             {
-                if (mySummaryTotal <= item.MaximumValue && mySummaryTotal >= item.MinimumValue)
+                if (summaryTotal <= item.MaximumGrade && summaryTotal >= item.MinimumGrade)
                 {
-                    remarkValue = item.PrincipalRemark;
+                    remarkValue = item.Remark;
                 }
             }
 
-            return !string.IsNullOrEmpty(remarkValue) ? remarkValue : "Enter Value between 1 - 100";
+            return !string.IsNullOrEmpty(remarkValue) ? remarkValue : "Enter Value between 1.0 - 9.0";
 
         }
     }

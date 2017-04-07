@@ -76,6 +76,9 @@ namespace StAugustine.Models
         public string Term { get; set; }
         public string SessionName { get; set; }
         public string SubjectName { get; set; }
+
+        public double SubjectHighest { get; set; }
+        public double SubjectLowest { get; set; }
         public int SubjectPosition { get; set; }
         public double AggretateScore { get; set; }
 

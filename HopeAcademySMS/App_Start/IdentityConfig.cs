@@ -1,9 +1,9 @@
-﻿using StAugustine.Models;
-using Microsoft.AspNet.Identity;
+﻿using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin;
 using Microsoft.Owin.Security;
+using StAugustine.Models;
 using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -44,7 +44,8 @@ namespace StAugustine
             manager.UserValidator = new UserValidator<ApplicationUser>(manager)
             {
                 AllowOnlyAlphanumericUserNames = false,
-                RequireUniqueEmail = true
+                RequireUniqueEmail = false,
+
             };
 
             // Configure validation logic for passwords

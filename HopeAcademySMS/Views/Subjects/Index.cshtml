@@ -20,7 +20,6 @@
         <th>
             @Html.DisplayNameFor(model => model.SubjectUnit)
         </th>
-      
         <th></th>
     </tr>
 
@@ -35,11 +34,10 @@
         <td>
             @Html.DisplayFor(modelItem => item.SubjectUnit)
         </td>
-      
         <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.CourseCode }) |
-            @Html.ActionLink("Details", "Details", new { id=item.CourseCode }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.CourseCode })
+            @Html.ActionLink("Edit", "Edit", new { id=item.SubjectId }) |
+            @Html.ActionLink("Details", "Details", new { id=item.SubjectId }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.SubjectId })
         </td>
     </tr>
 }

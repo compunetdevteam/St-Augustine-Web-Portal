@@ -1,4 +1,6 @@
-﻿using StAugustine.Models;
+﻿using Microsoft.AspNet.Identity;
+using StAugustine.Models;
+using StAugustine.ViewModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
@@ -9,12 +11,30 @@ namespace StAugustine.Controllers
 {
     public class ClassesController : Controller
     {
-        private ApplicationDbContext db = new ApplicationDbContext();
+        private readonly ApplicationDbContext _db = new ApplicationDbContext();
 
         // GET: Classes
         public async Task<ActionResult> Index()
         {
-            return View(await db.Classes.ToListAsync());
+            return View(await _db.Classes.ToListAsync());
+        }
+
+        public async Task<ActionResult> FormTeacher()
+        {
+            var myForm = new FormDataViewModel();
+            string username = User.Identity.GetUserName();
+            var className = _db.AssignFormTeacherToClasses.Where(x => x.Username.Equals(username))
+                                                .Select(s => s.ClassName)
+                                                .FirstOrDefault();
+            myForm.AssignedClasses = await _db.AssignedClasses.Where(x => x.ClassName.Equals(className) && x.TermName.Equals("First")
+                                                          && x.SessionName.Equals("2016-2017")).ToListAsync();
+
+            ViewBag.SubjectCode = new SelectList(_db.Subjects, "CourseName", "CourseName");
+            ViewBag.StudentId = new SelectList(_db.Students, "StudentID", "FullName");
+            ViewBag.SessionName = new SelectList(_db.Sessions, "SessionName", "SessionName");
+            ViewBag.ClassName = new SelectList(_db.Classes, "FullClassName", "FullClassName");
+            // return View(await db.Classes.ToListAsync());
+            return View(myForm);
         }
 
         // GET: Classes/Details/5
@@ -24,7 +44,7 @@ namespace StAugustine.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Class @class = await db.Classes.FindAsync(id);
+            Class @class = await _db.Classes.FindAsync(id);
             if (@class == null)
             {
                 return HttpNotFound();
@@ -35,6 +55,7 @@ namespace StAugustine.Controllers
         // GET: Classes/Create
         public ActionResult Create()
         {
+            ViewBag.SchoolName = new SelectList(_db.SchoolClasses, "ClassCode", "ClassCode");
             return View();
         }
 
@@ -47,26 +68,31 @@ namespace StAugustine.Controllers
         {
             if (ModelState.IsValid)
             {
-                var myClass = db.Classes.Where(x => x.FullClassName.Equals(model.FullClassName));
+                var myClass = _db.Classes.Where(x => x.FullClassName.Equals(model.FullClassName));
                 var countFromDb = myClass.Count();
                 if (countFromDb >= 1)
                 {
-                    return View("Error2");
+                    ViewBag.SchoolName = new SelectList(_db.SchoolClasses, "ClassCode", "ClassCode");
+                    TempData["UserMessage"] = "Class Already Exist in Database";
+                    TempData["Title"] = "Deleted.";
+                    return View(model);
                 }
                 var @class = new Class()
                 {
-                    ClassType = model.ClassType,
-                    SchoolName = model.SchoolName,
+                    ClassType = model.ClassType.Trim().ToUpper(),
+                    SchoolName = model.SchoolName.Trim(),
                     ClassLevel = model.ClassLevel
                 };
-                db.Classes.Add(@class);
-                await db.SaveChangesAsync();
+                _db.Classes.Add(@class);
+                await _db.SaveChangesAsync();
+                TempData["UserMessage"] = "Class Added Successfully.";
+                TempData["Title"] = "Success.";
                 return RedirectToAction("Index");
                 //db.Classes.Add(@class);
                 //await db.SaveChangesAsync();
                 //return RedirectToAction("Index");
             }
-
+            ViewBag.SchoolName = new SelectList(_db.SchoolClasses, "ClassCode", "ClassCode");
             return View(model);
         }
 
@@ -77,11 +103,12 @@ namespace StAugustine.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Class @class = await db.Classes.FindAsync(id);
+            Class @class = await _db.Classes.FindAsync(id);
             if (@class == null)
             {
                 return HttpNotFound();
             }
+            ViewBag.SchoolName = new SelectList(_db.SchoolClasses, "ClassCode", "ClassCode");
             return View(@class);
         }
 
@@ -90,15 +117,24 @@ namespace StAugustine.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit([Bind(Include = "ClassID,Name,ClassType")] Class @class)
+        public async Task<ActionResult> Edit([Bind(Include = "ClassID,Name,ClassType")] Class model)
         {
             if (ModelState.IsValid)
             {
-                db.Entry(@class).State = EntityState.Modified;
-                await db.SaveChangesAsync();
+                var @class = new Class()
+                {
+                    ClassType = model.ClassType.Trim().ToUpper(),
+                    SchoolName = model.SchoolName.Trim(),
+                    ClassLevel = model.ClassLevel
+                };
+                _db.Entry(@class).State = EntityState.Modified;
+                await _db.SaveChangesAsync();
+                TempData["UserMessage"] = "Class Updated Successfully.";
+                TempData["Title"] = "Success.";
                 return RedirectToAction("Index");
             }
-            return View(@class);
+            ViewBag.SchoolName = new SelectList(_db.SchoolClasses, "ClassCode", "ClassCode");
+            return View(model);
         }
 
         // GET: Classes/Delete/5
@@ -108,7 +144,7 @@ namespace StAugustine.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Class @class = await db.Classes.FindAsync(id);
+            Class @class = await _db.Classes.FindAsync(id);
             if (@class == null)
             {
                 return HttpNotFound();
@@ -121,9 +157,11 @@ namespace StAugustine.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DeleteConfirmed(int id)
         {
-            Class @class = await db.Classes.FindAsync(id);
-            db.Classes.Remove(@class);
-            await db.SaveChangesAsync();
+            Class @class = await _db.Classes.FindAsync(id);
+            _db.Classes.Remove(@class);
+            await _db.SaveChangesAsync();
+            TempData["UserMessage"] = "Class Has Been Deleted";
+            TempData["Title"] = "Deleted.";
             return RedirectToAction("Index");
         }
 
@@ -131,7 +169,7 @@ namespace StAugustine.Controllers
         {
             if (disposing)
             {
-                db.Dispose();
+                _db.Dispose();
             }
             base.Dispose(disposing);
         }

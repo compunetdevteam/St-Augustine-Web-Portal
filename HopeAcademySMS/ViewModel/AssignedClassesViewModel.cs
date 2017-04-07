@@ -1,5 +1,4 @@
-﻿using StAugustine.Models;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace StAugustine.ViewModel
 {
@@ -17,7 +16,7 @@ namespace StAugustine.ViewModel
 
         [Display(Name = "Term Name")]
         [Required(ErrorMessage = "Term Name cannot be empty")]
-        public PopUp.Term TermName { get; set; }
+        public string TermName { get; set; }
 
         [Display(Name = "Session Name")]
         [Required(ErrorMessage = "Session Name cannot be empty")]

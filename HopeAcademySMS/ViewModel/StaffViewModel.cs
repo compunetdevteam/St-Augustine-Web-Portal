@@ -19,7 +19,7 @@ namespace StAugustine.ViewModel
         public string FirstName { get; set; }
 
         [Display(Name = "Middle Name")]
-        [Required(ErrorMessage = "Your Middle Name is required")]
+        //[Required(ErrorMessage = "Your Middle Name is required")]
         [StringLength(50, ErrorMessage = "Your Middle Name is too long")]
         public string MiddleName { get; set; }
 
@@ -29,7 +29,7 @@ namespace StAugustine.ViewModel
         public string LastName { get; set; }
 
         [Display(Name = "Mobile Number")]
-        [Required(ErrorMessage = "Enter the Correct Phone Number")]
+        //[Required(ErrorMessage = "Enter the Correct Phone Number")]
         [DataType(DataType.PhoneNumber)]
         public string PhoneNumber { get; set; }
 
@@ -44,27 +44,27 @@ namespace StAugustine.ViewModel
 
         [Display(Name = "Address")]
         [DataType(DataType.MultilineText)]
-        [Required(ErrorMessage = "Your Address is required")]
+        // [Required(ErrorMessage = "Your Address is required")]
         [StringLength(50, ErrorMessage = "Your Address name is too long")]
         public string Address { get; set; }
 
         public PopUp.State StateOfOrigin { get; set; }
 
         [Display(Name = "Designation")]
-        [Required(ErrorMessage = "Designation is required")]
+        // [Required(ErrorMessage = "Designation is required")]
         public string Designation { get; set; }
 
         [Display(Name = "Date of Birth")]
-        [Required(ErrorMessage = "Date of Birth is required")]
+        // [Required(ErrorMessage = "Date of Birth is required")]
         [DataType(DataType.Date)]
         public DateTime DateOfBirth { get; set; }
 
         [Display(Name = "Marital Status")]
-        [Required(ErrorMessage = "Marital Status is required")]
+        // [Required(ErrorMessage = "Marital Status is required")]
         public PopUp.Maritalstatus MaritalStatus { get; set; }
 
         [Display(Name = "Highest Qualification")]
-        [Required(ErrorMessage = "Highest Qualification  is required")]
+        //[Required(ErrorMessage = "Highest Qualification  is required")]
         public PopUp.Qualifications Qualifications { get; set; }
 
         [Required]
@@ -85,12 +85,10 @@ namespace StAugustine.ViewModel
 
         public byte[] StaffPassport { get; set; }
 
+        public string Username => $"{this.FirstName}_{this.LastName}";
 
-
-
-        public string Username => $"{this.FirstName} {this.LastName}";
-
-        [Display(Name = "Local file")]
+        [Display(Name = "Upload A Passport/Picture")]
+        [ValidateFile(ErrorMessage = "Please select a PNG/JPEG image smaller than 1MB")]
         [NotMapped]
         public HttpPostedFileBase File
         {
@@ -111,7 +109,8 @@ namespace StAugustine.ViewModel
                     value.InputStream.CopyTo(target);
                     StaffPassport = target.ToArray();
                 }
-                catch (Exception){
+                catch (Exception)
+                {
 
                     //logger.Error(ex.Message);
                     //logger.Error(ex.StackTrace);

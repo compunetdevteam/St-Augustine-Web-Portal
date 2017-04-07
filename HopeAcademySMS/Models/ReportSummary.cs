@@ -5,8 +5,8 @@ namespace StAugustine.Models
 {
     public class ReportSummary
     {
-        private ApplicationDbContext db = new ApplicationDbContext();
-        private GradeRemark myGradeRemark = new GradeRemark();
+        private readonly ApplicationDbContext _db = new ApplicationDbContext();
+        private readonly GradeRemark _myGradeRemark = new GradeRemark();
         private ReportSummary()
         {
 
@@ -21,14 +21,16 @@ namespace StAugustine.Models
                 ClassName = className;
                 SessionName = sessionName;
                 SubjectName = subjectCode;
-                FirstTermScore = GetFirstTermScore(studentId, sessionName, subjectCode);
-                FirstTermSubjectGrade = myGradeRemark.Grading(FirstTermScore);
+                FirstTermScore = GetFirstTermScore(studentId, sessionName, subjectCode, className);
 
-                SecondTermScore = GetSecondTermScore(studentId, sessionName, subjectCode);
-                SecondTermSubjectGrade = myGradeRemark.Grading(SecondTermScore);
 
-                ThirdTermScore = GetThirdTermScore(studentId, sessionName, subjectCode);
-                ThirdTermSubjectGrade = myGradeRemark.Grading(ThirdTermScore);
+                FirstTermSubjectGrade = _myGradeRemark.Grading(FirstTermScore, className).ToString();
+
+                SecondTermScore = GetSecondTermScore(studentId, sessionName, subjectCode, className);
+                SecondTermSubjectGrade = _myGradeRemark.Grading(SecondTermScore, className).ToString();
+
+                ThirdTermScore = GetThirdTermScore(studentId, sessionName, subjectCode, className);
+                ThirdTermSubjectGrade = _myGradeRemark.Grading(ThirdTermScore, className).ToString();
 
                 FindSubjectPositionForFirstTerm(studentId, subjectCode, className, sessionName);
                 FindSubjectPositionForSecondTerm(studentId, subjectCode, className, sessionName);
@@ -37,6 +39,10 @@ namespace StAugustine.Models
                 TotalScorePerStudent = SummaryTotalScorePerStudent(studentId, className, sessionName);
                 NoOfStudentPerClass = NumberOfStudentPerClass(className, sessionName);
                 NoOfSubjectOffered = SubjectOfferedByStudent(studentId);
+
+                FirstTermGpa = Math.Round(GetFirstTermGpa(studentId, sessionName, subjectCode, className), 2);
+                SecondTermGpa = Math.Round(GetSecondTermGpa(studentId, sessionName, subjectCode, className), 2);
+                ThirdTermGpa = Math.Round(GetThirdTermGpa(studentId, sessionName, subjectCode, className), 2);
 
 
                 ClassAverage = Math.Round(CalculateAverage(studentId, className, sessionName), 2);
@@ -64,14 +70,15 @@ namespace StAugustine.Models
                 SubjectName = subjectCode;
                 SessionName = sessionName;
 
-                FirstTermScore = GetFirstTermScore(studentId, sessionName, subjectCode);
-                FirstTermSubjectGrade = myGradeRemark.Grading(FirstTermScore);
+                FirstTermScore = GetFirstTermScore(studentId, sessionName, subjectCode, className);
 
-                SecondTermScore = GetSecondTermScore(studentId, sessionName, subjectCode);
-                SecondTermSubjectGrade = myGradeRemark.Grading(SecondTermScore);
+                FirstTermSubjectGrade = _myGradeRemark.Grading(FirstTermScore, ClassName).ToString();
 
-                ThirdTermScore = GetThirdTermScore(studentId, sessionName, subjectCode);
-                ThirdTermSubjectGrade = myGradeRemark.Grading(ThirdTermScore);
+                SecondTermScore = GetSecondTermScore(studentId, sessionName, subjectCode, className);
+                SecondTermSubjectGrade = _myGradeRemark.Grading(SecondTermScore, ClassName).ToString();
+
+                ThirdTermScore = GetThirdTermScore(studentId, sessionName, subjectCode, className);
+                ThirdTermSubjectGrade = _myGradeRemark.Grading(ThirdTermScore, ClassName).ToString();
 
                 FindSubjectPositionForFirstTerm(studentId, subjectCode, className, sessionName);
                 FindSubjectPositionForSecondTerm(studentId, subjectCode, className, sessionName);
@@ -117,17 +124,30 @@ namespace StAugustine.Models
         public int ThirdTermSubjectPosition { get; private set; }
         public string ThirdTermSubjectGrade { get; private set; }
 
-        public double SummaryTotal
+        public double FirstTermGpa { get; private set; }
+        public double SecondTermGpa { get; private set; }
+        public double ThirdTermGpa { get; private set; }
+
+        public double Cgpa
         {
             get
             {
-                double firstTerm = 0.3 * FirstTermScore;
-                double secondTerm = 0.3 * SecondTermScore;
-                double thirdTerm = 0.4 * ThirdTermScore;
-                return firstTerm + secondTerm + thirdTerm;
+                return Math.Round((FirstTermGpa + SecondTermGpa + ThirdTermGpa) / 3, 2);
             }
             private set { }
         }
+
+        //public double SummaryTotal
+        //{
+        //    get
+        //    {
+        //        double firstTerm = 0.3 * FirstTermScore;
+        //        double secondTerm = 0.3 * SecondTermScore;
+        //        double thirdTerm = 0.4 * ThirdTermScore;
+        //        return firstTerm + secondTerm + thirdTerm;
+        //    }
+        //    private set { }
+        //}
 
         public int WeightedScores
         {
@@ -144,7 +164,7 @@ namespace StAugustine.Models
         {
             get
             {
-                return myGradeRemark.Grading(SummaryTotal);
+                return _myGradeRemark.Grading(ClassAverage, ClassName).ToString();
             }
             private set { }
         }
@@ -154,7 +174,7 @@ namespace StAugustine.Models
         {
             get
             {
-                return myGradeRemark.Remark(SummaryTotal);
+                return _myGradeRemark.Remark(ClassAverage, ClassName).ToString();
             }
             private set { }
         }
@@ -172,36 +192,41 @@ namespace StAugustine.Models
 
 
         #region Getting score for each Term
-        private double GetFirstTermScore(string studentId, string sessionName, string subjectCode)
+        private double GetFirstTermScore(string studentId, string sessionName, string subjectCode, string className)
         {
+            return _db.ContinuousAssessments.Where(x => x.StudentId.Equals(studentId)
+                                                        && x.TermName.ToUpper().Equals("FIRST")
+                                                        && x.SessionName.Equals(sessionName)
+                                                        && x.ClassName.Equals(className)
+                                                        && x.SubjectCode.Equals(subjectCode))
+                                                        .Select(y => y.Total).FirstOrDefault();
 
-            var firstTermScore = db.SessionSubjectTotals.Where(x => x.StudentId.Equals(studentId)
-                                                                    && x.SessionName.Equals(sessionName)
-                                                                    && x.SubjectName.Equals(subjectCode))
-                                                                    .Select(c => c.FirstTermScore).FirstOrDefault();
-
-            return firstTermScore;
         }
 
-        private double GetSecondTermScore(string studentId, string sessionName, string subjectCode)
-        {
-            var secondTermScore = db.SessionSubjectTotals.Where(x => x.StudentId.Equals(studentId)
-                                                                    && x.SessionName.Equals(sessionName)
-                                                                    && x.SubjectName.Equals(subjectCode))
-                                                                    .Select(c => c.SecondTermScore).FirstOrDefault();
 
-            return secondTermScore;
+        private double GetSecondTermScore(string studentId, string sessionName, string subjectCode,
+            string className)
+        {
+            return _db.ContinuousAssessments.Where(x => x.StudentId.Equals(studentId)
+                                                       && x.TermName.ToUpper().Equals("SECOND")
+                                                       && x.SessionName.Equals(sessionName)
+                                                       && x.ClassName.Equals(className)
+                                                       && x.SubjectCode.Equals(subjectCode))
+                                                       .Select(y => y.Total).FirstOrDefault();
+
         }
 
-        private double GetThirdTermScore(string studentId, string sessionName, string subjectCode)
+
+        private double GetThirdTermScore(string studentId, string sessionName, string subjectCode,
+            string className)
         {
 
-            var thirdTermScore = db.SessionSubjectTotals.Where(x => x.StudentId.Equals(studentId)
-                                                                    && x.SessionName.Equals(sessionName)
-                                                                    && x.SubjectName.Equals(subjectCode))
-                                                                    .Select(c => c.ThirdTermScore).FirstOrDefault();
-
-            return thirdTermScore;
+            return _db.ContinuousAssessments.Where(x => x.StudentId.Equals(studentId)
+                                                        && x.TermName.ToUpper().Equals("THIRD")
+                                                        && x.SessionName.Equals(sessionName)
+                                                        && x.ClassName.Equals(className)
+                                                        && x.SubjectCode.Equals(subjectCode))
+                                                        .Select(y => y.Total).FirstOrDefault();
 
         }
         #endregion
@@ -209,7 +234,7 @@ namespace StAugustine.Models
 
         private double SummaryTotalScorePerStudent(string studentId, string className, string session)
         {
-            var summaryTotalSum = db.SessionSubjectTotals.Where(x => x.StudentId.Equals(studentId) && x.ClassName.Equals(className)
+            var summaryTotalSum = _db.SessionSubjectTotals.Where(x => x.StudentId.Equals(studentId) && x.ClassName.Equals(className)
                                                                && x.SessionName.Equals(session))
                                                                .Sum(y => y.WeightedScores);
             return summaryTotalSum;
@@ -217,7 +242,7 @@ namespace StAugustine.Models
 
         private int NumberOfStudentPerClass(string className, string session)
         {
-            var studentPerClass = db.AssignedClasses.Count(x => x.ClassName.Equals(className) &&
+            var studentPerClass = _db.AssignedClasses.Count(x => x.ClassName.Equals(className) &&
                                                                 x.TermName.Equals("Third") &&
                                                                 x.SessionName.Equals(session));
             return studentPerClass;
@@ -225,12 +250,12 @@ namespace StAugustine.Models
 
         private int SubjectOfferedByStudent(string studentId)
         {
-            var className = db.AssignedClasses.Where(x => x.StudentId.Equals(studentId) && x.TermName.Equals("Third"))
+            var className = _db.AssignedClasses.Where(x => x.StudentId.Equals(studentId) && x.TermName.Equals("Third"))
                                 .Select(y => y.ClassName)
                                 .FirstOrDefault();
 
 
-            var subjectPerStudent = db.AssignSubjects.Count(x => x.ClassName.Equals(className));
+            var subjectPerStudent = _db.AssignSubjects.Count(x => x.ClassName.Equals(className));
             return subjectPerStudent;
         }
 
@@ -288,7 +313,7 @@ namespace StAugustine.Models
         private void FindSubjectPositionForFirstTerm(string studentId, string subject, string className, string session)
         {
 
-            var mySubjectPosition = db.SessionSubjectTotals.Where(x => x.SubjectName.Equals(subject) &&
+            var mySubjectPosition = _db.SessionSubjectTotals.Where(x => x.SubjectName.Equals(subject) &&
                                                                             x.ClassName.Equals(className) &&
                                                                             x.SessionName.Equals(session));
             //.OrderByDescending(y => y.FirstTermScore);
@@ -311,7 +336,7 @@ namespace StAugustine.Models
 
         private void FindSubjectPositionForSecondTerm(string studentId, string subject, string className, string session)
         {
-            var mySubjectPosition = db.SessionSubjectTotals.Where(x => x.SubjectName.Equals(subject) &&
+            var mySubjectPosition = _db.SessionSubjectTotals.Where(x => x.SubjectName.Equals(subject) &&
                                                                         x.ClassName.Equals(className) &&
                                                                         x.SessionName.Equals(session));
             //.OrderByDescending(y => y.SecondTermScore);
@@ -333,7 +358,7 @@ namespace StAugustine.Models
 
         private void FindSubjectPositionForThirdTerm(string studentId, string subject, string className, string session)
         {
-            var mySubjectPosition = db.SessionSubjectTotals.Where(x => x.SubjectName.Equals(subject) &&
+            var mySubjectPosition = _db.SessionSubjectTotals.Where(x => x.SubjectName.Equals(subject) &&
                                                                         x.ClassName.Equals(className) &&
                                                                         x.SessionName.Equals(session));
             // .OrderByDescending(y => y.ThirdTermScore);
@@ -356,7 +381,7 @@ namespace StAugustine.Models
         #endregion
         private void FindAggregatePosition(string studentId, string className, string term, string session)
         {
-            var resultPosition = db.ReportSummarys.Where(x => x.StudentId.Equals(studentId)
+            var resultPosition = _db.ReportSummarys.Where(x => x.StudentId.Equals(studentId)
                                                                 && x.ClassName.Equals(className)
                                                                 && x.SessionName.Equals(session));
             //.OrderByDescending(y => y.WeightedScores);
@@ -413,6 +438,37 @@ namespace StAugustine.Models
         //    //db.Entry(grade).State = EntityState.Modified;
         //    //await db.SaveChangesAsync();
         //}
+
+
+
+        private double GetFirstTermGpa(string studentId, string sessionName, string subjectCode, string className)
+        {
+            return _db.Results.Where(x => x.StudentId.Equals(studentId)
+                                                         && x.Term.ToUpper().Equals("FIRST")
+                                                         && x.SessionName.Equals(sessionName)
+                                                         && x.ClassName.Equals(className))
+                                                    .Select(c => c.GPA).FirstOrDefault();
+
+        }
+        private double GetSecondTermGpa(string studentId, string sessionName, string subjectCode, string className)
+        {
+            return _db.Results.Where(x => x.StudentId.Equals(studentId)
+                                                         && x.Term.ToUpper().Equals("SECOND")
+                                                         && x.SessionName.Equals(sessionName)
+                                                         && x.ClassName.Equals(className))
+                                                    .Select(c => c.GPA).FirstOrDefault();
+
+        }
+
+        private double GetThirdTermGpa(string studentId, string sessionName, string subjectCode, string className)
+        {
+            return _db.Results.Where(x => x.StudentId.Equals(studentId)
+                                                         && x.Term.ToUpper().Equals("THIRD")
+                                                         && x.SessionName.Equals(sessionName)
+                                                         && x.ClassName.Equals(className))
+                                                    .Select(c => c.GPA).FirstOrDefault();
+
+        }
 
 
     }

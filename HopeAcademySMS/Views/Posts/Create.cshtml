@@ -25,10 +25,10 @@
 </div>
    
     <label>Body</label>
-    <textarea name="body" id="editor1" rows="10" cols="80" class="form-control" placeholder="The Body goes here...">@Model.Body</textarea>
-    <script>
+    <textarea name="body" id="ckeditor" class="form-control control-12-rows" placeholder="Enter text ...">@Model.Body</textarea>
+    @*<script>
         CKEDITOR.replace('editor1');
-    </script>
+    </script>*@
     <br />
     <input type="submit" name="submit" value="Submit" style="width: auto; font-weight: 600;" />
 </form>

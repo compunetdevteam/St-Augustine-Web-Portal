@@ -1,5 +1,6 @@
-﻿using StAugustine.Models;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Web.Mvc;
 
 namespace StAugustine.ViewModel
 {
@@ -10,7 +11,7 @@ namespace StAugustine.ViewModel
 
         [Display(Name = "Grade Name")]
         [Required(ErrorMessage = "Grade Name is required")]
-        public PopUp.Grade GradeName { get; set; }
+        public string GradeName { get; set; }
 
         [Display(Name = "Score for Minimum Value")]
         [Range(1, 100)]
@@ -31,8 +32,10 @@ namespace StAugustine.ViewModel
         [Required(ErrorMessage = "Remark is required")]
         public string Remark { get; set; }
 
-        [Display(Name = "Principal Remark")]
-        [Required(ErrorMessage = "Principal Remark is required")]
-        public string PrincipalRemark { get; set; }
+        [Display(Name = "School Remark")]
+        [Required(ErrorMessage = "Remark is required")]
+        public string[] ClassName { get; set; }
+
     }
+
 }

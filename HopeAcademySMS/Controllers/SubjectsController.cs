@@ -1,117 +1,131 @@
 ﻿using StAugustine.Models;
+using System;
 using System.Data.Entity;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 
-namespace StAugustine.Controllers
+namespace HopeAcademySMS.Controllers
 {
     public class SubjectsController : Controller
     {
         private ApplicationDbContext db = new ApplicationDbContext();
 
-        // GET: Courses
+        // GET: Subjects
         public async Task<ActionResult> Index()
         {
-            var subjectList = await db.Subjects.OrderByDescending(x => x.CourseCode).ToListAsync();
-            return View(subjectList);
+            return View(await db.Subjects.ToListAsync());
         }
 
-
-        // GET: Courses/Details/5
-        public async Task<ActionResult> Details(string id)
+        // GET: Subjects/Details/5
+        public async Task<ActionResult> Details(int? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Subject course = await db.Subjects.FindAsync(id);
-            if (course == null)
+            Subject subject = await db.Subjects.FindAsync(id);
+            if (subject == null)
             {
                 return HttpNotFound();
             }
-            return View(course);
+            return View(subject);
         }
 
-        // GET: Courses/Create
+        // GET: Subjects/Create
         public ActionResult Create()
         {
             return View();
         }
 
-        // POST: Courses/Create
+        // POST: Subjects/Create
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Create([Bind(Include = "CourseCode,CourseName,SubjectUnit")] Subject course)
+        public async Task<ActionResult> Create([Bind(Include = "SubjectId,CourseCode,CourseName,SubjectUnit")] Subject subject)
         {
             if (ModelState.IsValid)
             {
-                db.Subjects.Add(course);
-                await db.SaveChangesAsync();
+                try
+                {
+                    db.Subjects.Add(subject);
+                    await db.SaveChangesAsync();
+                }
+                catch (Exception e)
+                {
+                    TempData["UserMessage"] = "You have already Created this Subject Code";
+                    TempData["Title"] = "Error.";
+                    return View(subject);
+                }
+
+                TempData["UserMessage"] = "Subject Updated Successfully.";
+                TempData["Title"] = "Success.";
                 return RedirectToAction("Index");
             }
 
-            return View(course);
+            return View(subject);
         }
 
-        // GET: Courses/Edit/5
-        public async Task<ActionResult> Edit(string id)
+        // GET: Subjects/Edit/5
+        public async Task<ActionResult> Edit(int? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Subject course = await db.Subjects.FindAsync(id);
-            if (course == null)
+            Subject subject = await db.Subjects.FindAsync(id);
+            if (subject == null)
             {
                 return HttpNotFound();
             }
-            return View(course);
+            return View(subject);
         }
 
-        // POST: Courses/Edit/5
+        // POST: Subjects/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit([Bind(Include = "CourseCode,CourseName,SubjectUnit")] Subject course)
+        public async Task<ActionResult> Edit([Bind(Include = "SubjectId,CourseCode,CourseName,SubjectUnit")] Subject subject)
         {
             if (ModelState.IsValid)
             {
-                db.Entry(course).State = EntityState.Modified;
+                db.Entry(subject).State = EntityState.Modified;
                 await db.SaveChangesAsync();
+                await db.SaveChangesAsync();
+                TempData["UserMessage"] = "Subject Saved Updated Successfully.";
+                TempData["Title"] = "Success.";
                 return RedirectToAction("Index");
             }
-            return View(course);
+            return View(subject);
         }
 
-        // GET: Courses/Delete/5
-        public async Task<ActionResult> Delete(string id)
+        // GET: Subjects/Delete/5
+        public async Task<ActionResult> Delete(int? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Subject course = await db.Subjects.FindAsync(id);
-            if (course == null)
+            Subject subject = await db.Subjects.FindAsync(id);
+            if (subject == null)
             {
                 return HttpNotFound();
             }
-            return View(course);
+            return View(subject);
         }
 
-        // POST: Courses/Delete/5
+        // POST: Subjects/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> DeleteConfirmed(string id)
+        public async Task<ActionResult> DeleteConfirmed(int id)
         {
-            Subject course = await db.Subjects.FindAsync(id);
-            if (course != null)
-                db.Subjects.Remove(course);
+            Subject subject = await db.Subjects.FindAsync(id);
+            db.Subjects.Remove(subject);
             await db.SaveChangesAsync();
+            TempData["UserMessage"] = "Subject Deleted Successfully.";
+            TempData["Title"] = "Deleted.";
             return RedirectToAction("Index");
         }
 

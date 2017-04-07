@@ -1,4 +1,5 @@
 ﻿using StAugustine.Models;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace StAugustine.ViewModel
@@ -6,6 +7,11 @@ namespace StAugustine.ViewModel
     public class GuardianViewModel
     {
         public string GuardianId { get; set; }
+
+        //[Display(Name = "Student Id")]
+        //[Required(ErrorMessage = "Your StudentId is required")]
+        //[StringLength(40, ErrorMessage = "Your StudentId name is too long")]
+        //public string StudentId { get; set; }
 
         public PopUp.Salutation Salutation { get; set; }
 
@@ -32,7 +38,7 @@ namespace StAugustine.ViewModel
         [DataType(DataType.PhoneNumber)]
         public string PhoneNumber { get; set; }
 
-        [Required(AllowEmptyStrings = false)]
+        //[Required(AllowEmptyStrings = false)]
         [Display(Name = "Email")]
         [EmailAddress]
         public string Email { get; set; }
@@ -47,9 +53,10 @@ namespace StAugustine.ViewModel
         [Display(Name = "Occupation")]
         [Required(ErrorMessage = "Your Occupation is required")]
         public string Occupation { get; set; }
+        public DateTime DateOfBirth { get; set; }
 
         [Display(Name = "Relationship")]
-        [Required(ErrorMessage = "Your Next of kin's Relationship is required")]
+        [Required(ErrorMessage = "Your Relationship is required")]
         public PopUp.Relationship Relationship { get; set; }
 
         public string Username => FirstName + " " + LastName;

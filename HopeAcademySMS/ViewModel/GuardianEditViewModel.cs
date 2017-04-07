@@ -9,7 +9,7 @@ namespace StAugustine.ViewModel
 
         [Display(Name = "Student's Name")]
         [Required(ErrorMessage = "Student's Name is required")]
-        public string StudentId { get; set; }
+       // public string StudentId { get; set; }
 
         public PopUp.Salutation Salutation { get; set; }
 

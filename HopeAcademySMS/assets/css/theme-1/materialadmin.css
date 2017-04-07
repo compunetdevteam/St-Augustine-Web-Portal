@@ -1690,6 +1690,7 @@ body:not(.menubar-first) .menubar-fixed-panel {
   border-radius: 2px;
   padding: 2px 4px;
   font-size: 10px;
+  
 }
 .gui-controls li {
   list-style: none;
@@ -1958,6 +1959,7 @@ body:not(.menubar-first) .menubar-fixed-panel {
   margin: auto;
   line-height: 40px;
   width: 1em;
+  color: #95a2d6;
 }
 .gui-icon:hover {
   background-color: rgba(12, 12, 12, 0.07);

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNet.Identity;
+﻿using HopeAcademySMS.Services;
+using Microsoft.AspNet.Identity;
 using OfficeOpenXml;
 using PagedList;
 using StAugustine.Models;
@@ -17,11 +18,13 @@ namespace StAugustine.Controllers
 {
     public class ContinuousAssessmentsController : Controller
     {
-        private ApplicationDbContext db = new ApplicationDbContext();
+        private readonly ApplicationDbContext _db = new ApplicationDbContext();
 
         // GET: ContinuousAssessments
-        public ActionResult Index(string sortOrder, string currentFilter, string search, int? page)
+        public async Task<ActionResult> Index(string sortOrder, string currentFilter, string search, int? page,
+            string SubjectCode, string ClassName, string TermName, string SessionName)
         {
+            int count = 10;
             ViewBag.NameSortParm = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
             if (search != null)
             {
@@ -33,93 +36,87 @@ namespace StAugustine.Controllers
                 search = currentFilter;
             }
             ViewBag.CurrentFilter = search;
-            var assignedList = from s in db.ContinuousAssessments select s;
-            if (!String.IsNullOrEmpty(search))
+            var assignedList = from s in _db.ContinuousAssessments select s;
+            if (User.IsInRole("Teacher"))
             {
-                assignedList = assignedList.Where(s => s.StudentId.ToUpper().Contains(search.ToUpper())
-                                                     || s.ClassName.ToUpper().Contains(search.ToUpper())
-                                                     || s.TermName.ToUpper().Contains(search.ToUpper()));
+                string name = User.Identity.GetUserName();
+                //var user = db.Guardians.Where(c => c.UserName.Equals(name)).Select(s => s.Email).FirstOrDefault();
+
+                assignedList = assignedList.AsNoTracking().Where(x => x.StaffName.Equals(name));
+
+                //return View(subjectName);
+            }
+            else
+            {
+                if (!String.IsNullOrEmpty(search))
+                {
+                    assignedList = assignedList.AsNoTracking().Where(s => s.StudentId.ToUpper().Contains(search.ToUpper())
+                                                                 || s.ClassName.ToUpper().Contains(search.ToUpper())
+                                                                 || s.TermName.ToUpper().Contains(search.ToUpper()));
+
+                }
+                else if (!String.IsNullOrEmpty(SubjectCode) && (!String.IsNullOrEmpty(ClassName)
+                       && !String.IsNullOrEmpty(SessionName) && !String.IsNullOrEmpty(TermName)))
+                {
+                    assignedList = assignedList.AsNoTracking().Where(s => s.SubjectCode.ToUpper().Equals(SubjectCode.ToUpper())
+                                               && s.ClassName.ToUpper().Equals(ClassName.ToUpper())
+                                               && s.TermName.ToUpper().Equals(TermName.ToUpper())
+                                               && s.SessionName.ToUpper().Equals(SessionName))
+                                               .OrderBy(c => c.StudentId);
+                    int myCount = await assignedList.CountAsync();
+                    if (myCount != 0)
+                    {
+                        count = myCount;
+                    }
+                }
+                else if (!String.IsNullOrEmpty(SubjectCode) || (!String.IsNullOrEmpty(ClassName)
+                                                                || !String.IsNullOrEmpty(SessionName) ||
+                                                                !String.IsNullOrEmpty(TermName)))
+                {
+                    assignedList = assignedList.AsNoTracking().Where(s => s.SubjectCode.ToUpper().Equals(SubjectCode.ToUpper())
+                                                           || s.ClassName.ToUpper().Equals(ClassName.ToUpper())
+                                                           || s.TermName.ToUpper().Equals(TermName.ToUpper())
+                                                           || s.SessionName.ToUpper().Equals(SessionName));
+                }
 
             }
+
+
             switch (sortOrder)
             {
                 case "name_desc":
-                    assignedList = assignedList.OrderByDescending(s => s.StudentId);
+                    assignedList = assignedList.AsNoTracking().OrderByDescending(s => s.StudentId);
                     break;
                 case "Date":
-                    assignedList = assignedList.OrderBy(s => s.SessionName);
+                    assignedList = assignedList.AsNoTracking().OrderBy(s => s.SessionName);
                     break;
                 default:
-                    assignedList = assignedList.OrderBy(s => s.ClassName);
+                    assignedList = assignedList.AsNoTracking().OrderBy(s => s.ClassName);
                     break;
             }
-            int pageSize = 10;
+            // ViewBag.SubjectCode = new SelectList(db.Subjects, "CourseName", "CourseName");
+            ViewBag.TermName = new SelectList(_db.Terms.AsNoTracking(), "TermName", "TermName");
+            ViewBag.SessionName = new SelectList(_db.Sessions.AsNoTracking(), "SessionName", "SessionName");
+
+            if (User.IsInRole("Teacher"))
+            {
+                string name = User.Identity.GetUserName();
+                var subjectList = _db.AssignSubjectTeachers.AsNoTracking().Where(x => x.StaffName.Equals(name));
+                ViewBag.SubjectCode = new SelectList(subjectList.AsNoTracking(), "SubjectName", "SubjectName");
+                ViewBag.ClassName = new SelectList(subjectList.AsNoTracking(), "ClassName", "ClassName");
+            }
+            else
+            {
+                ViewBag.ClassName = new SelectList(_db.Classes.AsNoTracking(), "FullClassName", "FullClassName");
+                ViewBag.SubjectCode = new SelectList(_db.Subjects.AsNoTracking(), "CourseName", "CourseName");
+            }
+            int pageSize = count;
             int pageNumber = (page ?? 1);
-            ViewBag.SubjectCode = new SelectList(db.Subjects, "CourseName", "CourseName");
-            ViewBag.StudentId = new SelectList(db.Students, "StudentID", "FullName");
-            ViewBag.SessionName = new SelectList(db.Sessions, "SessionName", "SessionName");
-            ViewBag.ClassName = new SelectList(db.Classes, "FullClassName", "FullClassName");
             return View(assignedList.ToPagedList(pageNumber, pageSize));
             //return View(await db.ContinuousAssessments.ToListAsync());
         }
 
 
-
-        [HttpPost]
-        public ActionResult CAQuery(string SubjectCode, string ClassName, string term,
-                                        string SessionName, int? page, string sortOrder, string currentFilter)
-        {
-            ViewBag.NameSortParm = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
-            if (SubjectCode != null && ClassName != null && term != null && SessionName != null)
-            {
-                page = 1;
-            }
-            else
-            {
-                //search = currentFilter;
-            }
-            //.CurrentFilter = search;
-            var caList = from s in db.ContinuousAssessments select s;
-
-            if (!String.IsNullOrEmpty(SubjectCode) && (!String.IsNullOrEmpty(ClassName)
-                    && !String.IsNullOrEmpty(SessionName) && !String.IsNullOrEmpty(term)))
-            {
-                caList = caList.Where(s => s.SubjectCode.ToUpper().Equals(SubjectCode.ToUpper())
-                                           && s.ClassName.ToUpper().Equals(ClassName.ToUpper())
-                                           && s.TermName.ToUpper().Equals(term.ToUpper())
-                                           && s.SessionName.ToUpper().Equals(SessionName))
-                                           .OrderBy(c => c.StudentId);
-
-            }
-            else
-            {
-                caList = caList.Where(s => s.SubjectCode.ToUpper().Equals(SubjectCode.ToUpper())
-                                          || s.ClassName.ToUpper().Equals(ClassName.ToUpper())
-                                          || s.TermName.ToUpper().Equals(term.ToUpper())
-                                          || s.SessionName.ToUpper().Equals(SessionName));
-            }
-
-            var pageCount = caList.Count();
-            switch (sortOrder)
-            {
-                case "name_desc":
-                    caList = caList.OrderByDescending(s => s.Total);
-                    break;
-                case "Date":
-                    caList = caList.OrderBy(s => s.SessionName);
-                    break;
-                default:
-                    caList = caList.OrderBy(s => s.TermName);
-                    break;
-            }
-            int pageSize = pageCount;
-            int pageNumber = (page ?? 1);
-            ViewBag.SubjectCode = new SelectList(db.Subjects, "CourseCode", "CourseName");
-            ViewBag.StudentId = new SelectList(db.Students, "StudentID", "FullName");
-            ViewBag.SessionName = new SelectList(db.Sessions, "SessionName", "SessionName");
-            ViewBag.ClassName = new SelectList(db.Classes, "FullClassName", "FullClassName");
-            return View(caList.ToPagedList(pageNumber, pageSize));
-        }
         // GET: ContinuousAssessments/Details/5
         public async Task<ActionResult> Details(int? id)
         {
@@ -127,7 +124,7 @@ namespace StAugustine.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            ContinuousAssessment continuousAssessment = await db.ContinuousAssessments.FindAsync(id);
+            ContinuousAssessment continuousAssessment = await _db.ContinuousAssessments.FindAsync(id);
             if (continuousAssessment == null)
             {
                 return HttpNotFound();
@@ -138,11 +135,21 @@ namespace StAugustine.Controllers
         // GET: ContinuousAssessments/Create
         public ActionResult Create()
         {
-            ViewBag.SubjectCode = new SelectList(db.Subjects, "CourseName", "CourseName");
-            ViewBag.StudentId = new SelectList(db.Students, "StudentID", "FullName");
-            ViewBag.SessionName = new SelectList(db.Sessions, "SessionName", "SessionName");
-            ViewBag.ClassName = new SelectList(db.Classes, "FullClassName", "FullClassName");
+            ViewBag.StudentId = new SelectList(_db.Students.AsNoTracking(), "StudentID", "FullName");
+            ViewBag.SessionName = new SelectList(_db.Sessions.AsNoTracking(), "SessionName", "SessionName");
+            ViewBag.ClassName = new SelectList(_db.Classes.AsNoTracking(), "FullClassName", "FullClassName");
+            ViewBag.TermName = new SelectList(_db.Terms.AsNoTracking(), "TermName", "TermName");
             ViewBag.StaffName = User.Identity.GetUserName();
+            if (User.IsInRole("Teacher"))
+            {
+                string name = User.Identity.GetUserName();
+                var assignedList = _db.AssignSubjectTeachers.Where(x => x.StaffName.Equals(name));
+                ViewBag.SubjectCode = new SelectList(assignedList.AsNoTracking(), "SubjectName", "SubjectName");
+            }
+            else
+            {
+                ViewBag.SubjectCode = new SelectList(_db.Subjects.AsNoTracking(), "CourseName", "CourseName");
+            }
             return View();
         }
 
@@ -163,15 +170,22 @@ namespace StAugustine.Controllers
                 //var student = db.AssignedClasses.Where(x => x.ClassName.Equals(model.ClassName)
                 //                                               && x.TermName.Contains(model.TermName.ToString())
                 //                                               && x.SessionName.Equals(model.SessionName));
-                var CA = db.ContinuousAssessments.Where(x => x.ClassName.Equals(model.ClassName)
+                var CA = _db.ContinuousAssessments.AsNoTracking().Where(x => x.ClassName.Equals(model.ClassName)
                                                                   && x.TermName.Contains(model.TermName.ToString())
                                                                   && x.SessionName.Equals(model.SessionName)
                                                                   && x.StudentId.Equals(model.StudentId)
                                                                   && x.SubjectCode.Equals(model.SubjectCode));
-                var countFromDb = CA.Count();
+                var countFromDb = await CA.CountAsync();
                 if (countFromDb >= 1)
                 {
-                    return View("Error2");
+                    ViewBag.SubjectCode = new SelectList(_db.Subjects.AsNoTracking(), "CourseName", "CourseName");
+                    ViewBag.StudentId = new SelectList(_db.Students.AsNoTracking(), "StudentID", "FullName");
+                    ViewBag.SessionName = new SelectList(_db.Sessions.AsNoTracking(), "SessionName", "SessionName");
+                    ViewBag.ClassName = new SelectList(_db.Classes.AsNoTracking(), "FullClassName", "FullClassName");
+                    ViewBag.TermName = new SelectList(_db.Terms.AsNoTracking(), "TermName", "TermName");
+                    TempData["UserMessage"] = "Record Already Exist in Database.";
+                    TempData["Title"] = "Error.";
+                    return View(model);
                 }
                 else
                 {
@@ -179,26 +193,28 @@ namespace StAugustine.Controllers
                     {
                         StudentId = model.StudentId,
                         SubjectCode = model.SubjectCode,
-                        Assignment1 = model.Assignment1,
-                        Assignment2 = model.Assignment2,
-                        FirstTest = model.FirstTest,
-                        SecondTest = model.SecondTest,
+                        ProjectScore = model.ProjectScore,
+                        Assignment = model.Assignment,
+                        Test = model.Test,
                         ExamScore = model.ExamScore,
-                        TermName = model.TermName.ToString(),
+                        TermName = model.TermName,
                         SessionName = model.SessionName,
                         ClassName = model.ClassName,
                         StaffName = model.StaffName
                         //SubjectCategory = mysubjectCategory
                     };
-                    db.ContinuousAssessments.Add(myContinuousAssessment);
+                    _db.ContinuousAssessments.Add(myContinuousAssessment);
                 }
-                await db.SaveChangesAsync();
+                await _db.SaveChangesAsync();
+                TempData["UserMessage"] = "Continuous Assessment Added Successfully.";
+                TempData["Title"] = "Success.";
                 return RedirectToAction("Index");
             }
-            ViewBag.SubjectCode = new SelectList(db.Subjects, "CourseName", "CourseName");
-            ViewBag.StudentId = new SelectList(db.Students, "StudentID", "FullName");
-            ViewBag.SessionName = new SelectList(db.Sessions, "SessionName", "SessionName");
-            ViewBag.ClassName = new SelectList(db.Classes, "FullClassName", "FullClassName");
+            ViewBag.SubjectCode = new SelectList(_db.Subjects.AsNoTracking(), "CourseName", "CourseName");
+            ViewBag.StudentId = new SelectList(_db.Students.AsNoTracking(), "StudentID", "FullName");
+            ViewBag.SessionName = new SelectList(_db.Sessions.AsNoTracking(), "SessionName", "SessionName");
+            ViewBag.ClassName = new SelectList(_db.Classes.AsNoTracking(), "FullClassName", "FullClassName");
+            ViewBag.TermName = new SelectList(_db.Terms.AsNoTracking(), "TermName", "TermName");
             ViewBag.StaffName = User.Identity.GetUserName();
 
             return View(model);
@@ -211,24 +227,24 @@ namespace StAugustine.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            ContinuousAssessment continuousAssessment = await db.ContinuousAssessments.FindAsync(id);
+            ContinuousAssessment continuousAssessment = await _db.ContinuousAssessments.FindAsync(id);
             if (continuousAssessment == null)
             {
                 return HttpNotFound();
             }
-            ViewBag.SubjectCode = new SelectList(db.Subjects, "CourseName", "CourseName");
-            ViewBag.StudentId = new SelectList(db.Students, "StudentID", "FullName");
-            ViewBag.SessionName = new SelectList(db.Sessions, "SessionName", "SessionName");
-            ViewBag.ClassName = new SelectList(db.Classes, "FullClassName", "FullClassName");
+            ViewBag.SubjectCode = new SelectList(_db.Subjects.AsNoTracking(), "CourseName", "CourseName");
+            ViewBag.StudentId = new SelectList(_db.Students.AsNoTracking(), "StudentID", "FullName");
+            ViewBag.SessionName = new SelectList(_db.Sessions.AsNoTracking(), "SessionName", "SessionName");
+            ViewBag.ClassName = new SelectList(_db.Classes.AsNoTracking(), "FullClassName", "FullClassName");
+            ViewBag.TermName = new SelectList(_db.Terms.AsNoTracking(), "TermName", "TermName");
             ViewBag.StaffName = User.Identity.GetUserName();
             ContinuousAssesmentViewModel model = new ContinuousAssesmentViewModel()
             {
                 ContinuousAssessmentId = continuousAssessment.ContinuousAssessmentId,
                 StudentId = continuousAssessment.StudentId,
-                Assignment1 = continuousAssessment.Assignment1,
-                Assignment2 = continuousAssessment.Assignment2,
-                FirstTest = continuousAssessment.FirstTest,
-                SecondTest = continuousAssessment.SecondTest,
+                ProjectScore = continuousAssessment.ProjectScore,
+                Assignment = continuousAssessment.Assignment,
+                Test = continuousAssessment.Test,
                 ExamScore = continuousAssessment.ExamScore
             };
             return View(model);
@@ -248,10 +264,9 @@ namespace StAugustine.Controllers
                     ContinuousAssessmentId = model.ContinuousAssessmentId,
                     StudentId = model.StudentId,
                     SubjectCode = model.SubjectCode,
-                    Assignment1 = model.Assignment1,
-                    Assignment2 = model.Assignment2,
-                    FirstTest = model.FirstTest,
-                    SecondTest = model.SecondTest,
+                    ProjectScore = model.ProjectScore,
+                    Assignment = model.Assignment,
+                    Test = model.Test,
                     ExamScore = model.ExamScore,
                     TermName = model.TermName.ToString(),
                     SessionName = model.SessionName,
@@ -259,15 +274,18 @@ namespace StAugustine.Controllers
                     StaffName = model.StaffName
                     //SubjectCategory = mysubjectCategory
                 };
-               // db.ContinuousAssessments.Add(myContinuousAssessment);
-                db.Entry(myContinuousAssessment).State = EntityState.Modified;
-                await db.SaveChangesAsync();
+                // db.ContinuousAssessments.Add(myContinuousAssessment);
+                _db.Entry(myContinuousAssessment).State = EntityState.Modified;
+                await _db.SaveChangesAsync();
+                TempData["UserMessage"] = "Continuous Assessment Updated Successfully.";
+                TempData["Title"] = "Success.";
                 return RedirectToAction("Index");
             }
-            ViewBag.SubjectCode = new SelectList(db.Subjects, "CourseName", "CourseName");
-            ViewBag.StudentId = new SelectList(db.Students, "StudentID", "FullName");
-            ViewBag.SessionName = new SelectList(db.Sessions, "SessionName", "SessionName");
-            ViewBag.ClassName = new SelectList(db.Classes, "FullClassName", "FullClassName");
+            ViewBag.SubjectCode = new SelectList(_db.Subjects.AsNoTracking(), "CourseName", "CourseName");
+            ViewBag.StudentId = new SelectList(_db.Students.AsNoTracking(), "StudentID", "FullName");
+            ViewBag.SessionName = new SelectList(_db.Sessions.AsNoTracking(), "SessionName", "SessionName");
+            ViewBag.ClassName = new SelectList(_db.Classes.AsNoTracking(), "FullClassName", "FullClassName");
+            ViewBag.TermName = new SelectList(_db.Terms.AsNoTracking(), "TermName", "TermName");
             ViewBag.StaffName = User.Identity.GetUserName();
             return View(model);
         }
@@ -279,7 +297,7 @@ namespace StAugustine.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            ContinuousAssessment continuousAssessment = await db.ContinuousAssessments.FindAsync(id);
+            ContinuousAssessment continuousAssessment = await _db.ContinuousAssessments.FindAsync(id);
             if (continuousAssessment == null)
             {
                 return HttpNotFound();
@@ -292,9 +310,9 @@ namespace StAugustine.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DeleteConfirmed(int id)
         {
-            ContinuousAssessment continuousAssessment = await db.ContinuousAssessments.FindAsync(id);
-            db.ContinuousAssessments.Remove(continuousAssessment);
-            await db.SaveChangesAsync();
+            ContinuousAssessment continuousAssessment = await _db.ContinuousAssessments.FindAsync(id);
+            if (continuousAssessment != null) _db.ContinuousAssessments.Remove(continuousAssessment);
+            await _db.SaveChangesAsync();
             return RedirectToAction("Index");
         }
 
@@ -302,7 +320,7 @@ namespace StAugustine.Controllers
         {
             if (disposing)
             {
-                db.Dispose();
+                _db.Dispose();
             }
             base.Dispose(disposing);
         }
@@ -319,13 +337,16 @@ namespace StAugustine.Controllers
             if (excelfile == null || excelfile.ContentLength == 0)
             {
                 ViewBag.Error = "Please Select a excel file <br/>";
-                return View("Index");
+                return View();
             }
             else
             {
                 HttpPostedFileBase file = Request.Files["excelfile"];
                 if (excelfile.FileName.EndsWith("xls") || excelfile.FileName.EndsWith("xlsx"))
                 {
+                    string lastrecord = "";
+                    int recordCount = 0;
+                    string message = "";
                     string fileContentType = file.ContentType;
                     byte[] fileBytes = new byte[file.ContentLength];
                     var data = file.InputStream.Read(fileBytes, 0, Convert.ToInt32(file.ContentLength));
@@ -335,29 +356,50 @@ namespace StAugustine.Controllers
                         var currentSheet = package.Workbook.Worksheets;
                         foreach (var sheet in currentSheet)
                         {
+                            ExcelValidation myExcel = new ExcelValidation();
                             //var workSheet = currentSheet.First();
                             var noOfCol = sheet.Dimension.End.Column;
                             var noOfRow = sheet.Dimension.End.Row;
+                            int requiredField = 10;
+
+                            string validCheck = myExcel.ValidateExcel(noOfRow, sheet, requiredField);
+                            if (!validCheck.Equals("Success"))
+                            {
+                                //string row = "";
+                                //string column = "";
+                                string[] ssizes = validCheck.Split(' ');
+                                string[] myArray = new string[2];
+                                for (int i = 0; i < ssizes.Length; i++)
+                                {
+                                    myArray[i] = ssizes[i];
+                                    // myArray[i] = ssizes[];
+                                }
+                                string lineError = $"Please Check sheet {sheet}, Line/Row number {myArray[0]}  and column {myArray[1]} is not rightly formatted, Please Check for anomalies ";
+                                //ViewBag.LineError = lineError;
+                                TempData["UserMessage"] = lineError;
+                                TempData["Title"] = "Error.";
+                                return View();
+                            }
 
                             for (int row = 2; row <= noOfRow; row++)
                             {
-                                string subjectValue = sheet.Cells[row, 2].Value.ToString();
-                                string studentId = sheet.Cells[row, 1].Value.ToString();
-                                string termName = sheet.Cells[row, 8].Value.ToString();
-                                string className = sheet.Cells[row, 11].Value.ToString();
-                                string sessionName = sheet.Cells[row, 9].Value.ToString();
+                                string studentId = sheet.Cells[row, 1].Value.ToString().ToUpper().Trim();
+                                string subjectValue = sheet.Cells[row, 2].Value.ToString().ToUpper().Trim();
+                                string termName = sheet.Cells[row, 7].Value.ToString().Trim().ToUpper();
+                                string className = sheet.Cells[row, 10].Value.ToString().Trim().ToUpper();
+                                string sessionName = sheet.Cells[row, 8].Value.ToString().Trim();
 
                                 //var mysubjectCategory = db.Subjects.Where(x => x.CourseCode.Equals(subjectValue))
                                 //    .Select(c => c.CategoriesId).FirstOrDefault();
-                                var subjectName = db.Subjects.Where(x => x.CourseCode.Equals(subjectValue))
+                                var subjectName = _db.Subjects.Where(x => x.CourseCode.Equals(subjectValue))
                                     .Select(c => c.CourseName).FirstOrDefault();
 
-                                var CA = db.ContinuousAssessments.Where(x => x.ClassName.Equals(className)
+                                var CA = _db.ContinuousAssessments.Where(x => x.ClassName.Equals(className)
                                                                              && x.TermName.Contains(termName)
                                                                              && x.SessionName.Equals(sessionName)
                                                                              && x.StudentId.Equals(studentId)
                                                                              && x.SubjectCode.Equals(subjectName));
-                                var countFromDb = CA.Count();
+                                var countFromDb = await CA.CountAsync();
                                 if (countFromDb >= 1)
                                 {
                                     return View("Error2");
@@ -368,30 +410,50 @@ namespace StAugustine.Controllers
                                     {
                                         StudentId = studentId,
                                         SubjectCode = subjectName,
-                                        Assignment1 = double.Parse(sheet.Cells[row, 3].Value.ToString()),
-                                        Assignment2 = double.Parse(sheet.Cells[row, 4].Value.ToString()),
-                                        FirstTest = double.Parse(sheet.Cells[row, 5].Value.ToString()),
-                                        SecondTest = double.Parse(sheet.Cells[row, 6].Value.ToString()),
-                                        ExamScore = double.Parse(sheet.Cells[row, 7].Value.ToString()),
+                                        ProjectScore = double.Parse(sheet.Cells[row, 3].Value.ToString().Trim()),
+                                        Assignment = double.Parse(sheet.Cells[row, 4].Value.ToString().Trim()),
+                                        Test = double.Parse(sheet.Cells[row, 5].Value.ToString().Trim()),
+                                        ExamScore = double.Parse(sheet.Cells[row, 6].Value.ToString().Trim()),
                                         TermName = termName,
                                         SessionName = sessionName,
-                                        StaffName = sheet.Cells[row, 10].Value.ToString(),
+                                        StaffName = sheet.Cells[row, 9].Value.ToString().Trim().ToUpper(),
                                         ClassName = className,
                                         //SubjectCategory = mysubjectCategory
                                     };
-                                    db.ContinuousAssessments.Add(mycontinuousAssessment);
+                                    _db.ContinuousAssessments.Add(mycontinuousAssessment);
+
+                                    recordCount++;
+                                    lastrecord = $"The last Updated record has the Student Id {studentId} and Subject Name is {subjectName}. Please Confirm!!!";
                                 }
 
                             }
                         }
                     }
-                    await db.SaveChangesAsync();
-                    return View("Success");
+                    await _db.SaveChangesAsync();
+                    message = $"You have successfully Uploaded {recordCount} records...  and {lastrecord}";
+                    TempData["UserMessage"] = message;
+                    TempData["Title"] = "Success.";
+                    ViewBag.TermName = new SelectList(_db.Terms.AsNoTracking(), "TermName", "TermName");
+                    ViewBag.SessionName = new SelectList(_db.Sessions.AsNoTracking(), "SessionName", "SessionName");
+
+                    if (User.IsInRole("Teacher"))
+                    {
+                        string name = User.Identity.GetUserName();
+                        var subjectList = _db.AssignSubjectTeachers.AsNoTracking().Where(x => x.StaffName.Equals(name));
+                        ViewBag.SubjectCode = new SelectList(subjectList.AsNoTracking(), "SubjectName", "SubjectName");
+                        ViewBag.ClassName = new SelectList(subjectList.AsNoTracking(), "ClassName", "ClassName");
+                    }
+                    else
+                    {
+                        ViewBag.ClassName = new SelectList(_db.Classes.AsNoTracking(), "FullClassName", "FullClassName");
+                        ViewBag.SubjectCode = new SelectList(_db.Subjects.AsNoTracking(), "CourseName", "CourseName");
+                    }
+                    return View();
                 }
                 else
                 {
                     ViewBag.Error = "File type is Incorrect <br/>";
-                    return View("Index");
+                    return View();
                 }
             }
 

@@ -33,8 +33,9 @@ namespace StAugustine.Controllers
         public ActionResult SendSMS()
         {
             //SMS sms = new SMS();
-            ViewBag.Session = new SelectList(db.Sessions, "SessionName", "SessionName");
-            ViewBag.ClassName = new SelectList(db.Classes, "FullClassName", "FullClassName");
+            ViewBag.Term = new SelectList(db.Terms.AsNoTracking(), "TermName", "TermName");
+            ViewBag.Session = new SelectList(db.Sessions.AsNoTracking(), "SessionName", "SessionName");
+            ViewBag.ClassName = new SelectList(db.Classes.AsNoTracking(), "FullClassName", "FullClassName");
             return View();
         }
 
@@ -50,18 +51,18 @@ namespace StAugustine.Controllers
                                                                 .Select(y => y.StudentId).ToList();
                 foreach (var student in studentList)
                 {
-                    var guardianList = db.Students.Where(x => x.StudentId.Equals(student))
-                                                    .Select(y => y.GuardianEmail).ToList();
-                    foreach (var guardian in guardianList)
+                    var guardianNumber =
+                        db.Students.Where(s => s.StudentId.Equals(student)).Select(x => x.GuardianEmail).ToList();
+                    foreach (var guardian in guardianNumber)
                     {
-                        var guardianContact = db.Guardians.Where(x => x.GuardianEmail.Equals(guardian))
-                                                .Select(y => y.PhoneNumber).FirstOrDefault();
+                        //var guardianContact = db.Guardians.Where(x => x.GuardianEmail.Equals(guardian))
+                        //                        .Select(y => y.PhoneNumber).FirstOrDefault();
 
                         SMS sms = new SMS()
                         {
                             SenderId = model.SenderId,
                             Message = model.Message,
-                            Numbers = guardianContact
+                            Numbers = guardian
                         };
                         try
                         {
@@ -149,59 +150,59 @@ namespace StAugustine.Controllers
         public ActionResult SendtoAllStudent()
         {
             //SMS sms = new SMS();
-            ViewBag.Session = new SelectList(db.Sessions, "SessionName", "SessionName");
+            ViewBag.Session = new SelectList(db.Sessions.AsNoTracking(), "SessionName", "SessionName");
+            ViewBag.Term = new SelectList(db.Terms.AsNoTracking(), "TermName", "TermName");
             return View();
         }
+
         [HttpPost]
         public ActionResult SendtoAllStudent(SendToAllViewModel model)
         {
 
             if (ModelState.IsValid)
             {
-                var studentList = db.AssignedClasses.Where(x => x.TermName.Equals(model.Term.ToString()) &&
-                                                                x.SessionName.Equals(model.Session))
-                                                                .Select(y => y.StudentId).ToList();
+                var studentList = db.Students.Where(x => x.Active.Equals(true) &&
+                                                         x.IsGraduated.Equals(false))
+                    .Select(y => y.GuardianEmail).ToList();
                 foreach (var student in studentList)
                 {
-                    var guardianList = db.Students.Where(x => x.StudentId.Equals(student))
-                                                    .Select(y => y.GuardianEmail).ToList();
-                    foreach (var guardian in guardianList)
+                    //var guardianList = db.Guardians.Where(x => x.StudentId.Equals(student))
+                    //                                .Select(y => y.GuardianEmail).ToList();
+                    //foreach (var guardian in guardianList)
+                    //{
+                    //    var guardianContact = db.Guardians.Where(x => x.GuardianEmail.Equals(guardian))
+                    //                            .Select(y => y.PhoneNumber).FirstOrDefault();
+
+                    SMS sms = new SMS()
                     {
-                        var guardianContact = db.Guardians.Where(x => x.GuardianEmail.Equals(guardian))
-                                                .Select(y => y.PhoneNumber).FirstOrDefault();
+                        SenderId = model.SenderId,
+                        Message = model.Message,
+                        Numbers = student
+                    };
+                    try
+                    {
+                        bool isSuccess = false;
+                        string errMsg = null;
+                        string response = _smsService.Send(sms); //Send sms
 
-                        SMS sms = new SMS()
+                        string code = _smsService.GetResponseMessage(response, out isSuccess, out errMsg);
+
+                        if (!isSuccess)
                         {
-                            SenderId = model.SenderId,
-                            Message = model.Message,
-                            Numbers = guardianContact
-                        };
-                        try
-                        {
-                            bool isSuccess = false;
-                            string errMsg = null;
-                            string response = _smsService.Send(sms); //Send sms
-
-                            string code = _smsService.GetResponseMessage(response, out isSuccess, out errMsg);
-
-                            if (!isSuccess)
-                            {
-                                ModelState.AddModelError("", errMsg);
-                            }
-                            else
-                            {
-                                ViewBag.Message = "Message was successfully sent.";
-                            }
+                            ModelState.AddModelError("", errMsg);
                         }
-                        catch (Exception ex)
+                        else
                         {
-                            ModelState.AddModelError("", ex.Message);
+                            ViewBag.Message = "Message was successfully sent.";
                         }
                     }
-
+                    catch (Exception ex)
+                    {
+                        ModelState.AddModelError("", ex.Message);
+                    }
                 }
-            }
 
+            }
             return View(model);
         }
     }

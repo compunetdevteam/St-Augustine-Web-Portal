@@ -1,4 +1,5 @@
-﻿using PagedList;
+﻿using Microsoft.AspNet.Identity;
+using PagedList;
 using StAugustine.Models;
 using StAugustine.ViewModel;
 using System;
@@ -12,10 +13,11 @@ namespace StAugustine.Controllers
 {
     public class AssignedClassesController : Controller
     {
-        private ApplicationDbContext db = new ApplicationDbContext();
+        private readonly ApplicationDbContext _db = new ApplicationDbContext();
 
         // GET: AssignedClasses
-        public ActionResult Index(string sortOrder, string currentFilter, string search, int? page)
+        public ActionResult Index(string sortOrder, string currentFilter, string search,
+                                        string SessionName, string ClassName, string TermName, int? page)
         {
             ViewBag.NameSortParm = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
             if (search != null)
@@ -27,30 +29,65 @@ namespace StAugustine.Controllers
             {
                 search = currentFilter;
             }
+            int pageSize = 15;
             ViewBag.CurrentFilter = search;
-            var assignedList = from s in db.AssignedClasses select s;
-            if (!String.IsNullOrEmpty(search))
+            var assignedList = from s in _db.AssignedClasses select s;
+            if (User.IsInRole("Teacher"))
             {
-                assignedList = assignedList.Where(s => s.StudentId.ToUpper().Contains(search.ToUpper())
-                                                     || s.ClassName.ToUpper().Contains(search.ToUpper())
-                                                     || s.TermName.ToUpper().Contains(search.ToUpper()));
+                string name = User.Identity.GetUserName();
+                //var user = db.Guardians.Where(c => c.UserName.Equals(name)).Select(s => s.Email).FirstOrDefault();
+                assignedList = assignedList.AsNoTracking().Where(x => x.ClassName.Equals(name));
 
+                //return View(subjectName);
+            }
+            else
+            {
+                if (!String.IsNullOrEmpty(search))
+                {
+                    assignedList = assignedList.AsNoTracking().AsNoTracking().Where(s => s.StudentId.ToUpper().Contains(search.ToUpper())
+                                                           || s.ClassName.ToUpper().Contains(search.ToUpper())
+                                                           || s.TermName.ToUpper().Contains(search.ToUpper()));
+
+                }
+                else if (!String.IsNullOrEmpty(SessionName) || !String.IsNullOrEmpty(ClassName))
+                {
+                    assignedList = assignedList.AsNoTracking().Where(s => s.SessionName.Contains(SessionName)
+                                                           && s.ClassName.ToUpper().Contains(ClassName.ToUpper())
+                                                           && s.TermName.ToUpper().Contains(TermName.ToUpper()));
+                    pageSize = assignedList.Count();
+                }
             }
             switch (sortOrder)
             {
                 case "name_desc":
-                    assignedList = assignedList.OrderByDescending(s => s.StudentId);
+                    assignedList = assignedList.AsNoTracking().OrderByDescending(s => s.StudentId);
                     break;
                 case "Date":
-                    assignedList = assignedList.OrderBy(s => s.SessionName);
+                    assignedList = assignedList.AsNoTracking().OrderBy(s => s.SessionName);
                     break;
                 default:
-                    assignedList = assignedList.OrderBy(s => s.ClassName);
+                    assignedList = assignedList.AsNoTracking().OrderBy(s => s.ClassName);
                     break;
             }
-            int pageSize = 10;
+
             int pageNumber = (page ?? 1);
-            return View(assignedList.ToPagedList(pageNumber, pageSize));
+
+            if (User.IsInRole("Teacher"))
+            {
+                string name = User.Identity.GetUserName();
+                var subjectList = _db.AssignSubjectTeachers.AsNoTracking().Where(x => x.StaffName.Equals(name));
+                ViewBag.ClassName = new SelectList(subjectList.AsNoTracking(), "ClassName", "ClassName");
+            }
+            else
+            {
+                ViewBag.ClassName = new SelectList(_db.Classes.AsNoTracking(), "FullClassName", "FullClassName");
+            }
+            ViewBag.SessionName = new SelectList(_db.Sessions.AsNoTracking(), "SessionName", "SessionName");
+            ViewBag.TermName = new SelectList(_db.Terms.AsNoTracking(), "TermName", "TermName");
+            var count = assignedList.Count();
+            TempData["Index"] = $"You Search result contains {count} Records ";
+            TempData["Title"] = "Success.";
+            return View(assignedList.AsNoTracking().ToPagedList(pageNumber, pageSize));
             //return View(await db.AssignedClasses.ToListAsync());
         }
 
@@ -61,7 +98,7 @@ namespace StAugustine.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            AssignedClass assignedClass = await db.AssignedClasses.FindAsync(id);
+            AssignedClass assignedClass = await _db.AssignedClasses.FindAsync(id);
             if (assignedClass == null)
             {
                 return HttpNotFound();
@@ -72,9 +109,20 @@ namespace StAugustine.Controllers
         // GET: AssignedClasses/Create
         public ActionResult Create()
         {
-            ViewBag.StudentId = new MultiSelectList(db.Students, "StudentID", "FullName");
-            ViewBag.SessionName = new SelectList(db.Sessions, "SessionName", "SessionName");
-            ViewBag.ClassName = new SelectList(db.Classes, "FullClassName", "FullClassName");
+            if (User.IsInRole("Teacher"))
+            {
+                string name = User.Identity.GetUserName();
+                var subjectList = _db.AssignSubjectTeachers.AsNoTracking().Where(x => x.StaffName.Equals(name));
+                ViewBag.ClassName = new SelectList(subjectList.AsNoTracking(), "ClassName", "ClassName");
+            }
+            else
+            {
+                ViewBag.ClassName = new SelectList(_db.Classes.AsNoTracking(), "FullClassName", "FullClassName");
+            }
+            ViewBag.StudentId = new MultiSelectList(_db.Students.AsNoTracking(), "StudentID", "FullName");
+            ViewBag.SessionName = new SelectList(_db.Sessions.AsNoTracking(), "SessionName", "SessionName");
+            // ViewBag.ClassName = new SelectList(db.Classes, "FullClassName", "FullClassName");
+            ViewBag.TermName = new SelectList(_db.Terms.AsNoTracking(), "TermName", "TermName");
             return View();
         }
 
@@ -89,36 +137,55 @@ namespace StAugustine.Controllers
             {
                 if (model.StudentId != null)
                 {
+                    int counter = 0;
+                    string theClass = "";
                     foreach (var item in model.StudentId)
                     {
-                        var assigClass = new AssignedClass()
+                        var countFromDb = await _db.AssignedClasses.AsNoTracking().CountAsync(x => x.TermName.Equals(model.TermName.ToString())
+                                                              && x.SessionName.Equals(model.SessionName)
+                                                              && x.StudentId.Equals(item));
+
+                        if (countFromDb >= 1)
                         {
-                            StudentId = item,
-                            ClassName = model.ClassName,
-                            TermName = model.TermName.ToString(),
-                            SessionName = model.SessionName
-                        };
-                        db.AssignedClasses.Add(assigClass);
+                            TempData["UserMessage"] = "You have already Assigned Class these student";
+                            TempData["Title"] = "Error.";
+                            ViewBag.StudentId = new MultiSelectList(_db.Students.AsNoTracking(), "StudentID", "FullName");
+                            ViewBag.SessionName = new SelectList(_db.Sessions.AsNoTracking(), "SessionName", "SessionName");
+                            ViewBag.ClassName = new SelectList(_db.Classes.AsNoTracking(), "FullClassName", "FullClassName");
+                            ViewBag.TermName = new SelectList(_db.Terms.AsNoTracking(), "TermName", "TermName");
+                            return View(model);
+                        }
+                        else
+                        {
+                            var studentName = await _db.Students.AsNoTracking().Where(x => x.StudentId.Equals(item))
+                                                .Select(s => s.FullName)
+                                                .FirstOrDefaultAsync();
+                            var assigClass = new AssignedClass()
+                            {
+                                StudentId = item,
+                                ClassName = model.ClassName,
+                                TermName = model.TermName,
+                                SessionName = model.SessionName,
+                                StudentName = studentName
+                            };
+                            _db.AssignedClasses.Add(assigClass);
+                            counter += 1;
+                            theClass = model.ClassName;
+                        }
                     }
 
-                    await db.SaveChangesAsync();
+                    await _db.SaveChangesAsync();
+                    TempData["UserMessage"] = $"You have Assigned to {counter} Student(s) to {theClass} Successfully.";
+                    TempData["Title"] = "Success.";
                     return RedirectToAction("Index", "AssignedClasses");
                 }
-
-                //var assigClass = new AssignedClass()
-                //{
-                //    StudentId = assignedClass.StudentId,
-                //    ClassName = assignedClass.ClassName,
-                //    TermName = assignedClass.TermName.ToString(),
-                //    SessionName = assignedClass.SessionName
-                //};
-
                 return RedirectToAction("Index");
             }
 
-            ViewBag.StudentId = new MultiSelectList(db.Students, "StudentID", "FullName");
-            ViewBag.SessionName = new SelectList(db.Sessions, "SessionName", "SessionName");
-            ViewBag.ClassName = new SelectList(db.Classes, "FullClassName", "FullClassName");
+            ViewBag.StudentId = new MultiSelectList(_db.Students.AsNoTracking(), "StudentID", "FullName");
+            ViewBag.SessionName = new SelectList(_db.Sessions.AsNoTracking(), "SessionName", "SessionName");
+            ViewBag.ClassName = new SelectList(_db.Classes.AsNoTracking(), "FullClassName", "FullClassName");
+            ViewBag.TermName = new SelectList(_db.Terms.AsNoTracking(), "TermName", "TermName");
             return View(model);
         }
 
@@ -129,16 +196,16 @@ namespace StAugustine.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            AssignedClass assignedClass = await db.AssignedClasses.FindAsync(id);
+            AssignedClass assignedClass = await _db.AssignedClasses.FindAsync(id);
             if (assignedClass == null)
             {
                 return HttpNotFound();
             }
             var myModel = new AssignedClassesViewModel();
             myModel.AssignedClassId = assignedClass.AssignedClassId;
-            ViewBag.StudentId = new MultiSelectList(db.Students, "StudentID", "FullName");
-            ViewBag.SessionName = new SelectList(db.Sessions, "SessionName", "SessionName");
-            ViewBag.ClassName = new SelectList(db.Classes, "FullClassName", "FullClassName");
+            ViewBag.StudentId = new MultiSelectList(_db.Students.AsNoTracking(), "StudentID", "FullName");
+            ViewBag.SessionName = new SelectList(_db.Sessions.AsNoTracking(), "SessionName", "SessionName");
+            ViewBag.ClassName = new SelectList(_db.Classes.AsNoTracking(), "FullClassName", "FullClassName");
             return View(myModel);
         }
 
@@ -151,6 +218,9 @@ namespace StAugustine.Controllers
         {
             if (ModelState.IsValid)
             {
+                var studentName = await _db.Students.AsNoTracking().Where(x => x.StudentId.Equals(assignedClass.StudentId))
+                                   .Select(s => s.FullName)
+                                   .FirstOrDefaultAsync();
                 var assigClass = new AssignedClass()
                 {
                     AssignedClassId = assignedClass.AssignedClassId,
@@ -159,13 +229,16 @@ namespace StAugustine.Controllers
                     TermName = assignedClass.TermName.ToString(),
                     SessionName = assignedClass.SessionName
                 };
-                db.Entry(assigClass).State = EntityState.Modified;
-                await db.SaveChangesAsync();
+                _db.Entry(assigClass).State = EntityState.Modified;
+                await _db.SaveChangesAsync();
+                TempData["UserMessage"] = "Student Class Updated Successfully.";
+                TempData["Title"] = "Success.";
                 return RedirectToAction("Index");
             }
-            ViewBag.StudentId = new MultiSelectList(db.Students, "StudentID", "FullName");
-            ViewBag.SessionName = new SelectList(db.Sessions, "SessionName", "SessionName");
-            ViewBag.ClassName = new SelectList(db.Classes, "FullClassName", "FullClassName");
+            ViewBag.StudentId = new MultiSelectList(_db.Students.AsNoTracking(), "StudentID", "FullName");
+            ViewBag.SessionName = new SelectList(_db.Sessions.AsNoTracking(), "SessionName", "SessionName");
+            ViewBag.ClassName = new SelectList(_db.Classes.AsNoTracking(), "FullClassName", "FullClassName");
+            ViewBag.TermName = new SelectList(_db.Terms.AsNoTracking(), "TermName", "TermName");
             return View(assignedClass);
         }
 
@@ -176,7 +249,7 @@ namespace StAugustine.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            AssignedClass assignedClass = await db.AssignedClasses.FindAsync(id);
+            AssignedClass assignedClass = await _db.AssignedClasses.FindAsync(id);
             if (assignedClass == null)
             {
                 return HttpNotFound();
@@ -189,9 +262,11 @@ namespace StAugustine.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DeleteConfirmed(int id)
         {
-            AssignedClass assignedClass = await db.AssignedClasses.FindAsync(id);
-            db.AssignedClasses.Remove(assignedClass);
-            await db.SaveChangesAsync();
+            AssignedClass assignedClass = await _db.AssignedClasses.FindAsync(id);
+            if (assignedClass != null) _db.AssignedClasses.Remove(assignedClass);
+            await _db.SaveChangesAsync();
+            TempData["UserMessage"] = "You have removed Student from Class";
+            TempData["Title"] = "Deleted.";
             return RedirectToAction("Index");
         }
 
@@ -199,7 +274,7 @@ namespace StAugustine.Controllers
         {
             if (disposing)
             {
-                db.Dispose();
+                _db.Dispose();
             }
             base.Dispose(disposing);
         }

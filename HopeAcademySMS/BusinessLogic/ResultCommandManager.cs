@@ -1,6 +1,8 @@
 ﻿using StAugustine.Models;
 using System;
+using System.Data.Entity;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace StAugustine.BusinessLogic
 {
@@ -8,43 +10,65 @@ namespace StAugustine.BusinessLogic
     {
 
         private readonly ApplicationDbContext _db = new ApplicationDbContext();
-        public double TotalScorePerStudent(string studentId, string className, string term, string session)
+        public async Task<double> TotalScorePerStudent(string studentId, string className, string term, string session)
         {
-            var totalSum = _db.ContinuousAssessments.Where(x => x.StudentId.Equals(studentId) && x.ClassName.Equals(className)
-                                                             && x.TermName.Equals(term) && x.SessionName.Equals(session))
-                .Sum(y => y.Total);
-            return totalSum;
+            var totalSum = await _db.ContinuousAssessments.AsNoTracking().Where(x => x.StudentId.ToUpper().Trim().Equals(studentId.ToUpper().Trim())
+                                                            && x.ClassName.ToUpper().Trim().Equals(className.ToUpper().Trim())
+                                                             && x.TermName.ToUpper().Trim().Equals(term.ToUpper().Trim())
+                                                             && x.SessionName.ToUpper().Trim().Equals(session.ToUpper().Trim()))
+                                                            .SumAsync(y => y.Total);
+
+            return Math.Round(totalSum, 2);
         }
 
-        public int SubjectOfferedByStudent(string className)
+        public async Task<int> SubjectOfferedByStudent(string studentId, string termName, string sessionName)
         {
-            //var className = _db.AssignedClasses.Where(x => x.StudentId.Equals(studentId)
-            //                                                && x.TermName.Equals(term)
-            //                                                && x.SessionName.Equals(session))
-            //                                            .Select(y => y.ClassName)
-            //                                            .FirstOrDefault();
+            int subjectPerStudent = 0;
+            var className = await _db.AssignedClasses.AsNoTracking().Where(x => x.StudentId.ToUpper().Trim().Equals(studentId.ToUpper().Trim())
+                                                            && x.TermName.ToUpper().Trim().Equals(termName.ToUpper().Trim())
+                                                            && x.SessionName.ToUpper().Trim().Equals(sessionName.ToUpper().Trim()))
+                                                        .Select(y => y.ClassName).FirstOrDefaultAsync();
 
+            var subjectAssigned = await _db.AssignSubjects.CountAsync(c => c.ClassName.ToUpper().Trim().Equals(className.ToUpper().Trim()));
+            var subjectregistration = await _db.SubjectRegistrations.AsNoTracking().CountAsync(x => x.StudentId.ToUpper().Trim().Equals(studentId.ToUpper().Trim())
+                                                    && x.TermName.ToUpper().Trim().Equals(termName.ToUpper().Trim())
+                                                    && x.SessionName.ToUpper().Trim().Equals(sessionName.ToUpper().Trim())
+                                                    && x.ClassName.ToUpper().Trim().Equals(className.ToUpper().Trim()));
+            if (subjectAssigned > 1 && subjectregistration > 1)
+            {
+                subjectPerStudent = subjectregistration;
+            }
+            else if (subjectAssigned > 1 && subjectregistration < 2)
+            {
+                subjectPerStudent = subjectAssigned;
+            }
+            else if (subjectAssigned < 2 && subjectregistration > 1)
+            {
+                subjectPerStudent = subjectregistration;
+            }
 
-            var subjectPerStudent = _db.AssignSubjects.Count(x => x.ClassName.Equals(className));
+            //var noOfSubjectPerStudent = _db.AssignSubjects.Count(x => x.ClassName.Equals(className));
             return subjectPerStudent;
         }
 
-        public double TotalScorePerSubject(string subject, string className, string term, string session)
+        public async Task<double> TotalScorePerSubject(string subject, string className, string term, string session)
         {
-            var sumPerSubject = _db.ContinuousAssessments.Where(x => x.SubjectCode.Equals(subject)
-                                                                    && x.ClassName.Equals(className)
-                                                                    && x.TermName.Equals(term) &&
-                                                                    x.SessionName.Equals(session)).Sum(y => y.Total);
+
+            double sumPerSubject = await _db.ContinuousAssessments.AsNoTracking().Where(x => x.SubjectCode.ToUpper().Trim().Equals(subject.ToUpper().Trim())
+                                                                    && x.ClassName.ToUpper().Trim().Equals(className.ToUpper().Trim())
+                                                                     && x.TermName.ToUpper().Trim().Equals(term.ToUpper().Trim())
+                                                             && x.SessionName.ToUpper().Trim().Equals(session.ToUpper().Trim()))
+                                                             .SumAsync(y => y.Total);
             return Math.Round(sumPerSubject, 2);
         }
 
 
 
-        public int NumberOfStudentPerClass(string className, string term, string session)
+        public async Task<int> NumberOfStudentPerClass(string className, string term, string session)
         {
-            var studentPerClass = _db.AssignedClasses.Count(x => x.ClassName.Equals(className) &&
-                                                                x.TermName.Equals(term) &&
-                                                                x.SessionName.Equals(session));
+            var studentPerClass = await _db.AssignedClasses.AsNoTracking().CountAsync(x => x.ClassName.ToUpper().Trim().Equals(className.ToUpper().Trim())
+                                                                && x.TermName.ToUpper().Trim().Equals(term.ToUpper().Trim())
+                                                             && x.SessionName.ToUpper().Trim().Equals(session.ToUpper().Trim()));
             return studentPerClass;
         }
 
@@ -56,13 +80,34 @@ namespace StAugustine.BusinessLogic
         //                                                        .OrderByDescending(y => y.AggretateScore);
         //}
 
+        public async Task<double> SubjectHighest(string subject, string className, string term, string session)
+        {
+
+            var mySubjectHighest = await _db.ContinuousAssessments.AsNoTracking().Where(x => x.SubjectCode.ToUpper().Trim().Equals(subject.ToUpper().Trim())
+                                                                    && x.ClassName.ToUpper().Trim().Equals(className.ToUpper().Trim())
+                                                                     && x.TermName.ToUpper().Trim().Equals(term.ToUpper().Trim())
+                                                             && x.SessionName.ToUpper().Trim().Equals(session.ToUpper().Trim()))
+                                                                   .MaxAsync(i => i.Total);
+            return mySubjectHighest;
+        }
+
+        public async Task<double> SubjectLowest(string subject, string className, string term, string session)
+        {
+            var mySubjectLowest = await _db.ContinuousAssessments.AsNoTracking().Where(x => x.SubjectCode.ToUpper().Trim().Equals(subject.ToUpper().Trim())
+                                                                    && x.ClassName.ToUpper().Trim().Equals(className.ToUpper().Trim())
+                                                                     && x.TermName.ToUpper().Trim().Equals(term.ToUpper().Trim())
+                                                             && x.SessionName.ToUpper().Trim().Equals(session.ToUpper().Trim()))
+                                                                   .MinAsync(i => i.Total);
+            return mySubjectLowest;
+        }
+
         public int FindSubjectPosition(string studentId, string subject, string className, string term, string session)
         {
             int subjectPosition = 0;
-            var mySubjectPosition = _db.ContinuousAssessments.Where(x => x.SubjectCode.Equals(subject) &&
-                                                                        x.ClassName.Equals(className) &&
-                                                                        x.TermName.Equals(term) &&
-                                                                        x.SessionName.Equals(session));
+            var mySubjectPosition = _db.ContinuousAssessments.AsNoTracking().Where(x => x.SubjectCode.ToUpper().Trim().Equals(subject.ToUpper().Trim())
+                                                                    && x.ClassName.ToUpper().Trim().Equals(className.ToUpper().Trim())
+                                                                     && x.TermName.ToUpper().Trim().Equals(term.ToUpper().Trim())
+                                                             && x.SessionName.ToUpper().Trim().Equals(session.ToUpper().Trim()));
 
             // .OrderByDescending(y => y.Total);
 
@@ -88,10 +133,10 @@ namespace StAugustine.BusinessLogic
         public int FindAggregatePosition(string studentId, string className, string term, string session)
         {
             int subjectPosition = 0;
-            var resultPosition = _db.Results.Where(x => x.ClassName.Equals(className) &&
-                                                       x.Term.Equals(term) &&
-                                                       x.SessionName.Equals(session)
-                                                       && x.SubjectName.Contains("Mathematics"));
+            var resultPosition = _db.Results.AsNoTracking().Where(x => x.ClassName.ToUpper().Trim().Equals(className.ToUpper().Trim()) &&
+                                                       x.Term.ToUpper().Trim().Equals(term.ToUpper().Trim()) &&
+                                                       x.SessionName.ToUpper().Trim().Equals(session.ToUpper().Trim())
+                                                       && x.SubjectName.Contains("Math"));
             //.OrderByDescending(y => y.AggretateScore);
 
             var q = from s in resultPosition
@@ -112,33 +157,34 @@ namespace StAugustine.BusinessLogic
             return subjectPosition;
         }
 
-        public double CalculateAverage(string studentId, string className, string term, string sessionName)
+        public async Task<double> CalculateAverage(string studentId, string className, string term, string sessionName)
         {
-            double scorePerstudent = TotalScorePerStudent(studentId, className, term, sessionName);
-            int subjectOffered = SubjectOfferedByStudent(className);
+            double scorePerstudent = await TotalScorePerStudent(studentId, className, term, sessionName);
+            int subjectOffered = await SubjectOfferedByStudent(studentId, term, sessionName);
             return Math.Round((scorePerstudent / subjectOffered), 2);
         }
 
-        public double CalculateClassAverage(string className, string term, string sessionName, string subject)
+        public async Task<double> CalculateClassAverage(string className, string term, string sessionName, string subject)
         {
-            var scorePerSubject = TotalScorePerSubject(subject, className, term, sessionName);
-            var studentInClass = NumberOfStudentPerClass(className, term, sessionName);
+            var scorePerSubject = await TotalScorePerSubject(subject, className, term, sessionName);
+            var studentInClass = await NumberOfStudentPerClass(className, term, sessionName);
             return Math.Round((scorePerSubject / studentInClass), 2);
         }
 
-        public int TotalQualityPoint(string studentId, string className, string term, string sessionName)
+        public async Task<double> TotalQualityPoint(string studentId, string className, string term, string sessionName)
         {
-            var totalPoint = _db.ContinuousAssessments.Where(x => x.ClassName.Equals(className) &&
-                                                                x.TermName.Equals(term) &&
-                                                                x.SessionName.Equals(sessionName) &&
-                                                                x.StudentId.Equals(studentId))
-                                                                .Sum(c => c.QualityPoint);
+
+            var totalPoint = await _db.ContinuousAssessments.AsNoTracking().Where(x => x.ClassName.ToUpper().Trim().Equals(className.ToUpper().Trim()) &&
+                                                                x.TermName.ToUpper().Trim().Equals(term.ToUpper().Trim()) &&
+                                                                x.SessionName.ToUpper().Trim().Equals(sessionName.ToUpper().Trim()) &&
+                                                                x.StudentId.ToUpper().Trim().Equals(studentId.ToUpper().Trim()))
+                                                                .SumAsync(c => c.QualityPoint);
             return totalPoint;
         }
 
-        public int TotalcreditUnit(string className)
+        public async Task<double> TotalcreditUnit(string className)
         {
-            var totalCredit = _db.AssignSubjects.Count(s => s.ClassName.Equals(className));
+            var totalCredit = await _db.AssignSubjects.AsNoTracking().CountAsync(s => s.ClassName.ToUpper().Trim().Equals(className.ToUpper().Trim()));
             return totalCredit * 2;
         }
 

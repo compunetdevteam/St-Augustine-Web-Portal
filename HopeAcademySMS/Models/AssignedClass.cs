@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace StAugustine.Models
 {
@@ -23,8 +22,10 @@ namespace StAugustine.Models
         [Required(ErrorMessage = "Session Name cannot be empty")]
         public string SessionName { get; set; }
 
-        public virtual ICollection<Student> Students { get; set; }
+        public string StudentName { get; set; }
 
-        public virtual ICollection<AssignSubject> AssignSubjects { get; set; }
+        public virtual Student Student { get; set; }
+
+        // public virtual ICollection<AssignSubject> AssignSubjects { get; set; }
     }
 }

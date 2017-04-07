@@ -35,7 +35,7 @@ namespace StAugustine.Controllers
         // GET: book/Create
         public ActionResult Create()
         {
-            ViewBag.BookId = new SelectList(db.BookIssues, "BookId", "StudentId");
+           // ViewBag.BookId = new SelectList(db.BookIssues, "BookId", "StudentId");
             return View();
         }
 

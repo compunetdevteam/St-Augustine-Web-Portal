@@ -1,5 +1,7 @@
-﻿using StAugustine.Models;
+﻿using PagedList;
+using StAugustine.Models;
 using StAugustine.ViewModel;
+using System;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
@@ -10,23 +12,65 @@ namespace StAugustine.Controllers
 {
     public class GradesController : Controller
     {
-        ApplicationDbContext db = new ApplicationDbContext();
+        readonly ApplicationDbContext _db = new ApplicationDbContext();
         // GET: Grades
-        public async Task<ActionResult> Index()
+        public async Task<ActionResult> Index(string sortOrder, string currentFilter, string search, int? page,
+           string ClassName)
         {
-            return View(await db.Grades.ToListAsync());
+            int count = 10;
+            ViewBag.NameSortParm = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
+            if (search != null)
+            {
+
+                page = 1;
+            }
+            else
+            {
+                search = currentFilter;
+            }
+            ViewBag.CurrentFilter = search;
+            var assignedList = from s in _db.Grades select s;
+            if (!String.IsNullOrEmpty(search))
+            {
+                assignedList = assignedList.Where(s => s.ClassName.ToUpper().Contains(search.ToUpper()));
+
+
+            }
+            else if (!String.IsNullOrEmpty(ClassName))
+            {
+                assignedList = assignedList.Where(s => s.ClassName.ToUpper().Equals(ClassName.ToUpper()));
+                int myCount = await assignedList.CountAsync();
+                if (myCount != 0)
+                {
+                    count = myCount;
+                }
+            }
+            switch (sortOrder)
+            {
+                case "name_desc":
+                    assignedList = assignedList.OrderByDescending(s => s.ClassName);
+                    break;
+                case "Date":
+                    assignedList = assignedList.OrderBy(s => s.ClassName);
+                    break;
+                default:
+                    assignedList = assignedList.OrderBy(s => s.GradeName);
+                    break;
+            }
+
+            ViewBag.ClassName = new SelectList(_db.SchoolClasses.AsNoTracking(), "ClassCode", "ClassCode");
+            int pageSize = count;
+            int pageNumber = (page ?? 1);
+            return View(assignedList.ToPagedList(pageNumber, pageSize));
+            //return View(await db.ContinuousAssessments.ToListAsync());
         }
 
-        // GET: Grades/Details/5
-        public ActionResult Details(int id)
-        {
-            return View();
-        }
+
 
         // GET: Grades/Create
         public ActionResult Create()
         {
-            ViewBag.ClassName = new SelectList(db.Classes, "FullClassName", "FullClassName");
+            ViewBag.ClassName = new SelectList(_db.SchoolClasses.AsNoTracking(), "ClassCode", "ClassCode");
             return View();
         }
 
@@ -37,30 +81,36 @@ namespace StAugustine.Controllers
         {
             if (ModelState.IsValid)
             {
+                foreach (var item in model.ClassName)
+                {
+                    var myGrade = await _db.Grades.CountAsync(x => x.GradeName.Trim().Equals(model.GradeName.Trim())
+                                               && x.ClassName.Equals(item));
 
-                var myGrade = db.Grades.Where(x => x.GradeName.Equals(model.GradeName.ToString()));
-                var countFromDb = myGrade.Count();
-                if (countFromDb >= 1)
-                {
-                    return View("Error2");
-                }
-                else
-                {
+                    if (myGrade >= 1)
+                    {
+                        TempData["UserMessage"] = "Grade Already Exist in Database.";
+                        TempData["Title"] = "Error.";
+                        ViewBag.ClassName = new SelectList(_db.SchoolClasses.AsNoTracking(), "ClassCode", "ClassCode");
+                        return View(model);
+                    }
+
                     var grade = new Grade
                     {
-                        GradeName = model.GradeName.ToString(),
+                        GradeName = model.GradeName.Trim().ToUpper(),
                         MinimumValue = model.MinimumValue,
                         MaximumValue = model.MaximumValue,
                         GradePoint = model.GradePoint,
                         Remark = model.Remark,
-                        PrincipalRemark = model.PrincipalRemark
+                        ClassName = item
                     };
-                    db.Grades.Add(grade);
+                    _db.Grades.Add(grade);
                 }
-                await db.SaveChangesAsync();
+                await _db.SaveChangesAsync();
+                TempData["UserMessage"] = "Grade Added Successfully.";
+                TempData["Title"] = "Success.";
                 return RedirectToAction("Index");
             }
-
+            ViewBag.ClassName = new SelectList(_db.SchoolClasses.AsNoTracking(), "ClassCode", "ClassCode");
             return View(model);
         }
 
@@ -73,21 +123,21 @@ namespace StAugustine.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Grade grade = await db.Grades.FindAsync(id);
+            Grade grade = await _db.Grades.FindAsync(id);
             if (grade == null)
             {
                 return HttpNotFound();
             }
             var myGrade = new GradeViewModel
             {
+                GradeName = grade.GradeName,
                 GradeId = grade.GradeId,
                 MinimumValue = grade.MinimumValue,
                 MaximumValue = grade.MaximumValue,
                 GradePoint = grade.GradePoint,
-                Remark = grade.Remark,
-                PrincipalRemark = grade.PrincipalRemark
+                Remark = grade.Remark
             };
-
+            ViewBag.ClassName = new SelectList(_db.SchoolClasses.AsNoTracking(), "ClassCode", "ClassCode");
             return View(myGrade);
         }
 
@@ -97,44 +147,67 @@ namespace StAugustine.Controllers
         {
             if (ModelState.IsValid)
             {
-                var grade = new Grade()
+                foreach (var item in model.ClassName)
                 {
-                    GradeId = model.GradeId,
-                    GradeName = model.GradeName.ToString(),
-                    MinimumValue = model.MinimumValue,
-                    MaximumValue = model.MaximumValue,
-                    GradePoint = model.GradePoint,
-                    Remark = model.Remark,
-                    PrincipalRemark = model.PrincipalRemark
-                };
-                db.Entry(grade).State = EntityState.Modified;
-                await db.SaveChangesAsync();
+                    var grade = new Grade()
+                    {
+
+                        GradeId = model.GradeId,
+                        GradeName = model.GradeName.ToString(),
+                        MinimumValue = model.MinimumValue,
+                        MaximumValue = model.MaximumValue,
+                        GradePoint = model.GradePoint,
+                        Remark = model.Remark,
+                        ClassName = item
+                    };
+                    _db.Entry(grade).State = EntityState.Modified;
+                }
+                await _db.SaveChangesAsync();
+                TempData["UserMessage"] = "Grade Updated Successfully.";
+                TempData["Title"] = "Success.";
                 return RedirectToAction("Index");
             }
-
+            ViewBag.ClassName = new SelectList(_db.SchoolClasses.AsNoTracking(), "ClassCode", "ClassCode");
             return View(model);
         }
 
-        // GET: Grades/Delete/5
-        public ActionResult Delete(int id)
+
+
+        // GET: Classes/Delete/5
+        public async Task<ActionResult> Delete(int? id)
         {
-            return View();
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            Grade @class = await _db.Grades.FindAsync(id);
+            if (@class == null)
+            {
+                return HttpNotFound();
+            }
+            return View(@class);
         }
 
-        // POST: Grades/Delete/5
-        [HttpPost]
-        public ActionResult Delete(int id, FormCollection collection)
+        // POST: Classes/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> DeleteConfirmed(int id)
         {
-            try
-            {
-                // TODO: Add delete logic here
+            Grade grade = await _db.Grades.FindAsync(id);
+            if (grade != null) _db.Grades.Remove(grade);
+            await _db.SaveChangesAsync();
+            TempData["UserMessage"] = "Class Has Been Deleted";
+            TempData["Title"] = "Deleted.";
+            return RedirectToAction("Index");
+        }
 
-                return RedirectToAction("Index");
-            }
-            catch
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
             {
-                return View();
+                _db.Dispose();
             }
+            base.Dispose(disposing);
         }
     }
 }

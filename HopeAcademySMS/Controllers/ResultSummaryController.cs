@@ -18,19 +18,16 @@ namespace StAugustine.Controllers
         }
 
         // GET: ResultSummary/Details/5
-        public ActionResult Details(int id)
-        {
-            return View();
-        }
+
 
         // GET: ResultSummary/Create
         public ActionResult Create()
         {
 
-            ViewBag.SubjectCode = new SelectList(db.SessionSubjectTotals, "SubjectName", "SubjectName");
-            ViewBag.StudentId = new SelectList(db.Students, "StudentId", "StudentId");
-            ViewBag.SessionName = new SelectList(db.Sessions, "SessionName", "SessionName");
-            ViewBag.ClassName = new SelectList(db.Classes, "FullClassName", "FullClassName");
+            ViewBag.SubjectCode = new SelectList(db.SessionSubjectTotals.AsNoTracking(), "SubjectName", "SubjectName");
+            ViewBag.StudentId = new SelectList(db.Students.AsNoTracking(), "StudentId", "StudentId");
+            ViewBag.SessionName = new SelectList(db.Sessions.AsNoTracking(), "SessionName", "SessionName");
+            ViewBag.ClassName = new SelectList(db.Classes.AsNoTracking(), "FullClassName", "FullClassName");
             return View();
         }
 
@@ -41,17 +38,17 @@ namespace StAugustine.Controllers
 
             if (ModelState.IsValid)
             {
-                var student = db.AssignedClasses.Where(x => x.ClassName.Equals(model.ClassName) && x.TermName.Contains("Third")
-                                                       && x.SessionName.Equals(model.SessionName)).ToList();
+                var student = await db.AssignedClasses.Where(x => x.ClassName.Equals(model.ClassName) && x.TermName.Contains("Third")
+                                                       && x.SessionName.Equals(model.SessionName)).ToListAsync();
                 foreach (var listStudent in student)
                 {
                     string studentNumber = listStudent.StudentId;
-                    var CA = db.ReportSummarys.Where(x => x.ClassName.Equals(model.ClassName)
+                    var CA = await db.ReportSummarys.AsNoTracking().CountAsync(x => x.ClassName.Equals(model.ClassName)
                                                                && x.SessionName.Equals(model.SessionName)
                                                                && x.SubjectName.Equals(model.SubjectCode)
                                                                && x.StudentId.Equals(studentNumber));
-                    var countFromDb = CA.Count();
-                    if (countFromDb >= 1)
+
+                    if (CA >= 1)
                     {
                         return View("Error3");
                     }
@@ -85,10 +82,10 @@ namespace StAugustine.Controllers
             {
                 ResultId = result.ResultId
             };
-            ViewBag.SubjectCode = new SelectList(db.Subjects, "CourseCode", "CourseName");
-            ViewBag.StudentId = new SelectList(db.Students, "StudentID", "FullName");
-            ViewBag.SessionName = new SelectList(db.Sessions, "SessionName", "SessionName");
-            ViewBag.ClassName = new SelectList(db.Classes, "FullClassName", "FullClassName");
+            ViewBag.SubjectCode = new SelectList(db.Subjects.AsNoTracking(), "CourseCode", "CourseName");
+            ViewBag.StudentId = new SelectList(db.Students.AsNoTracking(), "StudentID", "FullName");
+            ViewBag.SessionName = new SelectList(db.Sessions.AsNoTracking(), "SessionName", "SessionName");
+            ViewBag.ClassName = new SelectList(db.Classes.AsNoTracking(), "FullClassName", "FullClassName");
 
             ResultSummaryViewModel model = new ResultSummaryViewModel();
             model.ReportSummaryId = myStudent.ResultId;
@@ -109,7 +106,7 @@ namespace StAugustine.Controllers
                 {
                     return HttpNotFound();
                 }
-                var student = db.AssignedClasses.Where(x => x.ClassName.Equals(model.ClassName) && x.TermName.Contains("Third")
+                var student = db.AssignedClasses.AsNoTracking().Where(x => x.ClassName.Equals(model.ClassName) && x.TermName.Contains("Third")
                                                   && x.SessionName.Equals(model.SessionName));
                 foreach (var listStudent in student)
                 {

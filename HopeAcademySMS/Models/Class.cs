@@ -7,9 +7,9 @@ namespace StAugustine.Models
     {
         public int ClassId { get; set; }
 
-        [Display(Name = "School Name")]
-        [Required(ErrorMessage = "School Name cannot be empty")]
-        public PopUp.SchoolName SchoolName { get; set; }
+        [Display(Name = "Class")]
+        [Required(ErrorMessage = "Class Name cannot be empty")]
+        public string SchoolName { get; set; }
 
         [Display(Name = "Class Level")]
         [Range(1, 6)]
@@ -18,7 +18,7 @@ namespace StAugustine.Models
 
         [Display(Name = "Class Type")]
         [Required(ErrorMessage = "Class Type cannot be empty")]
-        public PopUp.ClassType ClassType { get; set; }
+        public string ClassType { get; set; }
 
         public string ClassName
         {
@@ -32,7 +32,7 @@ namespace StAugustine.Models
         {
             get
             {
-                return $"{this.ClassName} {this.ClassType.ToString()}";
+                return $"{this.ClassName.ToUpper()} {this.ClassType.ToUpper()}";
             }
             private set { }
         }

@@ -2,6 +2,8 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Web;
 
@@ -9,7 +11,7 @@ namespace StAugustine.ViewModel
 {
     public class StudentViewModel
     {
-      
+
         public string GuardianId { get; set; }
 
         [Display(Name = "Student ID")]
@@ -42,9 +44,10 @@ namespace StAugustine.ViewModel
         [DataType(DataType.Date)]
         public DateTime AdmissionDate { get; set; }
 
-        public byte[] StudentPassport { get; private set; }
+        public byte[] StudentPassport { get; set; }
 
-        [Display(Name = "Local file")]
+        [Display(Name = "Upload A Passport/Picture")]
+        [ValidateFile(ErrorMessage = "Please select a PNG/JPEG image smaller than 1MB")]
         [NotMapped]
         public HttpPostedFileBase File
         {
@@ -71,6 +74,33 @@ namespace StAugustine.ViewModel
                     //logger.Error(ex.StackTrace);
                 }
             }
+        }
+    }
+
+    public class ValidateFileAttribute : RequiredAttribute
+    {
+        public override bool IsValid(object value)
+        {
+            var file = value as HttpPostedFileBase;
+            if (file == null)
+            {
+                return true;
+            }
+
+            if (file.ContentLength > 1 * 1024 * 1024)
+            {
+                return false;
+            }
+
+            try
+            {
+                using (var img = Image.FromStream(file.InputStream))
+                {
+                    return img.RawFormat.Equals(img.RawFormat.Equals(ImageFormat.Png) ? ImageFormat.Png : ImageFormat.Jpeg);
+                }
+            }
+            catch { }
+            return false;
         }
     }
 }

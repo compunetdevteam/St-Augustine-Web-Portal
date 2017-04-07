@@ -4,9 +4,8 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 
-namespace StAugustine.Controllers
+namespace HopeAcademySMS.Controllers
 {
-    [Authorize(Roles = "Admin")]
     public class SessionsController : Controller
     {
         private ApplicationDbContext db = new ApplicationDbContext();
@@ -14,7 +13,7 @@ namespace StAugustine.Controllers
         // GET: Sessions
         public async Task<ActionResult> Index()
         {
-            return View(await db.Sessions.ToListAsync());
+            return View(await db.Sessions.AsNoTracking().ToListAsync());
         }
 
         // GET: Sessions/Details/5
@@ -43,12 +42,14 @@ namespace StAugustine.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Create([Bind(Include = "Id,SessionName")] Session session)
+        public async Task<ActionResult> Create([Bind(Include = "SessionId,SessionName,ActiveSession")] Session session)
         {
             if (ModelState.IsValid)
             {
                 db.Sessions.Add(session);
                 await db.SaveChangesAsync();
+                TempData["UserMessage"] = "Session Created Successfully.";
+                TempData["Title"] = "Success.";
                 return RedirectToAction("Index");
             }
 
@@ -75,12 +76,14 @@ namespace StAugustine.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit([Bind(Include = "Id,SessionName")] Session session)
+        public async Task<ActionResult> Edit([Bind(Include = "SessionId,SessionName,ActiveSession")] Session session)
         {
             if (ModelState.IsValid)
             {
                 db.Entry(session).State = EntityState.Modified;
                 await db.SaveChangesAsync();
+                TempData["UserMessage"] = "Session Updated Successfully.";
+                TempData["Title"] = "Success.";
                 return RedirectToAction("Index");
             }
             return View(session);
@@ -107,8 +110,10 @@ namespace StAugustine.Controllers
         public async Task<ActionResult> DeleteConfirmed(int id)
         {
             Session session = await db.Sessions.FindAsync(id);
-            db.Sessions.Remove(session);
+            if (session != null) db.Sessions.Remove(session);
             await db.SaveChangesAsync();
+            TempData["UserMessage"] = "Session Deleted Successfully.";
+            TempData["Title"] = "Error.";
             return RedirectToAction("Index");
         }
 

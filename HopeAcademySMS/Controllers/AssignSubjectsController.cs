@@ -1,6 +1,9 @@
-﻿using StAugustine.Models;
+﻿using PagedList;
+using StAugustine.Models;
 using StAugustine.ViewModel;
+using System;
 using System.Data.Entity;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -9,12 +12,56 @@ namespace StAugustine.Controllers
 {
     public class AssignSubjectsController : Controller
     {
-        private ApplicationDbContext db = new ApplicationDbContext();
+        private readonly ApplicationDbContext _db = new ApplicationDbContext();
 
         // GET: AssignSubjects
-        public async Task<ActionResult> Index()
+        public ActionResult Index(string sortOrder, string currentFilter, string search,
+                                         string ClassName, int? page)
         {
-            return View(await db.AssignSubjects.ToListAsync());
+
+            ViewBag.NameSortParm = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
+            if (search == null)
+            {
+
+                page = 1;
+            }
+            else
+            {
+                search = currentFilter;
+            }
+            ViewBag.CurrentFilter = search;
+            var assignedList = from s in _db.AssignSubjects select s;
+            if (!String.IsNullOrEmpty(search))
+            {
+                assignedList = assignedList.Where(s => s.ClassName.ToUpper().Contains(search.ToUpper())
+                                                       || s.SubjectName.ToUpper().Contains(search.ToUpper()));
+
+
+            }
+            else if (!String.IsNullOrEmpty(ClassName))
+            {
+                assignedList = assignedList.Where(s => s.ClassName.ToUpper().Contains(ClassName.ToUpper()));
+
+            }
+            switch (sortOrder)
+            {
+                case "name_desc":
+                    assignedList = assignedList.OrderByDescending(s => s.SubjectName);
+                    break;
+                case "Date":
+                    assignedList = assignedList.OrderBy(s => s.SubjectName);
+                    break;
+                default:
+                    assignedList = assignedList.OrderBy(s => s.ClassName);
+                    break;
+            }
+            int pageSize = 17;
+            int pageNumber = (page ?? 1);
+
+            ViewBag.ClassName = new SelectList(_db.Classes.AsNoTracking(), "FullClassName", "FullClassName");
+
+            return View(assignedList.ToPagedList(pageNumber, pageSize));
+            //return View(await db.AssignSubjects.ToListAsync());
         }
 
         // GET: AssignSubjects/Details/5
@@ -24,7 +71,7 @@ namespace StAugustine.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            AssignSubject assignSubject = await db.AssignSubjects.FindAsync(id);
+            AssignSubject assignSubject = await _db.AssignSubjects.FindAsync(id);
             if (assignSubject == null)
             {
                 return HttpNotFound();
@@ -35,8 +82,8 @@ namespace StAugustine.Controllers
         // GET: AssignSubjects/Create
         public ActionResult Create()
         {
-            ViewBag.SubjectName = new MultiSelectList(db.Subjects, "CourseName", "CourseName");
-            ViewBag.ClassName = new SelectList(db.Classes, "FullClassName", "FullClassName");
+            ViewBag.SubjectName = new MultiSelectList(_db.Subjects.AsNoTracking(), "CourseName", "CourseName");
+            ViewBag.ClassName = new SelectList(_db.Classes.AsNoTracking(), "FullClassName", "FullClassName");
             return View();
         }
 
@@ -49,26 +96,43 @@ namespace StAugustine.Controllers
         {
             if (ModelState.IsValid)
             {
+                int counter = 0;
+                string theClass = "";
                 if (model.SubjectName != null)
                 {
                     foreach (var item in model.SubjectName)
                     {
+                        var CA = _db.AssignSubjects.Where(x => x.ClassName.Equals(model.ClassName)
+                                                              && x.SubjectName.Equals(item));
+                        var countFromDb = await CA.CountAsync();
+                        if (countFromDb >= 1)
+                        {
+                            TempData["UserMessage"] = $"Admin have already assigned {item} subject to {model.ClassName} Class";
+                            TempData["Title"] = "Error.";
+                            ViewBag.SubjectName = new MultiSelectList(_db.Subjects.AsNoTracking(), "CourseName", "CourseName");
+                            ViewBag.ClassName = new SelectList(_db.Classes.AsNoTracking(), "FullClassName", "FullClassName");
+                            return View(model);
+                        }
                         var assigSubject = new AssignSubject()
                         {
                             ClassName = model.ClassName,
                             SubjectName = item,
-
                         };
-                        db.AssignSubjects.Add(assigSubject);
+                        _db.AssignSubjects.Add(assigSubject);
+                        counter += 1;
+                        theClass = model.ClassName;
                     }
 
-                    await db.SaveChangesAsync();
+                    await _db.SaveChangesAsync();
+
+                    TempData["UserMessage"] = $" You have Assigned {counter} Subject(s)  to {theClass} Successfully.";
+                    TempData["Title"] = "Success.";
                     return RedirectToAction("Index", "AssignSubjects");
                 }
             }
 
-            ViewBag.SubjectName = new MultiSelectList(db.Subjects, "CourseName", "CourseName");
-            ViewBag.ClassName = new SelectList(db.Classes, "FullClassName", "FullClassName");
+            ViewBag.SubjectName = new MultiSelectList(_db.Subjects.AsNoTracking(), "CourseName", "CourseName");
+            ViewBag.ClassName = new SelectList(_db.Classes.AsNoTracking(), "FullClassName", "FullClassName");
             return View(model);
         }
 
@@ -79,13 +143,13 @@ namespace StAugustine.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            AssignSubject assignSubject = await db.AssignSubjects.FindAsync(id);
+            AssignSubject assignSubject = await _db.AssignSubjects.FindAsync(id);
             if (assignSubject == null)
             {
                 return HttpNotFound();
             }
-            ViewBag.SubjectName = new SelectList(db.Subjects, "CourseName", "CourseName");
-            ViewBag.ClassName = new SelectList(db.Classes, "FullClassName", "FullClassName");
+            ViewBag.SubjectName = new SelectList(_db.Subjects.AsNoTracking(), "CourseName", "CourseName");
+            ViewBag.ClassName = new SelectList(_db.Classes.AsNoTracking(), "FullClassName", "FullClassName");
             return View(assignSubject);
         }
 
@@ -98,12 +162,15 @@ namespace StAugustine.Controllers
         {
             if (ModelState.IsValid)
             {
-                db.Entry(assignSubject).State = EntityState.Modified;
-                await db.SaveChangesAsync();
+                _db.Entry(assignSubject).State = EntityState.Modified;
+                await _db.SaveChangesAsync();
+
+                TempData["UserMessage"] = "Assigned Subject Updated Successfully.";
+                TempData["Title"] = "Success.";
                 return RedirectToAction("Index");
             }
-            ViewBag.SubjectName = new SelectList(db.Subjects, "CourseName", "CourseName");
-            ViewBag.ClassName = new SelectList(db.Classes, "FullClassName", "FullClassName");
+            ViewBag.SubjectName = new SelectList(_db.Subjects.AsNoTracking(), "CourseName", "CourseName");
+            ViewBag.ClassName = new SelectList(_db.Classes.AsNoTracking(), "FullClassName", "FullClassName");
             return View(assignSubject);
         }
 
@@ -114,7 +181,7 @@ namespace StAugustine.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            AssignSubject assignSubject = await db.AssignSubjects.FindAsync(id);
+            AssignSubject assignSubject = await _db.AssignSubjects.FindAsync(id);
             if (assignSubject == null)
             {
                 return HttpNotFound();
@@ -127,9 +194,11 @@ namespace StAugustine.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DeleteConfirmed(int id)
         {
-            AssignSubject assignSubject = await db.AssignSubjects.FindAsync(id);
-            db.AssignSubjects.Remove(assignSubject);
-            await db.SaveChangesAsync();
+            AssignSubject assignSubject = await _db.AssignSubjects.FindAsync(id);
+            if (assignSubject != null) _db.AssignSubjects.Remove(assignSubject);
+            await _db.SaveChangesAsync();
+            TempData["UserMessage"] = "Subject removed from Class Successfully.";
+            TempData["Title"] = "Deleted.";
             return RedirectToAction("Index");
         }
 
@@ -137,7 +206,7 @@ namespace StAugustine.Controllers
         {
             if (disposing)
             {
-                db.Dispose();
+                _db.Dispose();
             }
             base.Dispose(disposing);
         }

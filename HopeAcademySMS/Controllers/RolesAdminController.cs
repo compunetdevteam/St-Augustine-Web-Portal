@@ -1,19 +1,29 @@
-﻿using StAugustine.Models;
-using Microsoft.AspNet.Identity;
+﻿using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.Owin;
+using StAugustine.Models;
 using System;
 using System.Linq;
+using System.Web;
 using System.Web.Mvc;
 
 namespace StAugustine.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
     public class RolesAdminController : Controller
     {
-        private ApplicationDbContext context = new ApplicationDbContext();
+        private readonly ApplicationDbContext _context = new ApplicationDbContext();
+        private ApplicationUserManager _userManager;
+
+        public ApplicationUserManager UserManager
+        {
+            get { return _userManager ?? HttpContext.GetOwinContext().GetUserManager<ApplicationUserManager>(); }
+            private set { _userManager = value; }
+        }
+
         // GET: RolesAdmin
         public ActionResult Index()
         {
-            var roles = context.Roles.ToList();
+            var roles = _context.Roles.ToList();
             return View(roles);
         }
 
@@ -37,24 +47,30 @@ namespace StAugustine.Controllers
         {
             try
             {
-                context.Roles.Add(new Microsoft.AspNet.Identity.EntityFramework.IdentityRole()
+                _context.Roles.Add(new Microsoft.AspNet.Identity.EntityFramework.IdentityRole()
                 {
                     Name = collection["RoleName"]
                 });
-                context.SaveChanges();
-                ViewBag.ResultMessage = "Role created successfully !";
+                _context.SaveChanges();
+                //ViewBag.ResultMessage = "Role created successfully !";
+
+                // TempData["UserMessage"] = new { CssClassName = "alert-sucess", Title = "Success!", Message = "Roles Added Successfully." };
+                TempData["UserMessage"] = "Roles Added Successfully.";
+                TempData["Title"] = "Success.";
+
                 return RedirectToAction("Index");
             }
             catch
             {
+                TempData["UserMessage"] = "Role is not Added, Please try again later.";
+                TempData["Title"] = "Error.";
                 return View();
             }
         }
         // GET: RolesAdmin/Edit/5
         public ActionResult Edit(string roleName)
         {
-            var thisRole = context.Roles.Where(r => r.Name.Equals(roleName, StringComparison.CurrentCultureIgnoreCase)).FirstOrDefault();
-
+            var thisRole = _context.Roles.FirstOrDefault(r => r.Name.Equals(roleName, StringComparison.CurrentCultureIgnoreCase));
             return View(thisRole);
         }
 
@@ -66,13 +82,16 @@ namespace StAugustine.Controllers
         {
             try
             {
-                context.Entry(role).State = System.Data.Entity.EntityState.Modified;
-                context.SaveChanges();
-
+                _context.Entry(role).State = System.Data.Entity.EntityState.Modified;
+                _context.SaveChanges();
+                TempData["UserMessage"] = "Role Updated Successfully.";
+                TempData["Title"] = "Success.";
                 return RedirectToAction("Index");
             }
             catch
             {
+                TempData["UserMessage"] = "Update is Unsuccessful, Please try again later.";
+                TempData["Title"] = "Error.";
                 return View();
             }
         }
@@ -80,10 +99,13 @@ namespace StAugustine.Controllers
         public ActionResult ManageUserRoles()
         {
             // prepopulat roles for the view dropdown
-            var list = context.Roles.OrderBy(r => r.Name).ToList().Select(rr =>
+            //ViewBag.Roles = new SelectList(_context.Roles, "Name", "Name");
+            var role = _context.Roles.SingleOrDefault(m => m.Name == "Teacher");
+            var staff = UserManager.Users.Where(m => m.Roles.Any(r => r.RoleId == role.Id)).ToList();
 
-            new SelectListItem { Value = rr.Name.ToString(), Text = rr.Name }).ToList();
-            ViewBag.Roles = list;
+            ViewBag.Roles = new SelectList(_context.Roles, "Name", "Name");
+            ViewBag.Username = new SelectList(staff, "Username", "Username");
+
             return View();
         }
 
@@ -91,33 +113,47 @@ namespace StAugustine.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult RoleAddToUser(string UserName, string RoleName)
         {
-            ApplicationUser user = context.Users.Where(u => u.UserName.Equals(UserName, StringComparison.CurrentCultureIgnoreCase)).FirstOrDefault();
-            var account = new AccountController();
-            account.UserManager.AddToRole(user.Id, RoleName);
+            ApplicationUser user = _context.Users.FirstOrDefault(u => u.UserName.Equals(UserName, StringComparison.CurrentCultureIgnoreCase));
+            //var account = new AccountController();
+            UserManager.AddToRole(user.Id, RoleName);
 
             ViewBag.ResultMessage = "Role created successfully !";
 
             // prepopulat roles for the view dropdown
-            var list = context.Roles.OrderBy(r => r.Name).ToList().Select(rr => new SelectListItem { Value = rr.Name.ToString(), Text = rr.Name }).ToList();
-            ViewBag.Roles = list;
+            var role = _context.Roles.SingleOrDefault(m => m.Name == "Teacher" || m.Name == "Form-Teacher");
+            //var usersInRole = db.Users.Where(m => m.Roles.Any(r => r.RoleId == role.Id));
+            var staff = UserManager.Users.Where(m => m.Roles.Any(r => r.RoleId == role.Id)).ToList();
 
+            ViewBag.Roles = new SelectList(_context.Roles, "Name", "Name");
+            ViewBag.Username = new SelectList(staff, "Username", "Username");
             return View("ManageUserRoles");
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult GetRoles(string UserName)
+        public ActionResult GetRoles(string Username)
         {
-            if (!string.IsNullOrWhiteSpace(UserName))
+            if (!string.IsNullOrWhiteSpace(Username))
             {
-                ApplicationUser user = context.Users.Where(u => u.UserName.Equals(UserName, StringComparison.CurrentCultureIgnoreCase)).FirstOrDefault();
-                var account = new AccountController();
+                var user = _context.Users.FirstOrDefault(c => c.UserName.Equals(Username));
+                //ApplicationUser user = _context.Users.FirstOrDefault(u => u.UserName.Equals(Username.Trim(), StringComparison.CurrentCultureIgnoreCase));
+                if (user == null)
+                {
+                    var mlist = _context.Roles.OrderBy(r => r.Name).ToList().Select(rr => new SelectListItem { Value = rr.Name.ToString(), Text = rr.Name }).ToList();
+                    ViewBag.Roles = new SelectList(_context.Roles, "Name", "Name");
+                    ViewBag.Username = new SelectList(_context.Staffs, "Username", "Username");
+                    ViewBag.ClassName = new SelectList(_context.Classes, "FullClassName", "FullClassName");
+                    TempData["UserMessage"] = "Couldn't Find User.";
+                    TempData["Title"] = "Error.";
+                    return View("ManageUserRoles");
+                }
+                //var account = new AccountController();
 
-                ViewBag.RolesForThisUser = account.UserManager.GetRoles(user.Id);
+                ViewBag.RolesForThisUser = UserManager.GetRoles(user.Id);
+                ViewBag.Username = new SelectList(_context.Users, "Username", "Username");
 
-                // prepopulat roles for the view dropdown
-                var list = context.Roles.OrderBy(r => r.Name).ToList().Select(rr => new SelectListItem { Value = rr.Name.ToString(), Text = rr.Name }).ToList();
-                ViewBag.Roles = list;
+
+                ViewBag.Roles = new SelectList(_context.Roles, "Name", "Name");
             }
 
             return View("ManageUserRoles");
@@ -126,9 +162,11 @@ namespace StAugustine.Controllers
         // GET: RolesAdmin/Delete/5
         public ActionResult Delete(string RoleName)
         {
-            var thisRole = context.Roles.Where(r => r.Name.Equals(RoleName, StringComparison.CurrentCultureIgnoreCase)).FirstOrDefault();
-            context.Roles.Remove(thisRole);
-            context.SaveChanges();
+            var thisRole = _context.Roles.FirstOrDefault(r => r.Name.Equals(RoleName, StringComparison.CurrentCultureIgnoreCase));
+            _context.Roles.Remove(thisRole);
+            _context.SaveChanges();
+            TempData["UserMessage"] = "Role deleted Successfully.";
+            TempData["Title"] = "Delete.";
             return RedirectToAction("Index");
         }
 
@@ -136,22 +174,22 @@ namespace StAugustine.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteRoleForUser(string UserName, string RoleName)
         {
-            var account = new AccountController();
-            ApplicationUser user = context.Users.Where(u => u.UserName.Equals(UserName, StringComparison.CurrentCultureIgnoreCase)).FirstOrDefault();
+            //var account = new AccountController();
+            ApplicationUser user = _context.Users.FirstOrDefault(u => u.UserName.Equals(UserName, StringComparison.CurrentCultureIgnoreCase));
 
-            if (account.UserManager.IsInRole(user.Id, RoleName))
+            if (user != null && UserManager.IsInRole(user.Id, RoleName))
             {
-                account.UserManager.RemoveFromRole(user.Id, RoleName);
+                UserManager.RemoveFromRole(user.Id, RoleName);
                 ViewBag.ResultMessage = "Role removed from this user successfully !";
             }
             else
             {
                 ViewBag.ResultMessage = "This user doesn't belong to selected role.";
             }
-            // prepopulat roles for the view dropdown
-            var list = context.Roles.OrderBy(r => r.Name).ToList().Select(rr => new SelectListItem { Value = rr.Name.ToString(), Text = rr.Name }).ToList();
-            ViewBag.Roles = list;
 
+
+            ViewBag.Roles = new SelectList(_context.Roles, "Name", "Name");
+            ViewBag.Username = new SelectList(_context.Users, "Username", "Username");
             return View("ManageUserRoles");
         }
     }

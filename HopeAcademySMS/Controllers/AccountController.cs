@@ -1,11 +1,14 @@
-﻿using StAugustine.Models;
-using StAugustine.ViewModel;
+﻿using HopeAcademySMS.Services;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using OfficeOpenXml;
+using StAugustine.Models;
+using StAugustine.ViewModel;
 using System;
+using System.Data.Entity;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
@@ -16,7 +19,8 @@ namespace StAugustine.Controllers
     [Authorize]
     public class AccountController : Controller
     {
-        private ApplicationDbContext db = new ApplicationDbContext();
+        private readonly ApplicationDbContext _db = new ApplicationDbContext();
+        private string validation = String.Empty;
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
 
@@ -54,6 +58,94 @@ namespace StAugustine.Controllers
             }
         }
 
+        [AllowAnonymous]
+        public async Task<ActionResult> GuardianIndex()
+        {
+            var role = await _db.Roles.AsNoTracking().SingleOrDefaultAsync(m => m.Name == "Guardian");
+            //var usersInRole = db.Users.Where(m => m.Roles.Any(r => r.RoleId == role.Id));
+            return View(await UserManager.Users.AsNoTracking().Where(m => m.Roles.Any(r => r.RoleId == role.Id)).ToListAsync());
+        }
+
+        [AllowAnonymous]
+        public async Task<ActionResult> Index()
+        {
+            return View(await UserManager.Users.ToListAsync());
+        }
+
+
+        //// GET: /Account/Edit/1
+        //public async Task<ActionResult> Edit(string id)
+        //{
+        //    if (id == null)
+        //    {
+        //        return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+        //    }
+        //    var user = await UserManager.FindByIdAsync(id);
+        //    if (user == null)
+        //    {
+        //        return HttpNotFound();
+        //    }
+
+        //    var userRoles = await UserManager.GetRolesAsync(user.Id);
+        //    ViewBag.StudentId = new SelectList(db.Students, "StudentId", "FullName");
+        //    return View(new GuardianViewModel()
+        //    {
+        //        GuardianId = user.Id,
+        //        FirstName = user.FirstName,
+        //        LastName = user.LastName,
+        //        PhoneNumber = user.PhoneNumber,
+        //        Address = user.Address,
+        //        Email = user.Email,
+        //        //RolesList = RoleManager.Roles.ToList().Select(x => new SelectListItem()
+        //        //{
+        //        //    Selected = userRoles.Contains(x.Id),
+        //        //    Text = x.Name,
+        //        //    Value = x.Name
+        //        //})
+        //    });
+        //}
+
+        //// POST: /Users/Edit/5
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<ActionResult> Edit([Bind(Include = "Email,Id")] GuardianViewModel editUser)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        var user = await UserManager.FindByIdAsync(editUser.GuardianId);
+        //        if (user == null)
+        //        {
+        //            return HttpNotFound();
+        //        }
+
+        //        user.UserName = editUser.Username;
+        //        user.Email = editUser.Email;
+
+        //        var userRoles = await UserManager.GetRolesAsync(user.Id);
+
+        //        selectedRole = selectedRole ?? new string[] { };
+
+        //        var result = await UserManager.AddUserToRolesAsync(user.Id, selectedRole.Except(userRoles).ToList<string>());
+
+        //        if (!result.Succeeded)
+        //        {
+        //            ModelState.AddModelError("", result.Errors.First());
+        //            return View();
+        //        }
+        //        result = await UserManager.RemoveUserFromRolesAsync(user.Id, userRoles.Except(selectedRole).ToList<string>());
+
+        //        if (!result.Succeeded)
+        //        {
+        //            ModelState.AddModelError("", result.Errors.First());
+        //            return View();
+        //        }
+        //        return RedirectToAction("Index");
+        //    }
+        //    ModelState.AddModelError("", "Something failed.");
+        //    return View();
+        //}
+
+
         //
         // GET: /Account/Login
         [AllowAnonymous]
@@ -77,7 +169,8 @@ namespace StAugustine.Controllers
 
             // This doesn't count login failures towards account lockout
             // To enable password failures to trigger account lockout, change to shouldLockout: 
-            var user = db.Users.SingleOrDefault(c => c.Email.Equals(model.Email));
+            var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(c => c.Email.Equals(model.Email) || c.PhoneNumber.Equals(model.Email) || c.UserName.Equals(model.Email));
+
             if (user == null)
             {
                 return View("Error1");
@@ -145,7 +238,7 @@ namespace StAugustine.Controllers
         [AllowAnonymous]
         public ActionResult RegisterStaff()
         {
-            ViewBag.Name = new SelectList(db.Roles.ToList(), "Name", "Name").ToList();
+            ViewBag.Name = new SelectList(_db.Roles.AsNoTracking().ToList(), "Name", "Name").ToList();
             //ViewBag.Department = new SelectList(db.Departments.ToList(), "DeptCode", "DeptName");
             return View();
         }
@@ -180,10 +273,11 @@ namespace StAugustine.Controllers
                         StaffPassport = model.StaffPassport,
                         StateOfOrigin = model.StateOfOrigin.ToString(),
                         Gender = model.Gender.ToString(),
+                        Password = model.Password.ToString(),
                         Id = user.Id
                     };
                     db.Staffs.Add(staff);
-                    db.SaveChanges();
+                    await db.SaveChangesAsync();
 
                     //Assign Role to user Here 
                     await this.UserManager.AddToRoleAsync(user.Id, model.Name);
@@ -196,16 +290,195 @@ namespace StAugustine.Controllers
                     // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
                     // var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
                     // await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
-
+                    TempData["UserMessage"] = "Staff Has been Successfully Created.";
+                    TempData["Title"] = "Success.";
                     return RedirectToAction("Index", "Staffs");
                 }
                 AddErrors(result);
             }
 
             // If we got this far, something failed, redisplay form
-            ViewBag.Name = new SelectList(db.Roles.ToList(), "Name", "Name").ToList();
+            ViewBag.Name = new SelectList(_db.Roles.AsNoTracking().ToList(), "Name", "Name").ToList();
             return View(model);
         }
+
+        [AllowAnonymous]
+        public ActionResult UploadTeacher()
+        {
+            return View();
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<ActionResult> UploadTeacher(HttpPostedFileBase excelfile)
+        {
+            if (excelfile == null || excelfile.ContentLength == 0)
+            {
+                ViewBag.Error = "Please Select a excel file <br/>";
+                return View("Index");
+            }
+            else
+            {
+                HttpPostedFileBase file = Request.Files["excelfile"];
+                if (excelfile.FileName.EndsWith("xls") || excelfile.FileName.EndsWith("xlsx"))
+                {
+                    ExcelValidation myExcel = new ExcelValidation();
+                    string lastrecord = "";
+                    int recordCount = 0;
+                    string message = "";
+                    string fileContentType = file.ContentType;
+                    byte[] fileBytes = new byte[file.ContentLength];
+                    var data = file.InputStream.Read(fileBytes, 0, Convert.ToInt32(file.ContentLength));
+
+                    // Read data from excel file
+                    using (var package = new ExcelPackage(file.InputStream))
+                    {
+                        var currentSheet = package.Workbook.Worksheets;
+                        var workSheet = currentSheet.First();
+                        var noOfCol = workSheet.Dimension.End.Column;
+                        var noOfRow = workSheet.Dimension.End.Row;
+                        int requiredField = 12;
+
+                        //string validCheck = ValidateExcel(noOfRow, workSheet);
+                        string validCheck = myExcel.ValidateExcel(noOfRow, workSheet, requiredField);
+                        if (validCheck.Equals("Fail"))
+                        {
+                            string[] ssizes = validCheck.Split(' ');
+                            string[] myArray = new string[2];
+                            for (int i = 0; i < ssizes.Length; i++)
+                            {
+                                myArray[i] = ssizes[i];
+                                // myArray[i] = ssizes[];
+                            }
+                            string lineError = $"Line/Row number {myArray[0]}  and column {myArray[1]} is not rightly formatted, Please Check for anomalies ";
+                            //ViewBag.LineError = lineError;
+                            TempData["UserMessage"] = lineError;
+                            TempData["Title"] = "Error.";
+                            return View();
+                        }
+
+                        for (int row = 2; row <= noOfRow; row++)
+                        {
+
+                            string salutation = workSheet.Cells[row, 1].Value.ToString().Trim();
+                            string firstName = workSheet.Cells[row, 2].Value.ToString().Trim();
+                            string middleName = workSheet.Cells[row, 3].Value.ToString().Trim();
+                            string lastName = workSheet.Cells[row, 4].Value.ToString().Trim();
+                            string phoneNumber = workSheet.Cells[row, 5].Value.ToString().Trim();
+                            string email = workSheet.Cells[row, 6].Value.ToString().Trim();
+                            string gender = workSheet.Cells[row, 7].Value.ToString().Trim();
+                            string address = workSheet.Cells[row, 8].Value.ToString().Trim();
+                            string stateOffOrigin = workSheet.Cells[row, 9].Value.ToString().Trim();
+                            string designation = workSheet.Cells[row, 10].Value.ToString().Trim();
+                            DateTime dateofBirth = DateTime.Parse(workSheet.Cells[row, 11].Value.ToString().Trim());
+                            string maritalStatus = workSheet.Cells[row, 12].Value.ToString().Trim();
+                            string qualification = workSheet.Cells[row, 13].Value.ToString().Trim();
+                            string password = workSheet.Cells[row, 14].Value.ToString().Trim();
+                            string username = firstName.Trim() + " " + lastName.Trim();
+
+                            #region database operation
+
+                            var user = new ApplicationUser { UserName = username, Email = email };
+                            var result = await UserManager.CreateAsync(user, password);
+
+                            if (result.Succeeded)
+                            {
+                                #region Creating New staff
+
+                                try
+                                {
+                                    var staff = new Staff()
+                                    {
+                                        Id = user.Id,
+                                        Salutation = salutation,
+                                        FirstName = firstName,
+                                        MiddleName = middleName,
+                                        LastName = lastName,
+                                        PhoneNumber = phoneNumber,
+                                        Email = email,
+                                        Gender = gender,
+                                        Address = address,
+                                        StateOfOrigin = stateOffOrigin,
+                                        Designation = designation,
+                                        DateOfBirth = dateofBirth,
+                                        MaritalStatus = maritalStatus,
+                                        Qualifications = qualification,
+                                        Password = password
+                                    };
+                                    _db.Staffs.Add(staff);
+                                }
+                                catch (Exception e)
+                                {
+                                    return View();
+                                }
+
+                                #endregion
+
+                                //Assign Role to user Here 
+                                await this.UserManager.AddToRoleAsync(user.Id, "Teacher");
+
+                                recordCount++;
+                                lastrecord = $"The last Updated record has the Last Name {lastName} and First Name {firstName} with staff phonenumber {phoneNumber}";
+
+                            }
+                            #endregion
+                            await _db.SaveChangesAsync();
+                            message = $"You have successfully Uploaded {recordCount} records...  and {lastrecord}";
+                            TempData["UserMessage"] = message;
+                            TempData["Title"] = "Success.";
+                        }
+
+                    }
+
+                    return RedirectToAction("Index", "Staffs");
+                }
+                else
+                {
+                    ViewBag.Error = $"File type is Incorrect <br/>";
+                    return View("Index");
+                }
+
+            }
+        }
+
+        private string ValidateExcel(int noOfRow, ExcelWorksheet workSheet)
+        {
+            for (int row = 2; row <= noOfRow; row++)
+            {
+                try
+                {
+                    string salutation = workSheet.Cells[row, 1].Value.ToString().Trim();
+                    string firstName = workSheet.Cells[row, 2].Value.ToString().Trim();
+                    string middleName = workSheet.Cells[row, 3].Value.ToString().Trim();
+                    string lastName = workSheet.Cells[row, 4].Value.ToString().Trim();
+                    string phoneNumber = workSheet.Cells[row, 5].Value.ToString().Trim();
+                    string email = workSheet.Cells[row, 6].Value.ToString().Trim();
+                    string gender = workSheet.Cells[row, 7].Value.ToString().Trim();
+                    string address = workSheet.Cells[row, 8].Value.ToString().Trim();
+                    string stateOffOrigin = workSheet.Cells[row, 9].Value.ToString().Trim();
+                    string designation = workSheet.Cells[row, 10].Value.ToString().Trim();
+                    DateTime dateofBirth = DateTime.Parse(workSheet.Cells[row, 11].Value.ToString().Trim());
+                    string maritalStatus = workSheet.Cells[row, 12].Value.ToString().Trim();
+                    string qualification = workSheet.Cells[row, 13].Value.ToString().Trim();
+                    string password = workSheet.Cells[row, 14].Value.ToString().Trim();
+                    string username = firstName.Trim() + " " + lastName.Trim();
+
+                }
+                catch (Exception e)
+                {
+                    validation = row.ToString();
+                    return "Fail";
+                }
+            }
+            return "Success";
+        }
+
+        //public ActionResult ShowError(string rowNumber)
+        //{
+        //    string lineError = $"Line/Row number {rowNumber} is not rightly formatted, Please Check for anomalies ";
+        //    ViewBag.LineError = lineError;
+        //    return View("Error3");
+        //}
 
 
         [AllowAnonymous]
@@ -228,6 +501,9 @@ namespace StAugustine.Controllers
                 HttpPostedFileBase file = Request.Files["excelfile"];
                 if (excelfile.FileName.EndsWith("xls") || excelfile.FileName.EndsWith("xlsx"))
                 {
+                    string lastrecord = "";
+                    int recordCount = 0;
+                    string message = "";
                     string fileContentType = file.ContentType;
                     byte[] fileBytes = new byte[file.ContentLength];
                     var data = file.InputStream.Read(fileBytes, 0, Convert.ToInt32(file.ContentLength));
@@ -235,45 +511,121 @@ namespace StAugustine.Controllers
                     // Read data from excel file
                     using (var package = new ExcelPackage(file.InputStream))
                     {
+                        ExcelValidation myExcel = new ExcelValidation();
                         var currentSheet = package.Workbook.Worksheets;
                         var workSheet = currentSheet.First();
                         var noOfCol = workSheet.Dimension.End.Column;
                         var noOfRow = workSheet.Dimension.End.Row;
+                        int requiredField = 11;
+
+                        string validCheck = myExcel.ValidateExcel(noOfRow, workSheet, requiredField);
+                        if (!validCheck.Equals("Success"))
+                        {
+                            //string row = "";
+                            //string column = "";
+                            string[] ssizes = validCheck.Split(' ');
+                            string[] myArray = new string[2];
+                            for (int i = 0; i < ssizes.Length; i++)
+                            {
+                                myArray[i] = ssizes[i];
+                                // myArray[i] = ssizes[];
+                            }
+                            string lineError = $"Line/Row number {myArray[0]}  and column {myArray[1]} is not rightly formatted, Please Check for anomalies ";
+                            //ViewBag.LineError = lineError;
+                            TempData["UserMessage"] = lineError;
+                            TempData["Title"] = "Error.";
+                            return View();
+                        }
 
                         for (int row = 2; row <= noOfRow; row++)
                         {
-                            string salutation = workSheet.Cells[row, 1].Value.ToString();
-                            string firstName = workSheet.Cells[row, 2].Value.ToString();
-                            string middleName = workSheet.Cells[row, 3].Value.ToString();
-                            string lastName = workSheet.Cells[row, 4].Value.ToString();
-                            string email = workSheet.Cells[row, 5].Value.ToString();
-                            string gender = workSheet.Cells[row, 6].Value.ToString();
-                            string phoneNumber = workSheet.Cells[row, 7].Value.ToString();
-                            string address = workSheet.Cells[row, 8].Value.ToString();
-                            string occupation = workSheet.Cells[row, 9].Value.ToString();
-                            string relationship = workSheet.Cells[row, 10].Value.ToString();
-                            string password = workSheet.Cells[row, 11].Value.ToString();
-                            string username = firstName.Trim() + " " + lastName.Trim();
-
-                            var user = new ApplicationUser { UserName = username, Email = email };
-                            var result = await UserManager.CreateAsync(user, password);
-                            if (result.Succeeded)
+                            try
                             {
-                                var db = new ApplicationDbContext();
+                                //string studentId = workSheet.Cells[row, 1].Value.ToString().Trim();
+                                string salutation = workSheet.Cells[row, 1].Value.ToString().Trim();
+                                string firstName = workSheet.Cells[row, 2].Value.ToString().Trim();
+                                string middleName = workSheet.Cells[row, 3].Value.ToString().Trim();
+                                string lastName = workSheet.Cells[row, 4].Value.ToString().Trim();
+                                string email = workSheet.Cells[row, 5].Value.ToString().Trim();
+                                string gender = workSheet.Cells[row, 6].Value.ToString().Trim();
+                                string phoneNumber = workSheet.Cells[row, 7].Value.ToString().Trim();
+                                string address = workSheet.Cells[row, 8].Value.ToString().Trim();
+                                string occupation = workSheet.Cells[row, 9].Value.ToString().Trim();
+                                string relationship = workSheet.Cells[row, 10].Value.ToString().Trim();
+                                string password = workSheet.Cells[row, 11].Value.ToString().Trim();
+                                string username = firstName.Trim() + " " + lastName.Trim();
 
-                                var guardian = new Guardian(user.Id, salutation.Trim(), firstName.Trim(),
-                                    middleName.Trim(), lastName.Trim(),
-                                    gender.Trim(), address.Trim(), phoneNumber.Trim(), email.Trim(), relationship.Trim(),
-                                    occupation.Trim());
-                                db.Guardians.Add(guardian);
+                                var user = new ApplicationUser
+                                {
+                                    UserName = username,
+                                    Email = email.Trim(),
+                                    PhoneNumber = phoneNumber.Trim(),
 
-                                //Assign Role to user Here 
-                                await this.UserManager.AddToRoleAsync(user.Id, "Guardian");
-                                db.SaveChanges();
+                                };
+                                var result = await UserManager.CreateAsync(user, password);
+                                if (result.Succeeded)
+                                {
+                                    #region guardian comment code
+                                    var guardian = new Guardian()
+                                    {
+                                        GuardianId = user.Id,
+                                        Salutation = salutation.Trim(),
+                                        FirstName = firstName.Trim(),
+                                        MiddleName = middleName.Trim(),
+                                        LastName = lastName.Trim(),
+                                        Gender = gender.Trim(),
+                                        Address = address.Trim(),
+                                        PhoneNumber = phoneNumber.Trim(),
+                                        GuardianEmail = email.Trim(),
+                                        Relationship = relationship.Trim(),
+                                        Occupation = occupation.Trim(),
+                                        Password = password
+                                    };
+
+                                    //var guardian = new Guardian()
+                                    //{
+                                    //    GuardianId = user.Id,
+                                    //    StudentId = studentId,
+                                    //    FirstName = firstName,
+                                    //    MiddleName = middleName,
+                                    //    LastName = lastName,
+                                    //    PhoneNumber = phoneNumber,
+                                    //    GuardianEmail = email,
+                                    //    Address = address,
+                                    //    Relationship = relationship,
+                                    //    Occupation = occupation,
+                                    //    Gender = gender
+                                    //};
+                                    //db.Guardians.Add(guardian); 
+                                    #endregion
+                                    //Student mystudent = db.Students.Find(studentId);
+
+                                    //if (mystudent != null)
+                                    //{
+                                    //    var student = new Student(mystudent.StudentId, mystudent.FirstName, mystudent.MiddleName, mystudent.LastName,
+                                    //        mystudent.Gender, mystudent.DateOfBirth, mystudent.AdmissionDate,
+                                    //        mystudent.StudentPassport, true, false);
+                                    //    db.Entry(student).State = EntityState.Modified;
+                                    //}
+
+                                    //Assign Role to user Here 
+                                    await this.UserManager.AddToRoleAsync(user.Id, "Guardian");
+                                    recordCount++;
+                                    lastrecord =
+                                        $"The last Updated record has the Last Name {lastName} and First Name {firstName} with Phone Number {phoneNumber}";
+                                }
                             }
+                            catch (Exception e)
+                            {
+                                return View("Error3");
+                            }
+                           await _db.SaveChangesAsync();
+                            message = $"You have successfully Uploaded {recordCount} records...  and {lastrecord}";
+                            TempData["UserMessage"] = message;
+                            TempData["Title"] = "Success.";
                         }
 
-                        return RedirectToAction("Index", "Guardians");
+                        return RedirectToAction("GuardianIndex", "Account");
                     }
                 }
                 else
@@ -282,9 +634,6 @@ namespace StAugustine.Controllers
                     return View("UpLoadGuardian");
                 }
             }
-
-
-
         }
 
         //
@@ -292,7 +641,7 @@ namespace StAugustine.Controllers
         [AllowAnonymous]
         public ActionResult RegisterGuardian()
         {
-            ViewBag.StudentId = new SelectList(db.Students, "StudentId", "FullName");
+            ViewBag.StudentId = new SelectList(_db.Students, "StudentId", "FullName");
             return View();
         }
 
@@ -303,19 +652,63 @@ namespace StAugustine.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> RegisterGuardian(GuardianViewModel model)
         {
+
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = model.Username, Email = model.Email };
+                string studentUpdated = "";
+                ApplicationUser user = new ApplicationUser()
+                {
+                    UserName = model.Username,
+                    Email = model.Email.Trim(),
+                    PhoneNumber = model.PhoneNumber.Trim(),
+
+
+                    //DateOfBirth = DateTime.Now
+                };
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
-                    var db = new ApplicationDbContext();
-                    var guardian = new Guardian(user.Id, model.Salutation.ToString(),
-                                            model.FirstName, model.MiddleName, model.LastName, model.Gender.ToString(),
-                                            model.PhoneNumber, model.Address, model.Email, model.Relationship.ToString(), model.Occupation);
+                    #region Guardian
+                    //var db = new ApplicationDbContext();
+                    ////var guardian = new Guardian(user.Id, model.Salutation.ToString(),
+                    ////                        model.FirstName, model.MiddleName, model.LastName, model.Gender.ToString(),
+                    ////                        model.PhoneNumber, model.Address, model.Email, model.Relationship.ToString(), model.Occupation);
+                    var guardian = new Guardian()
+                    {
+                        GuardianId = user.Id,
+                        //StudentId = model.StudentId,
+                        FirstName = model.FirstName,
+                        MiddleName = model.MiddleName,
+                        LastName = model.LastName,
+                        PhoneNumber = model.PhoneNumber,
+                        GuardianEmail = model.Email,
+                        Address = model.Address,
+                        Relationship = model.Relationship.ToString(),
+                        Occupation = model.Occupation,
+                        Gender = model.Gender.ToString(),
+                        FullName = model.Username,
+                        Password = model.Password
+                    };
+                    //db.Guardians.Add(guardian); 
+                    #endregion
 
-                    db.Guardians.Add(guardian);
-                    db.SaveChanges();
+                    //Student mystudent = db.Students.Find(model.StudentId);
+
+                    //if (mystudent != null)
+                    //{
+                    //    using (ApplicationDbContext ent = new ApplicationDbContext())
+                    //    {
+                    //        var student = new Student(mystudent.StudentId, mystudent.FirstName, mystudent.MiddleName,
+                    //            mystudent.LastName,
+                    //            mystudent.Gender, mystudent.DateOfBirth, mystudent.AdmissionDate,
+                    //            mystudent.StudentPassport, true, false);
+                    //        ent.Entry(student).State = EntityState.Modified;
+                    //        ent.SaveChanges();
+                    //    }
+                    //}
+                    //studentUpdated =
+                    //    $"The Student assigned to this User has the First Name of {mystudent.FirstName} and Last Name of {mystudent.LastName}";
+                    //db.SaveChanges();
 
                     //Assign Role to user Here 
                     await this.UserManager.AddToRoleAsync(user.Id, "Guardian");
@@ -329,11 +722,13 @@ namespace StAugustine.Controllers
                     // var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
                     // await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
 
-                    return RedirectToAction("Index", "Guardians");
+                    TempData["UserMessage"] = "Parent/Guardian Created Successfully." + studentUpdated;
+                    TempData["Title"] = "Success.";
+                    return RedirectToAction("Index", "Account");
                 }
                 AddErrors(result);
             }
-            ViewBag.StudentId = new SelectList(db.Students, "StudentId", "FullName");
+            ViewBag.StudentId = new SelectList(_db.Students.AsNoTracking(), "StudentId", "FullName");
             // If we got this far, something failed, redisplay form
             return View(model);
         }
@@ -344,7 +739,7 @@ namespace StAugustine.Controllers
         [AllowAnonymous]
         public ActionResult Register()
         {
-            ViewBag.Class = new SelectList(db.Classes, "MyClassName", "MyClassName");
+            ViewBag.Class = new SelectList(_db.Classes.AsNoTracking(), "MyClassName", "MyClassName");
             return View();
         }
 
@@ -374,7 +769,7 @@ namespace StAugustine.Controllers
                     // var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
                     // await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
 
-                    return RedirectToAction("Index", "Home");
+                    return RedirectToAction("Dashboard", "Students");
                 }
                 AddErrors(result);
             }
@@ -725,7 +1120,7 @@ namespace StAugustine.Controllers
             {
                 return Redirect(returnUrl);
             }
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Dashboard", "Students");
         }
 
         internal class ChallengeResult : HttpUnauthorizedResult
@@ -757,5 +1152,68 @@ namespace StAugustine.Controllers
             }
         }
         #endregion
+
+        public ActionResult Details(string id)
+        {
+            throw new NotImplementedException();
+        }
+
+        // GET: /Users/Delete/5
+        [AllowAnonymous]
+        public async Task<ActionResult> Delete(string id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            var user = await UserManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return HttpNotFound();
+            }
+            return View(user);
+        }
+
+        //
+        // POST: /Users/Delete/5
+        [AllowAnonymous]
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> DeleteConfirmed(string id)
+        {
+            if (ModelState.IsValid)
+            {
+                if (id == null)
+                {
+                    return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                }
+
+                var user = await UserManager.FindByIdAsync(id);
+                if (user == null)
+                {
+                    return HttpNotFound();
+                }
+                var result = await UserManager.DeleteAsync(user);
+                if (!result.Succeeded)
+                {
+                    ModelState.AddModelError("", result.Errors.First());
+                    return View();
+                }
+                return RedirectToAction("Index");
+            }
+            return View();
+        }
+
+        private async Task DeleteUser(string id)
+        {
+            var user = UserManager.Users.FirstOrDefault(x => x.UserName.Equals(id));
+            // var user = await UserManager.FindByIdAsync(id);
+            var result = await UserManager.DeleteAsync(user);
+            if (!result.Succeeded)
+            {
+                ModelState.AddModelError("", result.Errors.First());
+
+            }
+        }
     }
 }

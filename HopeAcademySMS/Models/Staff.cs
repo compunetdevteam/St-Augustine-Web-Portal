@@ -10,7 +10,12 @@ namespace StAugustine.Models
         public string FirstName { get; set; }
         public string MiddleName { get; set; }
         public string LastName { get; set; }
+        //[Index(IsUnique = true)]
+        //[MaxLength(20)]
         public string PhoneNumber { get; set; }
+
+        //[Index(IsUnique = true)]
+        //[MaxLength(20)]
         public string Email { get; set; }
         public string Gender { get; set; }
         public string Address { get; set; }
@@ -20,8 +25,8 @@ namespace StAugustine.Models
         public DateTime DateOfBirth { get; set; }
         public string MaritalStatus { get; set; }
         public string Qualifications { get; set; }
-
-        public string Username => $"{FirstName} {LastName}";
+        public string Password { get; set; }
+        public string Username => $"{this.FirstName} {this.LastName}";
 
         public virtual ICollection<AssignedClass> AssignedClasses { get; set; }
         public virtual ICollection<Subject> Subjects { get; set; }
