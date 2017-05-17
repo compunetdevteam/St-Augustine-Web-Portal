@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using static StAugustine.Models.PopUp;
+using static SwiftSkool.Models.PopUp;
 
-namespace StAugustine.ViewModel
+namespace SwiftSkool.ViewModel
 {
     public class AffectiveViewModel
     {

@@ -1,11 +1,11 @@
-﻿using StAugustine.Models;
+﻿using SwiftSkool.Models;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.IO;
 using System.Web;
 
-namespace StAugustine.ViewModel
+namespace SwiftSkool.ViewModel
 {
     public class StaffViewModel
     {

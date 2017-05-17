@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Configuration;
 
-namespace StAugustine.Services
+namespace SwiftSkool.Services
 {
     public class ConfigService
     {

@@ -6,9 +6,9 @@ using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
-using StAugustine.Models;
+using SwiftSkool.Models;
 
-namespace StAugustine.Controllers
+namespace SwiftSkool.Controllers
 {
     [Authorize]
     public class ManageController : Controller

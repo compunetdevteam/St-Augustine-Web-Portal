@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace StAugustine.ViewModel
+namespace SwiftSkool.ViewModel
 {
     public class AssignSubjectViewModel
     {

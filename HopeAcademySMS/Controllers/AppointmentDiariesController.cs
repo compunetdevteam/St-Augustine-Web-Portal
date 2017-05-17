@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
-using StAugustine.Calender;
-using StAugustine.Models;
+using SwiftSkool.Calender;
+using SwiftSkool.Models;
 
 namespace HopeAcademySMS.Controllers
 {

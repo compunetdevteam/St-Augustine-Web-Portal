@@ -1,12 +1,12 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using StAugustine.Controllers;
+using SwiftSkool.Controllers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StAugustine.Controllers.Tests
+namespace SwiftSkool.Controllers.Tests
 {
     [TestClass()]
     public class StudentsControllerTests

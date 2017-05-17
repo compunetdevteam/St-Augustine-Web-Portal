@@ -1,4 +1,4 @@
-﻿namespace StAugustine.Models.CBT
+﻿namespace SwiftSkool.Models.CBT
 {
     public class StudentQuestion
     {

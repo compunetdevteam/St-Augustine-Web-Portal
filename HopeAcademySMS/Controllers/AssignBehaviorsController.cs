@@ -1,5 +1,5 @@
 ﻿using PagedList;
-using StAugustine.Models;
+using SwiftSkool.Models;
 using System;
 using System.Data.Entity;
 using System.Linq;

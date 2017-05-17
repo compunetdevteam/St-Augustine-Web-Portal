@@ -1,4 +1,4 @@
-﻿using StAugustine.Models;
+﻿using SwiftSkool.Models;
 using System;
 using System.Data.Entity;
 using System.Net;
@@ -9,12 +9,12 @@ namespace HopeAcademySMS.Controllers
 {
     public class SubjectsController : Controller
     {
-        private ApplicationDbContext db = new ApplicationDbContext();
+        private readonly ApplicationDbContext _db = new ApplicationDbContext();
 
         // GET: Subjects
         public async Task<ActionResult> Index()
         {
-            return View(await db.Subjects.ToListAsync());
+            return View(await _db.Subjects.ToListAsync());
         }
 
         // GET: Subjects/Details/5
@@ -24,7 +24,7 @@ namespace HopeAcademySMS.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Subject subject = await db.Subjects.FindAsync(id);
+            Subject subject = await _db.Subjects.FindAsync(id);
             if (subject == null)
             {
                 return HttpNotFound();
@@ -43,14 +43,14 @@ namespace HopeAcademySMS.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Create([Bind(Include = "SubjectId,CourseCode,CourseName,SubjectUnit")] Subject subject)
+        public async Task<ActionResult> Create([Bind(Include = "SubjectId,CourseCode,CourseName")] Subject subject)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
-                    db.Subjects.Add(subject);
-                    await db.SaveChangesAsync();
+                    _db.Subjects.Add(subject);
+                    await _db.SaveChangesAsync();
                 }
                 catch (Exception e)
                 {
@@ -74,7 +74,7 @@ namespace HopeAcademySMS.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Subject subject = await db.Subjects.FindAsync(id);
+            Subject subject = await _db.Subjects.FindAsync(id);
             if (subject == null)
             {
                 return HttpNotFound();
@@ -87,13 +87,13 @@ namespace HopeAcademySMS.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit([Bind(Include = "SubjectId,CourseCode,CourseName,SubjectUnit")] Subject subject)
+        public async Task<ActionResult> Edit([Bind(Include = "SubjectId,CourseCode,CourseName")] Subject subject)
         {
             if (ModelState.IsValid)
             {
-                db.Entry(subject).State = EntityState.Modified;
-                await db.SaveChangesAsync();
-                await db.SaveChangesAsync();
+                _db.Entry(subject).State = EntityState.Modified;
+                await _db.SaveChangesAsync();
+                await _db.SaveChangesAsync();
                 TempData["UserMessage"] = "Subject Saved Updated Successfully.";
                 TempData["Title"] = "Success.";
                 return RedirectToAction("Index");
@@ -108,7 +108,7 @@ namespace HopeAcademySMS.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Subject subject = await db.Subjects.FindAsync(id);
+            Subject subject = await _db.Subjects.FindAsync(id);
             if (subject == null)
             {
                 return HttpNotFound();
@@ -121,9 +121,9 @@ namespace HopeAcademySMS.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DeleteConfirmed(int id)
         {
-            Subject subject = await db.Subjects.FindAsync(id);
-            db.Subjects.Remove(subject);
-            await db.SaveChangesAsync();
+            Subject subject = await _db.Subjects.FindAsync(id);
+            _db.Subjects.Remove(subject);
+            await _db.SaveChangesAsync();
             TempData["UserMessage"] = "Subject Deleted Successfully.";
             TempData["Title"] = "Deleted.";
             return RedirectToAction("Index");
@@ -133,7 +133,7 @@ namespace HopeAcademySMS.Controllers
         {
             if (disposing)
             {
-                db.Dispose();
+                _db.Dispose();
             }
             base.Dispose(disposing);
         }

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace HopeAcademySMS.Models
+namespace SwiftSkool.Models
 {
     public class SubjectRegistration
     {

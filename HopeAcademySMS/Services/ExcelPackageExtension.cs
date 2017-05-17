@@ -2,7 +2,7 @@
 using System.Data;
 using System.Linq;
 
-namespace StAugustine.Services
+namespace SwiftSkool.Services
 {
     public static class ExcelPackageExtension
     {

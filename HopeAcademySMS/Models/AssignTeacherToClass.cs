@@ -1,4 +1,4 @@
-﻿namespace StAugustine.Models
+﻿namespace SwiftSkool.Models
 {
     public class AssignFormTeacherToClass
     {

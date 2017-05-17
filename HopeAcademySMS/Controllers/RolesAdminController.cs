@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
-using StAugustine.Models;
+using SwiftSkool.Models;
 using System;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 
-namespace StAugustine.Controllers
+namespace SwiftSkool.Controllers
 {
     //[Authorize(Roles = "Admin")]
     public class RolesAdminController : Controller

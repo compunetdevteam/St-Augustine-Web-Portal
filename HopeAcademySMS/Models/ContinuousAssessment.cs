@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace StAugustine.Models
+namespace SwiftSkool.Models
 {
     public class ContinuousAssessment
     {
@@ -29,17 +29,20 @@ namespace StAugustine.Models
         [Required(ErrorMessage = "Class Name is required")]
         public string ClassName { get; set; }
 
-        [Display(Name = "Score for Project")]
-        [Required(ErrorMessage = "Assignment is required")]
-        public double ProjectScore { get; set; }
+        [Display(Name = "Score for First Test")]
+        //[Required(ErrorMessage = "First Test is required")]
+        [Range(0, 10, ErrorMessage = "Enter number between 0 to 10")]
+        public double FirstTest { get; set; }
 
-        [Display(Name = "Score for Assignment")]
-        [Required(ErrorMessage = "Assignment is required")]
-        public double Assignment { get; set; }
+        [Display(Name = "Score for Second Test")]
+        //[Required(ErrorMessage = "Second Test is required")]
+        [Range(0, 10, ErrorMessage = "Enter number between 0 to 10")]
+        public double SecondTest { get; set; }
 
-        [Display(Name = "CA Score")]
-        [Required(ErrorMessage = "CA score is required")]
-        public double Test { get; set; }
+        [Display(Name = "Score Third Test")]
+        //[Required(ErrorMessage = "Third Test score is required")]
+        [Range(0, 10, ErrorMessage = "Enter number between 0 to 10")]
+        public double ThirdTest { get; set; }
 
 
         [Display(Name = "Exam Score")]
@@ -58,7 +61,7 @@ namespace StAugustine.Models
         {
             get
             {
-                double sum = ProjectScore + Assignment + Test + ExamScore;
+                double sum = FirstTest + SecondTest + ThirdTest + ExamScore;
                 return sum;
             }
             private set { }
@@ -66,15 +69,12 @@ namespace StAugustine.Models
 
         public string Grading
         {
-            #region Checking grade
 
             get
             {
                 return _myGradeRemark.Grading(Total, ClassName);
             }
             private set { }
-
-            #endregion
 
         }
 
@@ -91,26 +91,22 @@ namespace StAugustine.Models
             #endregion
         }
 
-        public int GradePoint
-        {
-            #region Checking grade
+        //public int GradePoint
+        //{
+        //    get
+        //    {
+        //        return _myGradeRemark.GradingPoint(Total, ClassName);
+        //    }
+        //    private set { }
+        //}
 
-            get
-            {
-                return _myGradeRemark.GradingPoint(Total, ClassName);
-            }
-            private set { }
-
-            #endregion
-        }
-
-        public int QualityPoint
-        {
-            get
-            {
-                return 2 * GradePoint;
-            }
-            private set { }
-        }
+        //public int QualityPoint
+        //{
+        //    get
+        //    {
+        //        return 2 * GradePoint;
+        //    }
+        //    private set { }
+        //}
     }
 }

@@ -1,4 +1,4 @@
-﻿@using StAugustine.Models
+﻿@using SwiftSkool.Models
 @model LoginViewModel
 @{
     ViewBag.Title = "Log in";
@@ -7,13 +7,13 @@
 <section class="section-account">
 
     <div class="spacer"></div>
-    <div class="img-backdrop" style="background-image: url('../../Content/images/DSC_7065.JPG');"></div>
+    <div class="img-backdrop" style="background-image:url('../../Content/images/kingsqueen.jpeg');"></div>
     <div class="card contain-sm style-transparent">
         <div class="card-body">
             <div class="row">
                 <div class="col-sm-6">
                     <br />
-                    <span class="text-lg text-bold text-primary">ST AUGUSTINE COLLEGE DU</span>
+                    <span class="text-lg text-bold text-primary">@System.Configuration.ConfigurationManager.AppSettings["SchoolName"]</span>
                     <br /><br />
                    @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
             {

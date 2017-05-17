@@ -1,4 +1,4 @@
-﻿@model IEnumerable<StAugustine.Models.ContinuousAssessment>
+﻿@model IEnumerable<SwiftSkool.Models.ContinuousAssessment>
 
 @{
     ViewBag.Title = "Index";
@@ -27,13 +27,13 @@
             @Html.DisplayNameFor(model => model.ClassName)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.ProjectScore)
+            @Html.DisplayNameFor(model => model.FirstTest)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Assignment)
+            @Html.DisplayNameFor(model => model.SecondTest)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Test)
+            @Html.DisplayNameFor(model => model.ThirdTest)
         </th>
       
         <th>
@@ -73,13 +73,13 @@
                 @Html.DisplayFor(modelItem => item.ClassName)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.ProjectScore)
+                @Html.DisplayFor(modelItem => item.FirstTest)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Assignment)
+                @Html.DisplayFor(modelItem => item.SecondTest)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Test)
+                @Html.DisplayFor(modelItem => item.ThirdTest)
             </td>
           
             <td>

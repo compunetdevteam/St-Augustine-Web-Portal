@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace StAugustine.Models.Objects
+namespace SwiftSkool.Models.Objects
 {
     public class Comment
     {
@@ -13,7 +10,7 @@ namespace StAugustine.Models.Objects
         public string Name { get; set; }
         public string Email { get; set; }
         public string Body { get; set; }
-    
+
         public virtual Post Post { get; set; }
     }
 }

@@ -1,9 +1,9 @@
-﻿using StAugustine.Calender;
-using StAugustine.Models;
+﻿using SwiftSkool.Calender;
+using SwiftSkool.Models;
 using System;
 using System.Linq;
 
-namespace StAugustine.Services
+namespace SwiftSkool.Services
 {
     public class Utils
     {

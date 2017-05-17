@@ -3,12 +3,12 @@ using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin;
 using Microsoft.Owin.Security;
-using StAugustine.Models;
+using SwiftSkool.Models;
 using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace StAugustine
+namespace SwiftSkool
 {
     public class EmailService : IIdentityMessageService
     {

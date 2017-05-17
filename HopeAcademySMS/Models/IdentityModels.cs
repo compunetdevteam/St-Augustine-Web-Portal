@@ -1,13 +1,13 @@
 ﻿using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
-using StAugustine.Calender;
-using StAugustine.Models.CBT;
-using StAugustine.Models.Objects;
+using SwiftSkool.Calender;
+using SwiftSkool.Models.CBT;
+using SwiftSkool.Models.Objects;
 using System.Data.Entity;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace StAugustine.Models
+namespace SwiftSkool.Models
 {
     // You can add profile data for the user by adding more properties to your ApplicationUser class, please visit http://go.microsoft.com/fwlink/?LinkID=317594 to learn more.
     public class ApplicationUser : IdentityUser
@@ -75,7 +75,7 @@ namespace StAugustine.Models
 
 
 
-        public DbSet<CBT.QuestionAnswer> QuestionAnswers { get; set; }
+        public DbSet<QuestionAnswer> QuestionAnswers { get; set; }
         public DbSet<CBT.StudentQuestion> StudentQuestions { get; set; }
 
         public DbSet<ExamRule> ExamRules { get; set; }
@@ -92,16 +92,18 @@ namespace StAugustine.Models
 
         public DbSet<AppointmentDiary> AppointmentDiary { get; set; }
 
-        public System.Data.Entity.DbSet<HopeAcademySMS.Models.SubjectRegistration> SubjectRegistrations { get; set; }
+        public DbSet<SubjectRegistration> SubjectRegistrations { get; set; }
 
-        public System.Data.Entity.DbSet<StAugustine.Models.SchoolClass> SchoolClasses { get; set; }
+        public DbSet<SchoolClass> SchoolClasses { get; set; }
 
-        public System.Data.Entity.DbSet<StAugustine.Models.BehaviorSkillCategory> BehaviorSkillCategories { get; set; }
+        public DbSet<BehaviorSkillCategory> BehaviorSkillCategories { get; set; }
 
-        public System.Data.Entity.DbSet<StAugustine.Models.BehaviouralSkill> BehaviouralSkills { get; set; }
+        public DbSet<BehaviouralSkill> BehaviouralSkills { get; set; }
 
-        public System.Data.Entity.DbSet<StAugustine.Models.AssignBehavior> AssignBehaviors { get; set; }
+        public DbSet<AssignBehavior> AssignBehaviors { get; set; }
 
-        public System.Data.Entity.DbSet<StAugustine.Models.ReportCard> ReportCards { get; set; }
+        public DbSet<ReportCard> ReportCards { get; set; }
+
+        public System.Data.Entity.DbSet<HopeAcademySMS.Models.HomePageSetUp> HomePageSetUps { get; set; }
     }
 }

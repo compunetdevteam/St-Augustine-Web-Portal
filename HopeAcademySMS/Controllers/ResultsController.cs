@@ -1,7 +1,7 @@
 ﻿using PagedList;
-using StAugustine.BusinessLogic;
-using StAugustine.Models;
-using StAugustine.ViewModel;
+using SwiftSkool.BusinessLogic;
+using SwiftSkool.Models;
+using SwiftSkool.ViewModel;
 using System;
 using System.Data.Entity;
 using System.Linq;
@@ -9,7 +9,7 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 
-namespace StAugustine.Controllers
+namespace SwiftSkool.Controllers
 {
     public class ResultsController : Controller
     {
@@ -167,7 +167,7 @@ namespace StAugustine.Controllers
                                 Average = Math.Round(await _resultCommand.CalculateAverage(studentNumber, model.ClassName, model.TermName, model.SessionName), 2),
                                 SubjectPosition = _resultCommand.FindSubjectPosition(studentNumber, model.SubjectCode, model.ClassName, model.TermName, model.SessionName),
                                 AggretateScore = Math.Round(await _resultCommand.TotalScorePerStudent(studentNumber, model.ClassName, model.TermName, model.SessionName), 2),
-                                TotalQualityPoint = Math.Round(await _resultCommand.TotalQualityPoint(studentNumber, model.ClassName, model.TermName, model.SessionName), 2),
+                                // TotalQualityPoint = Math.Round(await _resultCommand.TotalQualityPoint(studentNumber, model.ClassName, model.TermName, model.SessionName), 2),
                                 TotalCreditUnit = Math.Round(await _resultCommand.TotalcreditUnit(model.ClassName), 2),
                                 SubjectHighest = Math.Round(await _resultCommand.SubjectHighest(model.SubjectCode, model.ClassName, model.TermName, model.SessionName), 2),
                                 SubjectLowest = Math.Round(await _resultCommand.SubjectLowest(model.SubjectCode, model.ClassName, model.TermName, model.SessionName), 2)
@@ -211,7 +211,8 @@ namespace StAugustine.Controllers
             }
             var myStudent = new ResultViewModel()
             {
-                ResultId = result.ResultId
+                ResultId = result.ResultId,
+                StudentId = result.StudentId
             };
             ViewBag.SubjectCode = new SelectList(_db.Subjects.AsNoTracking(), "CourseCode", "CourseName");
             //ViewBag.StudentId = new SelectList(db.Students, "StudentID", "FullName");
@@ -223,32 +224,31 @@ namespace StAugustine.Controllers
 
         // POST: Results/Edit/5
         [HttpPost]
-        public ActionResult Edit(ResultViewModel model)
+        public async Task<ActionResult> Edit(ResultViewModel model)
         {
             if (ModelState.IsValid)
             {
+                string studentNumber = model.StudentId;
 
-                //var result = new Result
-                //{
-                //    StudentId = studentNumber,
-                //    ClassName = model.ClassName,
-                //    Term = model.TermName.ToString(),
-                //    SubjectName = model.SubjectCode,
-                //    SessionName = model.SessionName,
-                //    NoOfStudentPerClass = ResultCommand.NumberOfStudentPerClass(model.ClassName, model.TermName.ToString(), model.SessionName),
-                //    NoOfSubjectOffered = ResultCommand.SubjectOfferedByStudent(model.ClassName),
-                //    ClassAverage = ResultCommand.CalculateClassAverage(model.ClassName, model.TermName.ToString(), model.SessionName, model.SubjectCode),
-                //    Average = ResultCommand.CalculateAverage(studentNumber, model.ClassName, model.TermName.ToString(), model.SessionName),
-                //    SubjectPosition = ResultCommand.FindSubjectPosition(studentNumber, model.SubjectCode, model.ClassName, model.TermName.ToString(), model.SessionName),
-                //    AggretateScore = ResultCommand.TotalScorePerStudent(studentNumber, model.ClassName, model.TermName.ToString(), model.SessionName),
-                //    AggregatePosition = ResultCommand.FindAggregatePosition(studentNumber, model.ClassName, model.TermName.ToString(), model.SessionName),
-                //    TotalQualityPoint = ResultCommand.TotalQualityPoint(studentNumber, model.ClassName, model.TermName.ToString(), model.SessionName),
-                //    TotalCreditUnit = ResultCommand.TotalcreditUnit(model.ClassName)
+                var result = new Result
+                {
+                    StudentId = studentNumber,
+                    ClassName = model.ClassName,
+                    Term = model.TermName,
+                    SubjectName = model.SubjectCode,
+                    SessionName = model.SessionName,
+                    ClassAverage = Math.Round(await _resultCommand.CalculateClassAverage(model.ClassName, model.TermName, model.SessionName, model.SubjectCode), 2),
+                    Average = Math.Round(await _resultCommand.CalculateAverage(studentNumber, model.ClassName, model.TermName, model.SessionName), 2),
+                    SubjectPosition = _resultCommand.FindSubjectPosition(studentNumber, model.SubjectCode, model.ClassName, model.TermName, model.SessionName),
+                    AggretateScore = Math.Round(await _resultCommand.TotalScorePerStudent(studentNumber, model.ClassName, model.TermName, model.SessionName), 2),
+                    // TotalQualityPoint = Math.Round(await _resultCommand.TotalQualityPoint(studentNumber, model.ClassName, model.TermName, model.SessionName), 2),
+                    TotalCreditUnit = Math.Round(await _resultCommand.TotalcreditUnit(model.ClassName), 2),
+                    SubjectHighest = Math.Round(await _resultCommand.SubjectHighest(model.SubjectCode, model.ClassName, model.TermName, model.SessionName), 2),
+                    SubjectLowest = Math.Round(await _resultCommand.SubjectLowest(model.SubjectCode, model.ClassName, model.TermName, model.SessionName), 2)
+                };
 
-                //};
-
-                //db.Entry(result).State = EntityState.Modified;
-                //await db.SaveChangesAsync();
+                _db.Entry(result).State = EntityState.Modified;
+                await _db.SaveChangesAsync();
                 return RedirectToAction("Index");
             }
 

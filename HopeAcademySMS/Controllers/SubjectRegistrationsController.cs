@@ -1,6 +1,5 @@
-﻿using HopeAcademySMS.Models;
-using PagedList;
-using StAugustine.Models;
+﻿using PagedList;
+using SwiftSkool.Models;
 using System;
 using System.Data.Entity;
 using System.Linq;
@@ -8,7 +7,7 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 
-namespace HopeAcademySMS.Controllers
+namespace SwiftSkool.Controllers
 {
     public class SubjectRegistrationsController : Controller
     {

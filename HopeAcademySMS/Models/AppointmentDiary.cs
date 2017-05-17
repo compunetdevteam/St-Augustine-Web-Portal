@@ -1,4 +1,4 @@
-﻿namespace StAugustine.Calender
+﻿namespace SwiftSkool.Calender
 {
     public partial class AppointmentDiary
     {

@@ -1,14 +1,14 @@
 ﻿using HopeAcademySMS.Services;
 using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.EntityFramework;
 using OfficeOpenXml;
 using PagedList;
-using StAugustine.BusinessLogic;
-using StAugustine.Models;
-using StAugustine.Services;
-using StAugustine.ViewModel;
 using SwiftKampus.Services;
+using SwiftSkool.BusinessLogic;
+using SwiftSkool.Models;
+using SwiftSkool.Services;
+using SwiftSkool.ViewModel;
 using System;
-using System.Data;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
@@ -18,7 +18,7 @@ using System.Web.Mvc;
 
 //using Excel = Microsoft.Office.Interop.Excel;
 
-namespace StAugustine.Controllers
+namespace SwiftSkool.Controllers
 {
     public class StudentsController : Controller
     {
@@ -40,12 +40,15 @@ namespace StAugustine.Controllers
             }
             ViewBag.CurrentFilter = search;
 
-            var studentList = from s in _db.Students.AsNoTracking() select s;
+            //var studentList = from s in _db.Students.AsNoTracking() select s;
+            var studentList = _db.Students.AsNoTracking().Include(g => g.Guardian);
             if (User.IsInRole("Guardian"))
             {
                 string name = User.Identity.GetUserName();
                 var user = await _db.Users.AsNoTracking().Where(c => c.UserName.Equals(name)).Select(x => x.PhoneNumber).FirstOrDefaultAsync();
-                studentList = studentList.Where(s => s.GuardianEmail.ToUpper().Contains(user.ToUpper()));
+                // studentList = studentList.Where(s => s.GPhoneNumber.ToUpper().Equals(user.ToUpper()));
+
+                // var studentId = studentList.Select(x => x.StudentId).FirstOrDefault();
             }
             else
             {
@@ -76,58 +79,6 @@ namespace StAugustine.Controllers
             return View(studentList.ToPagedList(pageNumber, pageSize));
             //return View(studentList.ToList());
         }
-
-        public ActionResult GuardianIndex(string sortOrder, string currentFilter, string search, int? page)
-        {
-            ViewBag.NameSortParm = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
-            if (search != null)
-            {
-
-                page = 1;
-            }
-            else
-            {
-                search = currentFilter;
-            }
-            ViewBag.CurrentFilter = search;
-
-            var studentList = from s in _db.Students.AsNoTracking() select s;
-            if (User.IsInRole("Guardian"))
-            {
-                string name = User.Identity.GetUserName();
-                //var user = db.Guardians.Where(c => c.UserName.Equals(name)).Select(s => s.Email).FirstOrDefault();
-
-                //var studentName = studentList.Where(x => x.GuardianEmail.Equals(user)).ToList();
-
-                //return View(studentName);
-            }
-
-            if (!String.IsNullOrEmpty(search))
-            {
-                studentList = studentList.AsNoTracking().Where(s => s.LastName.ToUpper().Contains(search.ToUpper())
-                                                     || s.FirstName.ToUpper().Contains(search.ToUpper())
-                                                     || s.StudentId.ToUpper().Contains(search.ToUpper()));
-
-            }
-            switch (sortOrder)
-            {
-                case "name_desc":
-                    studentList = studentList.AsNoTracking().OrderByDescending(s => s.LastName);
-                    break;
-                case "Date":
-                    studentList = studentList.AsNoTracking().OrderBy(s => s.FirstName);
-                    break;
-                default:
-                    studentList = studentList.AsNoTracking().OrderBy(s => s.LastName);
-                    break;
-            }
-            int pageSize = 10;
-            int pageNumber = (page ?? 1);
-            //ViewBag.Message = whatever;
-            return View(studentList.ToPagedList(pageNumber, pageSize));
-            //return View(studentList.ToList());
-        }
-
 
 
         public async Task<ActionResult> Dashboard()
@@ -176,9 +127,9 @@ namespace StAugustine.Controllers
         // GET: Students/Create
         public async Task<ActionResult> Create()
         {
-            var role = await _db.Roles.AsNoTracking().SingleOrDefaultAsync(m => m.Name == "Guardian");
-            var usersInRole = _db.Users.AsNoTracking().Where(m => m.Roles.Any(r => r.RoleId == role.Id));
-            ViewBag.GuardianId = new SelectList(usersInRole, "PhoneNumber", "UserName");
+            //var role = await _db.Roles.AsNoTracking().SingleOrDefaultAsync(m => m.Name == "Guardian");
+            //var usersInRole = _db.Users.AsNoTracking().Where(m => m.Roles.Any(r => r.RoleId == role.Id));
+            //ViewBag.GuardianId = new SelectList(usersInRole, "Email", "UserName");
             return View();
         }
 
@@ -189,14 +140,38 @@ namespace StAugustine.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Create(StudentViewModel model)
         {
+            string myemail = System.Configuration.ConfigurationManager.AppSettings["SchoolName"].ToString();
+            string email = model.StudentId + "@" + myemail + ".com";
+            var store = new UserStore<ApplicationUser>(_db);
+            var manager = new UserManager<ApplicationUser>(store);
             if (ModelState.IsValid)
             {
-                var student = new Student(model.StudentId, model.GuardianId, model.FirstName, model.MiddleName, model.LastName,
-                                            model.Gender.ToString(), model.DateOfBirth, model.AdmissionDate,
-                                            model.StudentPassport, false);
+                var user = new ApplicationUser { Id = model.StudentId, UserName = model.UserName, Email = email, PhoneNumber = model.PhoneNumber };
 
+                manager.Create(user, model.Password);
+
+                var student = new Student()
+                {
+                    StudentId = model.StudentId,
+                    FirstName = model.FirstName,
+                    MiddleName = model.MiddleName,
+                    LastName = model.LastName,
+                    PhoneNumber = model.PhoneNumber,
+                    Gender = model.Gender.ToString(),
+                    Religion = model.Religion.ToString(),
+                    DateOfBirth = model.DateOfBirth,
+                    PlaceOfBirth = model.PlaceOfBirth,
+                    StateOfOrigin = model.StateOfOrigin.ToString(),
+                    Tribe = model.Tribe,
+                    AdmissionDate = model.AdmissionDate,
+                    StudentPassport = model.StudentPassport,
+                    IsGraduated = false
+                };
                 _db.Students.Add(student);
+
                 await _db.SaveChangesAsync();
+                await manager.AddToRoleAsync(user.Id, "Student");
+
 
                 TempData["UserMessage"] = "Student has been Added Successfully";
                 TempData["Title"] = "Success.";
@@ -204,7 +179,7 @@ namespace StAugustine.Controllers
             };
             var role = await _db.Roles.AsNoTracking().SingleOrDefaultAsync(m => m.Name == "Guardian");
             var usersInRole = _db.Users.AsNoTracking().Where(m => m.Roles.Any(r => r.RoleId == role.Id));
-            ViewBag.GuardianId = new SelectList(usersInRole, "PhoneNumber", "UserName");
+            ViewBag.GuardianId = new SelectList(usersInRole, "Email", "UserName");
             return View(model);
         }
 
@@ -220,7 +195,7 @@ namespace StAugustine.Controllers
             {
                 return HttpNotFound();
             }
-            var myStudent = new StudentViewModel()
+            var myStudent = new StudentEditViewModel()
             {
                 StudentId = student.StudentId,
                 FirstName = student.FirstName,
@@ -228,14 +203,13 @@ namespace StAugustine.Controllers
                 LastName = student.LastName,
                 DateOfBirth = student.DateOfBirth,
                 AdmissionDate = student.AdmissionDate,
-                StudentPassport = student.StudentPassport
+                StudentPassport = student.StudentPassport,
+                PlaceOfBirth = student.PlaceOfBirth,
+                PhoneNumber = student.PhoneNumber,
+                Tribe = student.Tribe
             };
-            //var role = _db.Roles.SingleOrDefault(m => m.Name == "Guardian");
-            //var usersInRole = _db.Users.Where(m => m.Roles.Any(r => r.RoleId == role.Id));
-            // ViewBag.GuardianId = new SelectList(_db.Guardians, "PhoneNumber", "UserName");
-            var role = await _db.Roles.AsNoTracking().SingleOrDefaultAsync(m => m.Name == "Guardian");
-            var usersInRole = _db.Users.AsNoTracking().Where(m => m.Roles.Any(r => r.RoleId == role.Id));
-            ViewBag.GuardianId = new SelectList(usersInRole, "PhoneNumber", "UserName");
+
+
             return View(myStudent);
         }
 
@@ -244,24 +218,41 @@ namespace StAugustine.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit(StudentViewModel model)
+        public async Task<ActionResult> Edit(StudentEditViewModel model)
         {
             if (ModelState.IsValid)
             {
-                var student = new Student(model.StudentId, model.GuardianId, model.FirstName, model.MiddleName, model.LastName,
-                                            model.Gender.ToString(), model.DateOfBirth, model.AdmissionDate,
-                                            model.StudentPassport, false);
-                _db.Entry(student).State = EntityState.Modified;
+                //var student = new Student(model.StudentId, model.GuardianId, model.FirstName, model.MiddleName, model.LastName,
+                //                            model.Gender.ToString(), model.DateOfBirth, model.AdmissionDate,
+                //
+                Student student = await _db.Students.FindAsync(model.StudentId);
+
+                if (student != null)
+                {
+                    student.StudentId = model.StudentId;
+                    student.FirstName = model.FirstName;
+                    student.MiddleName = model.MiddleName;
+                    student.LastName = model.LastName;
+                    student.PhoneNumber = model.PhoneNumber;
+                    student.Gender = model.Gender.ToString();
+                    student.Religion = model.Religion.ToString();
+                    student.DateOfBirth = model.DateOfBirth;
+                    student.PlaceOfBirth = model.PlaceOfBirth;
+                    student.StateOfOrigin = model.StateOfOrigin.ToString();
+                    student.Tribe = model.Tribe;
+                    student.AdmissionDate = model.AdmissionDate;
+                    student.StudentPassport = model.StudentPassport;
+                    student.IsGraduated = false;
+
+                    _db.Entry(student).State = EntityState.Modified;
+                }
                 await _db.SaveChangesAsync();
                 TempData["UserMessage"] = "Student has been Updated Successfully";
                 TempData["Title"] = "Success.";
 
                 return RedirectToAction("Index");
             }
-            //var role = _db.Roles.SingleOrDefault(m => m.Name == "Guardian");
-            //var usersInRole = _db.Users.Where(m => m.Roles.Any(r => r.RoleId == role.Id));
-            //ViewBag.GuardianId = new SelectList(usersInRole, "PhoneNumber", "UserName");
-            //ViewBag.GuardianId = new SelectList(_db.Guardians, "PhoneNumber", "UserName");
+
             var role = await _db.Roles.AsNoTracking().SingleOrDefaultAsync(m => m.Name == "Guardian");
             var usersInRole = _db.Users.AsNoTracking().Where(m => m.Roles.Any(r => r.RoleId == role.Id));
             ViewBag.GuardianId = new SelectList(usersInRole, "PhoneNumber", "UserName");
@@ -296,107 +287,6 @@ namespace StAugustine.Controllers
             return RedirectToAction("Index");
         }
 
-        [AllowAnonymous]
-        public ActionResult UploadStudent()
-        {
-            return View();
-        }
-
-        [AllowAnonymous]
-        [HttpPost]
-        public async Task<ActionResult> UploadStudent(HttpPostedFileBase excelfile)
-        {
-            if (excelfile == null || excelfile.ContentLength == 0)
-            {
-                ViewBag.Error = "Please Select a excel file <br/>";
-                return View("Index");
-            }
-            else
-            {
-                HttpPostedFileBase file = Request.Files["excelfile"];
-                if (excelfile.FileName.EndsWith("xls") || excelfile.FileName.EndsWith("xlsx"))
-                {
-                    string lastrecord = "";
-                    int recordCount = 0;
-                    string message = "";
-                    string fileContentType = file.ContentType;
-                    byte[] fileBytes = new byte[file.ContentLength];
-                    var data = file.InputStream.Read(fileBytes, 0, Convert.ToInt32(file.ContentLength));
-
-                    // Read data from excel file
-                    using (var package = new ExcelPackage(file.InputStream))
-                    {
-                        ExcelValidation myExcel = new ExcelValidation();
-                        var currentSheet = package.Workbook.Worksheets;
-                        var workSheet = currentSheet.First();
-                        var noOfCol = workSheet.Dimension.End.Column;
-                        var noOfRow = workSheet.Dimension.End.Row;
-                        int requiredField = 7;
-
-                        string validCheck = myExcel.ValidateExcel(noOfRow, workSheet, requiredField);
-                        if (!validCheck.Equals("Success"))
-                        {
-                            //string row = "";
-                            //string column = "";
-                            string[] ssizes = validCheck.Split(' ');
-                            string[] myArray = new string[2];
-                            for (int i = 0; i < ssizes.Length; i++)
-                            {
-                                myArray[i] = ssizes[i];
-                                // myArray[i] = ssizes[];
-                            }
-                            string lineError = $"Line/Row number {myArray[0]}  and column {myArray[1]} is not rightly formatted, Please Check for anomalies ";
-                            //ViewBag.LineError = lineError;
-                            TempData["UserMessage"] = lineError;
-                            TempData["Title"] = "Error.";
-                            return View();
-                        }
-                        for (int row = 2; row <= noOfRow; row++)
-                        {
-                            try
-                            {
-                                string studentId = workSheet.Cells[row, 1].Value.ToString().Trim();
-                                string firstName = workSheet.Cells[row, 2].Value.ToString().Trim();
-                                string middleName = workSheet.Cells[row, 3].Value.ToString().Trim();
-                                string lastName = workSheet.Cells[row, 4].Value.ToString().Trim();
-                                string gender = workSheet.Cells[row, 5].Value.ToString().Trim();
-                                DateTime dateofBirth = DateTime.Parse(workSheet.Cells[row, 6].Value.ToString().Trim());
-                                DateTime admissionDate = DateTime.Parse(workSheet.Cells[row, 7].Value.ToString().Trim());
-                                //string guardianId = workSheet.Cells[row, 8].Value.ToString().Trim();
-
-                                var student = new Student(studentId, firstName, middleName, lastName,
-                               gender, dateofBirth, admissionDate);
-
-
-                                _db.Students.Add(student);
-                                recordCount++;
-                                lastrecord = $"The last Updated record has the Last Name {lastName} and First Name {firstName} with Student Id {studentId}";
-                            }
-                            catch (Exception e)
-                            {
-                                return View("Error3");
-                            }
-
-                        }
-                        await _db.SaveChangesAsync();
-                        message = $"You have successfully Uploaded {recordCount} records...  and {lastrecord}";
-                        TempData["UserMessage"] = message;
-                        TempData["Title"] = "Success.";
-
-                    }
-
-                    return RedirectToAction("Index", "Students");
-                }
-
-                else
-                {
-                    ViewBag.Error = $"File type is Incorrect <br/>";
-                    return View("Index");
-                }
-            }
-
-
-        }
 
         public async Task<ActionResult> RenderImage(string studentId)
         {
@@ -416,11 +306,11 @@ namespace StAugustine.Controllers
             return File(photoBack, "image/png");
         }
 
-        public PartialViewResult GuardianInfo(string studentNumber)
-        {
-            var GuardianInfoes = _db.Guardians.Include(p => p.Student).Where(s => s.GuardianEmail.Contains(studentNumber));
-            return PartialView(GuardianInfoes);
-        }
+        //public PartialViewResult GuardianInfo(string studentNumber)
+        //{
+        //    var GuardianInfoes = _db.Guardians.Include(p => p.Student).Where(s => s.GuardianEmail.Contains(studentNumber));
+        //    return PartialView(GuardianInfoes);
+        //}
 
         public async Task<ActionResult> PrintSecondTerm(string id, string term, string sessionName)
         {
@@ -481,7 +371,7 @@ namespace StAugustine.Controllers
                                                        && s.SessionName.Contains(sessionName))
                                                         .Select(c => c.GPA).FirstOrDefaultAsync();
             reportModel.AggregateScore = await _resultCommand.TotalScorePerStudent(id, className, term, sessionName);
-            reportModel.TotalQualityPoint = await _resultCommand.TotalQualityPoint(id, className, term, sessionName);
+            //reportModel.TotalQualityPoint = await _resultCommand.TotalQualityPoint(id, className, term, sessionName);
             reportModel.TotalCreditUnit = await _resultCommand.TotalcreditUnit(className);
             reportModel.GradePointAverage = Math.Round((reportModel.TotalQualityPoint / reportModel.TotalCreditUnit), 2);
 
@@ -516,133 +406,31 @@ namespace StAugustine.Controllers
             return View(reportModel);
 
             // return new ViewAsPdf("PrintSecondTerm", reportModel);
-
-            //if (id == null)
-            //{
-            //    return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            //}
-            //Student student = await db.Students.FindAsync(id);
-            //if (student == null)
-            //{
-            //    return HttpNotFound();
-            //}
-            //return View(student);
         }
 
-        //public async Task<ActionResult> QueryResult(string StudentId, string TermName, string SessionName)
+        //public async Task<ActionResult> PrintSecondTerm(string FileId)
         //{
-        //    ReportViewModel reportModel = new ReportViewModel();
-        //    try
+        //    DownloadFiles obj = new DownloadFiles();
+        //    string NewFileName = FileId + ".pdf";
+        //    var filesCol = obj.GetFiles();
+        //    string CurrentFileName = (from fls in filesCol
+        //                              where fls.FileName == NewFileName
+        //                              select fls.FilePath).First();
+
+        //    string contentType = string.Empty;
+
+        //    if (CurrentFileName.Contains(".pdf"))
         //    {
-
-        //        string id = StudentId;
-        //        string sessionName = SessionName;
-        //        string term = TermName.ToUpper();
-        //        reportModel.Student = await _db.Students.FindAsync(id);
-
-
-        //        //reportModel.Maths = db.ContinuousAssessments.Include(p => p.Student)
-        //        //                                        .Where(s => s.StudentId.Contains(id)
-        //        //                                        && s.TermName.Contains(term)
-        //        //                                        && s.SessionName.Contains(sessionName)
-        //        //                                        && s.SubjectCategory.Equals("Mathematics")).ToList();
-
-        //        //reportModel.English = db.ContinuousAssessments.Include(p => p.Student)
-        //        //                                       .Where(s => s.StudentId.Contains(id)
-        //        //                                       && s.TermName.Contains(term)
-        //        //                                       && s.SessionName.Contains(sessionName)
-        //        //                                       && s.SubjectCategory.Equals("English")).ToList();
-
-        //        reportModel.ContinuousAssessments = _db.ContinuousAssessments.Where(s => s.StudentId.Contains(id)
-        //                                                && s.TermName.Contains(term)
-        //                                                && s.SessionName.Contains(sessionName))
-        //                                                .OrderBy(y => y.SubjectCode).ToList();
-
-        //        reportModel.Results = _db.Results.Where(s => s.StudentId.Contains(id)
-        //                                                             && s.Term.Contains(term)
-        //                                                             && s.SessionName.Contains(sessionName)).ToList();
-
-        //        var className = _db.AssignedClasses.Where(x => x.StudentId.Equals(id) && x.TermName.Equals(term)
-        //                                                 && x.SessionName.Equals(sessionName))
-        //                                            .Select(y => y.ClassName)
-        //                                            .FirstOrDefault();
-
-
-        //        // var className = "JSS1 A";
-
-        //        reportModel.NoOfStudentPerClass = _db.AssignedClasses.Count(x => x.ClassName.Contains(className) &&
-        //                                                           x.TermName.Equals(term) &&
-        //                                                           x.SessionName.Equals(sessionName));
-        //        reportModel.NoOfSubjectOffered = _resultCommand.SubjectOfferedByStudent(id, term, sessionName);
-        //        //reportModel = _resultCommand.FindAggregatePosition(id, className, term, sessionName);
-        //        reportModel.Average = _db.Results.Where(s => s.StudentId.Contains(id)
-        //                                                    && s.Term.Contains(term)
-        //                                                    && s.SessionName.Contains(sessionName))
-        //                                                    .Select(c => c.Average).FirstOrDefault();
-        //        reportModel.TotalScore = _db.Results.Where(s => s.StudentId.Contains(id)
-        //                                                    && s.Term.Contains(term)
-        //                                                    && s.SessionName.Contains(sessionName))
-        //                                                    .Select(c => c.AggretateScore).FirstOrDefault();
-        //        var myOtherSkills = _db.Psychomotors.Where(s => s.StudentId.Contains(id)
-        //                                                      && s.TermName.Contains(term)
-        //                                                      && s.SessionName.Contains(sessionName)
-        //                                                      && s.ClassName.Equals(className))
-        //                                                     .Select(c => c.Id).FirstOrDefault();
-
-        //        reportModel.GPA = _db.Results.Where(s => s.StudentId.Contains(id)
-        //                                                   && s.Term.Contains(term)
-        //                                                   && s.SessionName.Contains(sessionName))
-        //                                                    .Select(c => c.GPA).FirstOrDefault();
-        //        reportModel.AggregateScore = _resultCommand.TotalScorePerStudent(id, className, term, sessionName);
-        //        reportModel.TotalQualityPoint = _resultCommand.TotalQualityPoint(id, className, term, sessionName);
-        //        reportModel.TotalCreditUnit = _resultCommand.TotalcreditUnit(className);
-        //        reportModel.GradePointAverage = Math.Round((reportModel.TotalQualityPoint / reportModel.TotalCreditUnit), 2);
-
-
-        //        reportModel.BehaviorCataegory = _db.BehaviorSkillCategories.ToList().Select(x => x.Name).ToList();
-        //        reportModel.Psychomotor = _db.AssignBehaviors.Where(s => s.StudentId.Contains(id)
-        //                                                                 && s.TermName.Contains(term)
-        //                                                                 && s.SessionName.Contains(sessionName)).ToList();
-        //        //&& s.BehaviouralSkillId.Equals()).ToList();
-
-        //        //reportModel.Affective = _db.Affectives.FirstOrDefault(s => s.StudentId.Contains(id)
-        //        //                                                    && s.TermName.Contains(term)
-        //        //                                                    && s.SessionName.Contains(sessionName)
-        //        //                                                    && s.ClassName.Equals(className));
-
-        //        //reportModel.TeacherComment = _db.AssignBehaviors.FirstOrDefault(x => x.StudentId.Equals(id) && x.TermName.Equals(term)
-        //        // && x.SessionName.Equals(sessionName)).Select(c => c.TeacherComment);
-
-        //        reportModel.TeacherComment = reportModel.Psychomotor.Select(c => c.TeacherComment).FirstOrDefault();
-        //        reportModel.TeacherDate = reportModel.Psychomotor.Select(c => c.Date).FirstOrDefault();
-        //        reportModel.ReportCard = _db.ReportCards.FirstOrDefault(x => x.TermName.ToUpper().Equals(term)
-        //                                            && x.SessionName.Equals(sessionName));
-
-
-        //        //ViewBag.Class = 
-        //        ViewBag.PrincipalComment = _gradeRemark.PrincipalRemark(reportModel.GPA, className);
-        //        ViewBag.Term = term;
-        //        ViewBag.Session = sessionName;
-        //        ViewBag.ClassName = className;
-        //        ViewBag.Absent = reportModel.Psychomotor.Select(x => x.NoOfAbsence).FirstOrDefault();
-        //        return View(reportModel);
-        //    }
-        //    catch (Exception)
-        //    {
-        //        ViewBag.PrincipalComment = null;
-        //        ViewBag.Term = null;
-        //        ViewBag.Session = null;
-        //        ViewBag.ClassName = null;
-        //        ViewBag.Absent = reportModel.Psychomotor.Select(x => x.NoOfAbsence).FirstOrDefault();
-        //        ViewBag.StudentId = new SelectList(_db.Students.AsNoTracking(), "StudentID", "FullName");
-        //        ViewBag.SessionName = new SelectList(_db.Sessions.AsNoTracking(), "SessionName", "SessionName");
-        //        // ViewBag.ClassName = new SelectList(db.Classes, "FullClassName", "FullClassName");
-        //        ViewBag.TermName = new SelectList(_db.Terms.AsNoTracking(), "TermName", "TermName");
-        //        return View(reportModel);
+        //        contentType = "application/pdf";
         //    }
 
-
+        //    else if (CurrentFileName.Contains(".docx"))
+        //    {
+        //        contentType = "application/docx";
+        //    }
+        //    return File(CurrentFileName, contentType, CurrentFileName);
         //}
+
 
         //public ActionResult PrintTest(string id, string term, string sessionName)
         //{
@@ -788,10 +576,130 @@ namespace StAugustine.Controllers
             var rows = eventList.ToArray();
             return Json(rows, JsonRequestBehavior.AllowGet);
         }
+
+        public ActionResult UpLoadStudent()
+        {
+            return View();
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<ActionResult> UpLoadStudent(HttpPostedFileBase excelfile)
+        {
+            if (excelfile == null || excelfile.ContentLength == 0)
+            {
+                ViewBag.Error = "Please Select a excel file <br/>";
+                return View("UpLoadStudent");
+            }
+            else
+            {
+                HttpPostedFileBase file = Request.Files["excelfile"];
+                if (excelfile.FileName.EndsWith("xls") || excelfile.FileName.EndsWith("xlsx"))
+                {
+                    string lastrecord = "";
+                    int recordCount = 0;
+                    string message = "";
+                    string fileContentType = file.ContentType;
+                    byte[] fileBytes = new byte[file.ContentLength];
+                    var data = file.InputStream.Read(fileBytes, 0, Convert.ToInt32(file.ContentLength));
+
+                    // Read data from excel file
+                    using (var package = new ExcelPackage(file.InputStream))
+                    {
+                        ExcelValidation myExcel = new ExcelValidation();
+                        var currentSheet = package.Workbook.Worksheets;
+                        var workSheet = currentSheet.First();
+                        var noOfCol = workSheet.Dimension.End.Column;
+                        var noOfRow = workSheet.Dimension.End.Row;
+                        int requiredField = 13;
+
+                        string validCheck = myExcel.ValidateExcel(noOfRow, workSheet, requiredField);
+                        if (!validCheck.Equals("Success"))
+                        {
+                            //string row = "";
+                            //string column = "";
+                            string[] ssizes = validCheck.Split(' ');
+                            string[] myArray = new string[2];
+                            for (int i = 0; i < ssizes.Length; i++)
+                            {
+                                myArray[i] = ssizes[i];
+                                // myArray[i] = ssizes[];
+                            }
+                            string lineError = $"Line/Row number {myArray[0]}  and column {myArray[1]} is not rightly formatted, Please Check for anomalies ";
+                            //ViewBag.LineError = lineError;
+                            TempData["UserMessage"] = lineError;
+                            TempData["Title"] = "Error.";
+                            return View();
+                        }
+
+                        for (int row = 2; row <= noOfRow; row++)
+                        {
+                            string studentId = workSheet.Cells[row, 1].Value.ToString().Trim();
+                            string firstName = workSheet.Cells[row, 2].Value.ToString().Trim();
+                            string middleName = workSheet.Cells[row, 3].Value.ToString().Trim();
+                            string lastName = workSheet.Cells[row, 4].Value.ToString().Trim();
+                            string gender = workSheet.Cells[row, 5].Value.ToString().Trim();
+                            DateTime dateOfBirth = DateTime.Parse(workSheet.Cells[row, 6].Value.ToString().Trim());
+                            string placeofBirth = workSheet.Cells[row, 7].Value.ToString().Trim();
+                            string state = workSheet.Cells[row, 8].Value.ToString().Trim();
+                            string religion = workSheet.Cells[row, 9].Value.ToString().Trim();
+                            string tribe = workSheet.Cells[row, 10].Value.ToString().Trim();
+                            DateTime addmision = DateTime.Parse(workSheet.Cells[row, 11].Value.ToString().Trim());
+                            string phoneNumber = workSheet.Cells[row, 12].Value.ToString().Trim();
+                            string password = workSheet.Cells[row, 13].Value.ToString().Trim();
+                            string username = lastName.Trim() + " " + firstName.Trim();
+                            try
+                            {
+                                var student = new Student()
+                                {
+                                    StudentId = studentId,
+                                    FirstName = firstName,
+                                    MiddleName = middleName,
+                                    LastName = lastName,
+                                    PhoneNumber = phoneNumber,
+                                    Gender = gender,
+                                    Religion = religion,
+                                    PlaceOfBirth = placeofBirth,
+                                    StateOfOrigin = state,
+                                    Tribe = tribe,
+                                    DateOfBirth = dateOfBirth,
+                                    AdmissionDate = addmision
+                                };
+                                _db.Students.Add(student);
+
+                                recordCount++;
+                                lastrecord =
+                                    $"The last Updated record has the Last Name {lastName} and First Name {firstName} with Phone Number {phoneNumber}";
+                            }
+                            catch (Exception e)
+                            {
+                                message = $"You have successfully Uploaded {recordCount} records...  and {lastrecord}";
+                                TempData["UserMessage"] = message;
+                                TempData["Title"] = "Success.";
+                                return View("Error3");
+                            }
+
+
+                        }
+                        await _db.SaveChangesAsync();
+                        message = $"You have successfully Uploaded {recordCount} records...  and {lastrecord}";
+                        TempData["UserMessage"] = message;
+                        TempData["Title"] = "Success.";
+                        return RedirectToAction("Index", "Students");
+                    }
+                }
+                else
+                {
+                    ViewBag.Error = "File type is Incorrect <br/>";
+                    return View("UploadStudent");
+                }
+            }
+        }
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
+                _resultCommand.Dispose();
                 _db.Dispose();
             }
             base.Dispose(disposing);

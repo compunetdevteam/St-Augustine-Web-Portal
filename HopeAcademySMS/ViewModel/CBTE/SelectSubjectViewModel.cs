@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace StAugustine.ViewModel.CBTE
+namespace SwiftSkool.ViewModel.CBTE
 {
     public class SelectSubjectViewModel
     {

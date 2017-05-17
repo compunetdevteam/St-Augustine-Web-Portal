@@ -1,8 +1,6 @@
-﻿using System.Data.Entity;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Linq;
 
-namespace StAugustine.Models
+namespace SwiftSkool.Models
 {
     public class GradeRemark
     {
@@ -25,7 +23,8 @@ namespace StAugustine.Models
             string gradeValue = "";
             int mySummaryTotal = (int)summaryTotal;
 
-            var myGrade = _db.Grades.AsNoTracking().Where(x => x.ClassName.Equals(myclassName)).ToList();
+            // var myGrade = _db.Grades.AsNoTracking().Where(x => x.ClassName.Equals(myclassName)).ToList();
+            var myGrade = _db.Grades.AsNoTracking().ToList();
             foreach (var item in myGrade)
             {
                 if (mySummaryTotal <= item.MaximumValue && mySummaryTotal >= item.MinimumValue)
@@ -46,7 +45,8 @@ namespace StAugustine.Models
             string remarkValue = "";
 
             int mySummaryTotal = (int)summaryTotal;
-            var myGrade = _db.Grades.AsNoTracking().Where(x => x.ClassName.Equals(myclassName)).ToList();
+            //var myGrade = _db.Grades.AsNoTracking().Where(x => x.ClassName.Equals(myclassName)).ToList();
+            var myGrade = _db.Grades.AsNoTracking().ToList();
             foreach (var item in myGrade)
             {
                 if (mySummaryTotal <= item.MaximumValue && mySummaryTotal >= item.MinimumValue)
@@ -58,29 +58,30 @@ namespace StAugustine.Models
             return !string.IsNullOrEmpty(remarkValue) ? remarkValue : "Enter Value between 1 - 100";
         }
 
-        public int GradingPoint(double summaryTotal, string className)
-        {
-            string myclassName = GetschoolClass(className);
-            int remarkValue = 0;
-            int mySummaryTotal = (int)summaryTotal;
-            var myGrade = _db.Grades.AsNoTracking().Where(x => x.ClassName.Equals(myclassName)).ToList();
-            foreach (var item in myGrade)
-            {
-                if (mySummaryTotal <= item.MaximumValue && mySummaryTotal >= item.MinimumValue)
-                {
-                    remarkValue = item.GradePoint;
-                }
-            }
-            if (remarkValue == 0)
-            {
-                return 0;
-            }
-            else
-            {
-                return remarkValue;
+        //public int GradingPoint(double summaryTotal, string className)
+        //{
+        //    string myclassName = GetschoolClass(className);
+        //    int remarkValue = 0;
+        //    int mySummaryTotal = (int)summaryTotal;
+        //    //var myGrade = _db.Grades.AsNoTracking().Where(x => x.ClassName.Equals(myclassName)).ToList();
+        //    var myGrade = _db.Grades.AsNoTracking().ToList();
+        //    foreach (var item in myGrade)
+        //    {
+        //        if (mySummaryTotal <= item.MaximumValue && mySummaryTotal >= item.MinimumValue)
+        //        {
+        //            remarkValue = item.GradePoint;
+        //        }
+        //    }
+        //    if (remarkValue == 0)
+        //    {
+        //        return 0;
+        //    }
+        //    else
+        //    {
+        //        return remarkValue;
 
-            }
-        }
+        //    }
+        //}
 
         public string PrincipalRemark(double summaryTotal, string className)
         {

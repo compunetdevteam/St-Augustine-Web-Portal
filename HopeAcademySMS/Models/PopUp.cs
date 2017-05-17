@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace StAugustine.Models
+namespace SwiftSkool.Models
 {
     public class PopUp
     {
@@ -16,6 +16,10 @@ namespace StAugustine.Models
         {
             Male = 1, Female
         }
+        public enum ThemeColor
+        {
+            DeepRed = 1, LightBlue, NavyBlue, ArmyGreen, LightRed
+        }
         public enum PMode
         {
             Cash = 1, Cheque, Teller
@@ -23,6 +27,11 @@ namespace StAugustine.Models
         public enum Status
         {
             GivenOut = 1, Returned
+        }
+
+        public enum Religion
+        {
+            Christianity = 1, Muslim, Others
         }
 
         public enum ClassType

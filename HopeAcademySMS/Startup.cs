@@ -1,8 +1,8 @@
 ﻿using Microsoft.Owin;
 using Owin;
 
-[assembly: OwinStartupAttribute(typeof(StAugustine.Startup))]
-namespace StAugustine
+[assembly: OwinStartupAttribute(typeof(SwiftSkool.Startup))]
+namespace SwiftSkool
 {
     public partial class Startup
     {

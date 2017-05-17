@@ -1,6 +1,6 @@
 ﻿using PagedList;
-using StAugustine.Models;
-using StAugustine.ViewModel;
+using SwiftSkool.Models;
+using SwiftSkool.ViewModel;
 using System;
 using System.Data.Entity;
 using System.Linq;
@@ -8,7 +8,7 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 
-namespace StAugustine.Controllers
+namespace SwiftSkool.Controllers
 {
     public class GradesController : Controller
     {
@@ -30,28 +30,28 @@ namespace StAugustine.Controllers
             }
             ViewBag.CurrentFilter = search;
             var assignedList = from s in _db.Grades select s;
-            if (!String.IsNullOrEmpty(search))
-            {
-                assignedList = assignedList.Where(s => s.ClassName.ToUpper().Contains(search.ToUpper()));
+            //if (!String.IsNullOrEmpty(search))
+            //{
+            //    assignedList = assignedList.Where(s => s.ClassName.ToUpper().Contains(search.ToUpper()));
 
 
-            }
-            else if (!String.IsNullOrEmpty(ClassName))
-            {
-                assignedList = assignedList.Where(s => s.ClassName.ToUpper().Equals(ClassName.ToUpper()));
-                int myCount = await assignedList.CountAsync();
-                if (myCount != 0)
-                {
-                    count = myCount;
-                }
-            }
+            //}
+            //else if (!String.IsNullOrEmpty(ClassName))
+            //{
+            //    assignedList = assignedList.Where(s => s.ClassName.ToUpper().Equals(ClassName.ToUpper()));
+            //    int myCount = await assignedList.CountAsync();
+            //    if (myCount != 0)
+            //    {
+            //        count = myCount;
+            //    }
+            //}
             switch (sortOrder)
             {
                 case "name_desc":
-                    assignedList = assignedList.OrderByDescending(s => s.ClassName);
+                    assignedList = assignedList.OrderByDescending(s => s.GradeName);
                     break;
                 case "Date":
-                    assignedList = assignedList.OrderBy(s => s.ClassName);
+                    assignedList = assignedList.OrderBy(s => s.Remark);
                     break;
                 default:
                     assignedList = assignedList.OrderBy(s => s.GradeName);
@@ -81,36 +81,34 @@ namespace StAugustine.Controllers
         {
             if (ModelState.IsValid)
             {
-                foreach (var item in model.ClassName)
+
+                var myGrade = await _db.Grades.CountAsync(x => x.GradeName.Trim().Equals(model.GradeName.Trim()));
+
+                if (myGrade >= 1)
                 {
-                    var myGrade = await _db.Grades.CountAsync(x => x.GradeName.Trim().Equals(model.GradeName.Trim())
-                                               && x.ClassName.Equals(item));
-
-                    if (myGrade >= 1)
-                    {
-                        TempData["UserMessage"] = "Grade Already Exist in Database.";
-                        TempData["Title"] = "Error.";
-                        ViewBag.ClassName = new SelectList(_db.SchoolClasses.AsNoTracking(), "ClassCode", "ClassCode");
-                        return View(model);
-                    }
-
-                    var grade = new Grade
-                    {
-                        GradeName = model.GradeName.Trim().ToUpper(),
-                        MinimumValue = model.MinimumValue,
-                        MaximumValue = model.MaximumValue,
-                        GradePoint = model.GradePoint,
-                        Remark = model.Remark,
-                        ClassName = item
-                    };
-                    _db.Grades.Add(grade);
+                    TempData["UserMessage"] = "Grade Already Exist in Database.";
+                    TempData["Title"] = "Error.";
+                    ViewBag.ClassName = new SelectList(_db.SchoolClasses.AsNoTracking(), "ClassCode", "ClassCode");
+                    return View(model);
                 }
+
+                var grade = new Grade
+                {
+                    GradeName = model.GradeName.Trim().ToUpper(),
+                    MinimumValue = model.MinimumValue,
+                    MaximumValue = model.MaximumValue,
+                    //GradePoint = model.GradePoint,
+                    Remark = model.Remark,
+                    //ClassName = item
+                };
+                _db.Grades.Add(grade);
+
                 await _db.SaveChangesAsync();
                 TempData["UserMessage"] = "Grade Added Successfully.";
                 TempData["Title"] = "Success.";
                 return RedirectToAction("Index");
             }
-            ViewBag.ClassName = new SelectList(_db.SchoolClasses.AsNoTracking(), "ClassCode", "ClassCode");
+            //ViewBag.ClassName = new SelectList(_db.SchoolClasses.AsNoTracking(), "ClassCode", "ClassCode");
             return View(model);
         }
 
@@ -134,7 +132,7 @@ namespace StAugustine.Controllers
                 GradeId = grade.GradeId,
                 MinimumValue = grade.MinimumValue,
                 MaximumValue = grade.MaximumValue,
-                GradePoint = grade.GradePoint,
+                //GradePoint = grade.GradePoint,
                 Remark = grade.Remark
             };
             ViewBag.ClassName = new SelectList(_db.SchoolClasses.AsNoTracking(), "ClassCode", "ClassCode");
@@ -147,21 +145,21 @@ namespace StAugustine.Controllers
         {
             if (ModelState.IsValid)
             {
-                foreach (var item in model.ClassName)
+                //foreach (var item in model.ClassName)
+                //{
+                var grade = new Grade()
                 {
-                    var grade = new Grade()
-                    {
 
-                        GradeId = model.GradeId,
-                        GradeName = model.GradeName.ToString(),
-                        MinimumValue = model.MinimumValue,
-                        MaximumValue = model.MaximumValue,
-                        GradePoint = model.GradePoint,
-                        Remark = model.Remark,
-                        ClassName = item
-                    };
-                    _db.Entry(grade).State = EntityState.Modified;
-                }
+                    GradeId = model.GradeId,
+                    GradeName = model.GradeName.ToString(),
+                    MinimumValue = model.MinimumValue,
+                    MaximumValue = model.MaximumValue,
+                    //GradePoint = model.GradePoint,
+                    Remark = model.Remark,
+                    //ClassName = item
+                };
+                _db.Entry(grade).State = EntityState.Modified;
+                //}
                 await _db.SaveChangesAsync();
                 TempData["UserMessage"] = "Grade Updated Successfully.";
                 TempData["Title"] = "Success.";

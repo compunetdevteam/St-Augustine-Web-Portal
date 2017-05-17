@@ -3,10 +3,10 @@ using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin;
 using Microsoft.Owin.Security.Cookies;
 using Owin;
-using StAugustine.Models;
+using SwiftSkool.Models;
 using System;
 
-namespace StAugustine
+namespace SwiftSkool
 {
     public partial class Startup
     {

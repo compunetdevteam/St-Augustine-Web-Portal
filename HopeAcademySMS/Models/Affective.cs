@@ -1,4 +1,4 @@
-﻿using StAugustine.ViewModel;
+﻿using SwiftSkool.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.IO;
 using System.Web;
 
-namespace StAugustine.Models
+namespace SwiftSkool.Models
 {
     public class Affective
     {

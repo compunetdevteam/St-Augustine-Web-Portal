@@ -3,8 +3,8 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using OfficeOpenXml;
-using StAugustine.Models;
-using StAugustine.ViewModel;
+using SwiftSkool.Models;
+using SwiftSkool.ViewModel;
 using System;
 using System.Data.Entity;
 using System.Linq;
@@ -14,7 +14,7 @@ using System.Web;
 using System.Web.Mvc;
 
 
-namespace StAugustine.Controllers
+namespace SwiftSkool.Controllers
 {
     [Authorize]
     public class AccountController : Controller
@@ -238,7 +238,7 @@ namespace StAugustine.Controllers
         [AllowAnonymous]
         public ActionResult RegisterStaff()
         {
-            ViewBag.Name = new SelectList(_db.Roles.AsNoTracking().ToList(), "Name", "Name").ToList();
+            //ViewBag.Name = new SelectList(_db.Roles.AsNoTracking().ToList(), "Name", "Name").ToList();
             //ViewBag.Department = new SelectList(db.Departments.ToList(), "DeptCode", "DeptName");
             return View();
         }
@@ -280,7 +280,7 @@ namespace StAugustine.Controllers
                     await db.SaveChangesAsync();
 
                     //Assign Role to user Here 
-                    await this.UserManager.AddToRoleAsync(user.Id, model.Name);
+                    await this.UserManager.AddToRoleAsync(user.Id, "Teacher");
 
                     //Disabled to avoid login in Automatically
                     //await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
@@ -473,28 +473,21 @@ namespace StAugustine.Controllers
             return "Success";
         }
 
-        //public ActionResult ShowError(string rowNumber)
-        //{
-        //    string lineError = $"Line/Row number {rowNumber} is not rightly formatted, Please Check for anomalies ";
-        //    ViewBag.LineError = lineError;
-        //    return View("Error3");
-        //}
-
 
         [AllowAnonymous]
-        public ActionResult UpLoadGuardian()
+        public ActionResult UpLoadStudent()
         {
             return View();
         }
 
         [AllowAnonymous]
         [HttpPost]
-        public async Task<ActionResult> UpLoadGuardian(HttpPostedFileBase excelfile)
+        public async Task<ActionResult> UpLoadStudent(HttpPostedFileBase excelfile)
         {
             if (excelfile == null || excelfile.ContentLength == 0)
             {
                 ViewBag.Error = "Please Select a excel file <br/>";
-                return View("UpLoadGuardian");
+                return View("UpLoadStudent");
             }
             else
             {
@@ -516,7 +509,7 @@ namespace StAugustine.Controllers
                         var workSheet = currentSheet.First();
                         var noOfCol = workSheet.Dimension.End.Column;
                         var noOfRow = workSheet.Dimension.End.Row;
-                        int requiredField = 11;
+                        int requiredField = 13;
 
                         string validCheck = myExcel.ValidateExcel(noOfRow, workSheet, requiredField);
                         if (!validCheck.Equals("Success"))
@@ -539,109 +532,89 @@ namespace StAugustine.Controllers
 
                         for (int row = 2; row <= noOfRow; row++)
                         {
+                            string studentId = workSheet.Cells[row, 1].Value.ToString().Trim();
+                            string firstName = workSheet.Cells[row, 2].Value.ToString().Trim();
+                            string middleName = workSheet.Cells[row, 3].Value.ToString().Trim();
+                            string lastName = workSheet.Cells[row, 4].Value.ToString().Trim();
+                            string gender = workSheet.Cells[row, 5].Value.ToString().Trim();
+                            DateTime dateOfBirth = DateTime.Parse(workSheet.Cells[row, 6].Value.ToString().Trim());
+                            string placeofBirth = workSheet.Cells[row, 7].Value.ToString().Trim();
+                            string state = workSheet.Cells[row, 8].Value.ToString().Trim();
+                            string religion = workSheet.Cells[row, 9].Value.ToString().Trim();
+                            string tribe = workSheet.Cells[row, 10].Value.ToString().Trim();
+                            DateTime addmision = DateTime.Parse(workSheet.Cells[row, 11].Value.ToString().Trim());
+                            string phoneNumber = workSheet.Cells[row, 12].Value.ToString().Trim();
+                            string password = workSheet.Cells[row, 13].Value.ToString().Trim();
+                            string username = lastName.Trim() + " " + firstName.Trim();
                             try
                             {
-                                //string studentId = workSheet.Cells[row, 1].Value.ToString().Trim();
-                                string salutation = workSheet.Cells[row, 1].Value.ToString().Trim();
-                                string firstName = workSheet.Cells[row, 2].Value.ToString().Trim();
-                                string middleName = workSheet.Cells[row, 3].Value.ToString().Trim();
-                                string lastName = workSheet.Cells[row, 4].Value.ToString().Trim();
-                                string email = workSheet.Cells[row, 5].Value.ToString().Trim();
-                                string gender = workSheet.Cells[row, 6].Value.ToString().Trim();
-                                string phoneNumber = workSheet.Cells[row, 7].Value.ToString().Trim();
-                                string address = workSheet.Cells[row, 8].Value.ToString().Trim();
-                                string occupation = workSheet.Cells[row, 9].Value.ToString().Trim();
-                                string relationship = workSheet.Cells[row, 10].Value.ToString().Trim();
-                                string password = workSheet.Cells[row, 11].Value.ToString().Trim();
-                                string username = firstName.Trim() + " " + lastName.Trim();
+                                var student = new Student()
+                                {
+                                    StudentId = studentId,
+                                    FirstName = firstName,
+                                    MiddleName = middleName,
+                                    LastName = lastName,
+                                    PhoneNumber = phoneNumber,
+                                    Gender = gender,
+                                    Religion = religion,
+                                    PlaceOfBirth = placeofBirth,
+                                    StateOfOrigin = state,
+                                    Tribe = tribe,
+                                    DateOfBirth = dateOfBirth,
+                                    AdmissionDate = addmision
+                                };
+                                _db.Students.Add(student);
+
+                                recordCount++;
+                                lastrecord =
+                                    $"The last Updated record has the Last Name {lastName} and First Name {firstName} with Phone Number {phoneNumber}";
 
                                 var user = new ApplicationUser
                                 {
+                                    Id = studentId,
                                     UserName = username,
-                                    Email = email.Trim(),
+                                    //Email = email.Trim(),
                                     PhoneNumber = phoneNumber.Trim(),
 
                                 };
                                 var result = await UserManager.CreateAsync(user, password);
                                 if (result.Succeeded)
                                 {
-                                    #region guardian comment code
-                                    var guardian = new Guardian()
-                                    {
-                                        GuardianId = user.Id,
-                                        Salutation = salutation.Trim(),
-                                        FirstName = firstName.Trim(),
-                                        MiddleName = middleName.Trim(),
-                                        LastName = lastName.Trim(),
-                                        Gender = gender.Trim(),
-                                        Address = address.Trim(),
-                                        PhoneNumber = phoneNumber.Trim(),
-                                        GuardianEmail = email.Trim(),
-                                        Relationship = relationship.Trim(),
-                                        Occupation = occupation.Trim(),
-                                        Password = password
-                                    };
-
-                                    //var guardian = new Guardian()
-                                    //{
-                                    //    GuardianId = user.Id,
-                                    //    StudentId = studentId,
-                                    //    FirstName = firstName,
-                                    //    MiddleName = middleName,
-                                    //    LastName = lastName,
-                                    //    PhoneNumber = phoneNumber,
-                                    //    GuardianEmail = email,
-                                    //    Address = address,
-                                    //    Relationship = relationship,
-                                    //    Occupation = occupation,
-                                    //    Gender = gender
-                                    //};
-                                    //db.Guardians.Add(guardian); 
-                                    #endregion
-                                    //Student mystudent = db.Students.Find(studentId);
-
-                                    //if (mystudent != null)
-                                    //{
-                                    //    var student = new Student(mystudent.StudentId, mystudent.FirstName, mystudent.MiddleName, mystudent.LastName,
-                                    //        mystudent.Gender, mystudent.DateOfBirth, mystudent.AdmissionDate,
-                                    //        mystudent.StudentPassport, true, false);
-                                    //    db.Entry(student).State = EntityState.Modified;
-                                    //}
-
                                     //Assign Role to user Here 
-                                    await this.UserManager.AddToRoleAsync(user.Id, "Guardian");
-                                    recordCount++;
-                                    lastrecord =
-                                        $"The last Updated record has the Last Name {lastName} and First Name {firstName} with Phone Number {phoneNumber}";
+                                    await this.UserManager.AddToRoleAsync(user.Id, "Student");
                                 }
                             }
                             catch (Exception e)
                             {
+                                message = $"You have successfully Uploaded {recordCount} records...  and {lastrecord}";
+                                TempData["UserMessage"] = message;
+                                TempData["Title"] = "Success.";
                                 return View("Error3");
                             }
-                           await _db.SaveChangesAsync();
-                            message = $"You have successfully Uploaded {recordCount} records...  and {lastrecord}";
-                            TempData["UserMessage"] = message;
-                            TempData["Title"] = "Success.";
-                        }
 
-                        return RedirectToAction("GuardianIndex", "Account");
+
+                        }
+                        await _db.SaveChangesAsync();
+                        message = $"You have successfully Uploaded {recordCount} records...  and {lastrecord}";
+                        TempData["UserMessage"] = message;
+                        TempData["Title"] = "Success.";
+                        return RedirectToAction("Index", "Students");
                     }
                 }
                 else
                 {
                     ViewBag.Error = "File type is Incorrect <br/>";
-                    return View("UpLoadGuardian");
+                    return View("UploadStudent");
                 }
             }
         }
 
-        //
+
         // GET: /Account/Register
         [AllowAnonymous]
-        public ActionResult RegisterGuardian()
+        public ActionResult RegisterStudent()
         {
-            ViewBag.StudentId = new SelectList(_db.Students, "StudentId", "FullName");
+            //ViewBag.StudentId = new SelectList(_db.Students, "StudentId", "FullName");
             return View();
         }
 
@@ -650,7 +623,7 @@ namespace StAugustine.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> RegisterGuardian(GuardianViewModel model)
+        public async Task<ActionResult> RegisterStudent(StudentViewModel model)
         {
 
             if (ModelState.IsValid)
@@ -658,8 +631,9 @@ namespace StAugustine.Controllers
                 string studentUpdated = "";
                 ApplicationUser user = new ApplicationUser()
                 {
-                    UserName = model.Username,
-                    Email = model.Email.Trim(),
+                    Id = model.StudentId,
+                    UserName = model.UserName,
+                    //Email = model.Email.Trim(),
                     PhoneNumber = model.PhoneNumber.Trim(),
 
 
@@ -668,50 +642,31 @@ namespace StAugustine.Controllers
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
-                    #region Guardian
-                    //var db = new ApplicationDbContext();
-                    ////var guardian = new Guardian(user.Id, model.Salutation.ToString(),
-                    ////                        model.FirstName, model.MiddleName, model.LastName, model.Gender.ToString(),
-                    ////                        model.PhoneNumber, model.Address, model.Email, model.Relationship.ToString(), model.Occupation);
-                    var guardian = new Guardian()
+                    #region Student
+                    var student = new Student()
                     {
-                        GuardianId = user.Id,
-                        //StudentId = model.StudentId,
+                        StudentId = model.StudentId,
                         FirstName = model.FirstName,
                         MiddleName = model.MiddleName,
                         LastName = model.LastName,
                         PhoneNumber = model.PhoneNumber,
-                        GuardianEmail = model.Email,
-                        Address = model.Address,
-                        Relationship = model.Relationship.ToString(),
-                        Occupation = model.Occupation,
                         Gender = model.Gender.ToString(),
-                        FullName = model.Username,
-                        Password = model.Password
+                        Religion = model.Religion.ToString(),
+                        DateOfBirth = model.DateOfBirth,
+                        PlaceOfBirth = model.PlaceOfBirth,
+                        StateOfOrigin = model.StateOfOrigin.ToString(),
+                        Tribe = model.Tribe,
+                        AdmissionDate = model.AdmissionDate,
+                        StudentPassport = model.StudentPassport,
                     };
-                    //db.Guardians.Add(guardian); 
+                    _db.Students.Add(student);
+                    TempData["UserMessage"] = "Student has been Added Successfully";
+                    TempData["Title"] = "Success.";
+                    await _db.SaveChangesAsync();
                     #endregion
 
-                    //Student mystudent = db.Students.Find(model.StudentId);
-
-                    //if (mystudent != null)
-                    //{
-                    //    using (ApplicationDbContext ent = new ApplicationDbContext())
-                    //    {
-                    //        var student = new Student(mystudent.StudentId, mystudent.FirstName, mystudent.MiddleName,
-                    //            mystudent.LastName,
-                    //            mystudent.Gender, mystudent.DateOfBirth, mystudent.AdmissionDate,
-                    //            mystudent.StudentPassport, true, false);
-                    //        ent.Entry(student).State = EntityState.Modified;
-                    //        ent.SaveChanges();
-                    //    }
-                    //}
-                    //studentUpdated =
-                    //    $"The Student assigned to this User has the First Name of {mystudent.FirstName} and Last Name of {mystudent.LastName}";
-                    //db.SaveChanges();
-
                     //Assign Role to user Here 
-                    await this.UserManager.AddToRoleAsync(user.Id, "Guardian");
+                    await this.UserManager.AddToRoleAsync(user.Id, "Student");
 
                     // To avoid automatic login
                     //await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
@@ -722,9 +677,8 @@ namespace StAugustine.Controllers
                     // var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
                     // await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
 
-                    TempData["UserMessage"] = "Parent/Guardian Created Successfully." + studentUpdated;
-                    TempData["Title"] = "Success.";
-                    return RedirectToAction("Index", "Account");
+
+                    return RedirectToAction("Index", "Students");
                 }
                 AddErrors(result);
             }
@@ -778,69 +732,7 @@ namespace StAugustine.Controllers
             return View(model);
         }
 
-        //[AllowAnonymous]
-        //public ActionResult UploadStudent()
-        //{
-        //    return View();
-        //}
 
-        //[AllowAnonymous]
-        //[HttpPost]
-        //public async Task<ActionResult> UploadStudent(HttpPostedFileBase excelfile)
-        //{
-        //    if (excelfile == null || excelfile.ContentLength == 0)
-        //    {
-        //        ViewBag.Error = "Please Select a excel file <br/>";
-        //        return View("Index");
-        //    }
-        //    else
-        //    {
-        //        HttpPostedFileBase file = Request.Files["excelfile"];
-        //        if (excelfile.FileName.EndsWith("xls") || excelfile.FileName.EndsWith("xlsx"))
-        //        {
-        //            string fileContentType = file.ContentType;
-        //            byte[] fileBytes = new byte[file.ContentLength];
-        //            var data = file.InputStream.Read(fileBytes, 0, Convert.ToInt32(file.ContentLength));
-
-        //            // Read data from excel file
-        //            using (var package = new ExcelPackage(file.InputStream))
-        //            {
-        //                var currentSheet = package.Workbook.Worksheets;
-        //                var workSheet = currentSheet.First();
-        //                var noOfCol = workSheet.Dimension.End.Column;
-        //                var noOfRow = workSheet.Dimension.End.Row;
-
-        //                for (int row = 2; row <= noOfRow; row++)
-        //                {
-
-        //                    string lastName = workSheet.Cells[row, 2].Value.ToString();
-        //                    string firstName = workSheet.Cells[row, 3].Value.ToString();
-        //                    string username = lastName.Trim() + " " + firstName.Trim();
-
-        //                    string currentClass = workSheet.Cells[row, 8].Value.ToString();
-
-        //                    string StudentId = workSheet.Cells[row, 1].Value.ToString();
-        //                    string LastName = lastName.Trim();
-        //                    string FirstName = firstName.Trim();
-        //                    string MiddleName = workSheet.Cells[row, 4].Value.ToString();
-        //                    string Email = workSheet.Cells[row, 5].Value.ToString();
-        //                    string PhoneNumber = workSheet.Cells[row, 6].Value.ToString();
-        //                    string Address = workSheet.Cells[row, 7].Value.ToString();
-        //                    string MyClassName = currentClass.Trim();
-        //                    string Gender = workSheet.Cells[row, 9].Value.ToString();
-        //                }
-
-        //                return RedirectToAction("Index", "Students");
-        //            }
-        //        }
-        //        else
-        //        {
-        //            ViewBag.Error = "File type is Incorrect <br/>";
-        //            return View("Index");
-
-        //        }
-        //    }
-        //}
 
 
         //GET: /Account/ConfirmEmail

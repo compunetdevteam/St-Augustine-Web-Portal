@@ -2,7 +2,7 @@
 using System.IO;
 using System.Web.Hosting;
 
-namespace StAugustine.Services
+namespace SwiftSkool.Services
 {
     public class Fingerprint
     {

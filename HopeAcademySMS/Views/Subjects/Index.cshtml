@@ -1,4 +1,4 @@
-﻿@model IEnumerable<StAugustine.Models.Subject>
+﻿@model IEnumerable<SwiftSkool.Models.Subject>
 
 @{
     ViewBag.Title = "Index";
@@ -17,9 +17,9 @@
         <th>
             @Html.DisplayNameFor(model => model.CourseName)
         </th>
-        <th>
+        @*<th>
             @Html.DisplayNameFor(model => model.SubjectUnit)
-        </th>
+        </th>*@
         <th></th>
     </tr>
 
@@ -31,9 +31,9 @@
         <td>
             @Html.DisplayFor(modelItem => item.CourseName)
         </td>
-        <td>
+        @*<td>
             @Html.DisplayFor(modelItem => item.SubjectUnit)
-        </td>
+        </td>*@
         <td>
             @Html.ActionLink("Edit", "Edit", new { id=item.SubjectId }) |
             @Html.ActionLink("Details", "Details", new { id=item.SubjectId }) |

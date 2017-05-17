@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace StAugustine.Models
+namespace SwiftSkool.Models
 {
     public class Grade
     {
@@ -9,9 +9,9 @@ namespace StAugustine.Models
         public string GradeName { get; set; }
         public int MinimumValue { get; set; }
         public int MaximumValue { get; set; }
-        public int GradePoint { get; set; }
+        //public int GradePoint { get; set; }
         public string Remark { get; set; }
-        public string ClassName { get; set; }
+        // public string ClassName { get; set; }
 
     }
 

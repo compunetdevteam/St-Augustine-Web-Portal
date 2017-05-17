@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace StAugustine.Models
+namespace SwiftSkool.Models
 {
     public class Staff
     {

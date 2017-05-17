@@ -1,26 +1,24 @@
-﻿@model IEnumerable<StAugustine.Models.Guardian>
+﻿@model IEnumerable<SwiftSkool.Models.Guardian>
 
 @{
     ViewBag.Title = "Index";
 }
 
-<h2>Parents/Guardian List</h2>
+<h2>Index</h2>
 
-
-<table class="table">
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table table-responsive">
     <tr>
-       
+        <th>
+            Student Name
+        </th>
         <th>
             @Html.DisplayNameFor(model => model.Salutation)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.FirstName)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.MiddleName)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.LastName)
+            @Html.DisplayNameFor(model => model.FullName)
         </th>
         <th>
             @Html.DisplayNameFor(model => model.Gender)
@@ -29,31 +27,29 @@
             @Html.DisplayNameFor(model => model.PhoneNumber)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Address)
+            @Html.DisplayNameFor(model => model.Email)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Occupation)
+            @Html.DisplayNameFor(model => model.Address)
         </th>
         <th>
             @Html.DisplayNameFor(model => model.Relationship)
         </th>
+    
+       
         <th></th>
     </tr>
 
 @foreach (var item in Model) {
     <tr>
-       
+        <td>
+            @Html.DisplayFor(modelItem => item.Student.FullName)
+        </td>
         <td>
             @Html.DisplayFor(modelItem => item.Salutation)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.FirstName)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.MiddleName)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.LastName)
+            @Html.DisplayFor(modelItem => item.FullName)
         </td>
         <td>
             @Html.DisplayFor(modelItem => item.Gender)
@@ -62,23 +58,21 @@
             @Html.DisplayFor(modelItem => item.PhoneNumber)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.Address)
+            @Html.DisplayFor(modelItem => item.Email)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.Occupation)
+            @Html.DisplayFor(modelItem => item.Address)
         </td>
+     
         <td>
             @Html.DisplayFor(modelItem => item.Relationship)
         </td>
+        
+       
         <td>
-            @*@Html.ActionLink("Edit", "Edit", new
-           {
-               id = item.GuardianEmail
-              
-           })*@
-            @Html.ActionLink("Edit", "Edit", new {id = item.GuardianEmail}) |
-            @Html.ActionLink("Details", "Details", new {id = item.GuardianEmail}) |
-
+            @Html.ActionLink("Edit", "Edit", new { id=item.GuardianId }) |
+            @Html.ActionLink("Details", "Details", new { id=item.GuardianId }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.GuardianId })
         </td>
     </tr>
 }

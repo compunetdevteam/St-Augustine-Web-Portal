@@ -1,6 +1,6 @@
-﻿@model StAugustine.Models.Objects
+﻿@model SwiftSkool.Models.Objects
 
-@helper Render(StAugustine.Models.Objects.Post post, System.Web.Mvc.HtmlHelper html, bool isAdmin, bool showComments)
+@helper Render(SwiftSkool.Models.Objects.Post post, System.Web.Mvc.HtmlHelper html, bool isAdmin, bool showComments)
 {
 
     <div class="well">
@@ -28,7 +28,7 @@
             <hr>
             </p>
             <div class="taglist">
-                @*@foreach (StAugustine.Models.Objects.Tag tag in post.Tags)
+                @*@foreach (SwiftSkool.Models.Objects.Tag tag in post.Tags)
                 {
                     <span class="tag"> <a href="@Href("~/Posts/Tags/" + tag.Name)">@tag.Name</a></span>
                 }*@
@@ -60,7 +60,7 @@
     {
         <div>
             <a id="comments"></a>
-            @foreach (StAugustine.Models.Objects.Comment comment in post.Comments.OrderBy(x => x.DateTime))
+            @foreach (SwiftSkool.Models.Objects.Comment comment in post.Comments.OrderBy(x => x.DateTime))
             {
                 <div class="comment">
                     <div class="CommentName">

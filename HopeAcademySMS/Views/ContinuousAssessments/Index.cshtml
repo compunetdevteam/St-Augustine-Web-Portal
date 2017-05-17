@@ -1,5 +1,5 @@
-﻿@*@model IEnumerable<StAugustine.Models.ContinuousAssessment>*@
-@model PagedList.IPagedList<StAugustine.Models.ContinuousAssessment>
+﻿@*@model IEnumerable<SwiftSkool.Models.ContinuousAssessment>*@
+@model PagedList.IPagedList<SwiftSkool.Models.ContinuousAssessment>
 @using PagedList.Mvc;
 <link href="~/Content/PagedList.css" rel="stylesheet" type="text/css" />
 
@@ -128,13 +128,13 @@
                 @Html.DisplayFor(modelItem => item.ClassName)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.ProjectScore)
+                @Html.DisplayFor(modelItem => item.FirstTest)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Assignment)
+                @Html.DisplayFor(modelItem => item.SecondTest)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Test)
+                @Html.DisplayFor(modelItem => item.ThirdTest)
             </td>
            
             <td>

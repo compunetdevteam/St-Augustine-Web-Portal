@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace StAugustine.Models
+namespace SwiftSkool.Models
 {
     public class SMS
     {

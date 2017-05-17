@@ -1,7 +1,7 @@
-﻿using StAugustine.Models;
+﻿using SwiftSkool.Models;
 using System.ComponentModel.DataAnnotations;
 
-namespace StAugustine.ViewModel
+namespace SwiftSkool.ViewModel
 {
     public class GuardianEditViewModel
     {

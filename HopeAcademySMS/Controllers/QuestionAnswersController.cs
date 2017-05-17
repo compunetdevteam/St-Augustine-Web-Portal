@@ -1,11 +1,11 @@
-﻿using StAugustine.Models;
-using StAugustine.Models.CBT;
+﻿using SwiftSkool.Models;
+using SwiftSkool.Models.CBT;
 using System.Data.Entity;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 
-namespace StAugustine.Controllers
+namespace SwiftSkool.Controllers
 {
     public class QuestionAnswersController : Controller
     {

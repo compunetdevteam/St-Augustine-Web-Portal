@@ -1,4 +1,4 @@
-﻿namespace StAugustine.ViewModel.CBTE
+﻿namespace SwiftSkool.ViewModel.CBTE
 {
     public class DisplayQuestionViewModel
     {

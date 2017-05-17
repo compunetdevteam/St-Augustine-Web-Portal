@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
-namespace StAugustine
+namespace SwiftSkool
 {
     // resource: html-color-codes  http://html-color-codes.info/
     // left part stores color, right part stores className for html rendering

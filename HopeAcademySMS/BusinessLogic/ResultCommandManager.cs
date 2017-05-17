@@ -1,12 +1,12 @@
-﻿using StAugustine.Models;
+﻿using SwiftSkool.Models;
 using System;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace StAugustine.BusinessLogic
+namespace SwiftSkool.BusinessLogic
 {
-    public class ResultCommandManager
+    public class ResultCommandManager : IDisposable
     {
 
         private readonly ApplicationDbContext _db = new ApplicationDbContext();
@@ -171,16 +171,16 @@ namespace StAugustine.BusinessLogic
             return Math.Round((scorePerSubject / studentInClass), 2);
         }
 
-        public async Task<double> TotalQualityPoint(string studentId, string className, string term, string sessionName)
-        {
+        //public async Task<double> TotalQualityPoint(string studentId, string className, string term, string sessionName)
+        //{
 
-            var totalPoint = await _db.ContinuousAssessments.AsNoTracking().Where(x => x.ClassName.ToUpper().Trim().Equals(className.ToUpper().Trim()) &&
-                                                                x.TermName.ToUpper().Trim().Equals(term.ToUpper().Trim()) &&
-                                                                x.SessionName.ToUpper().Trim().Equals(sessionName.ToUpper().Trim()) &&
-                                                                x.StudentId.ToUpper().Trim().Equals(studentId.ToUpper().Trim()))
-                                                                .SumAsync(c => c.QualityPoint);
-            return totalPoint;
-        }
+        //    var totalPoint = await _db.ContinuousAssessments.AsNoTracking().Where(x => x.ClassName.ToUpper().Trim().Equals(className.ToUpper().Trim()) &&
+        //                                                        x.TermName.ToUpper().Trim().Equals(term.ToUpper().Trim()) &&
+        //                                                        x.SessionName.ToUpper().Trim().Equals(sessionName.ToUpper().Trim()) &&
+        //                                                        x.StudentId.ToUpper().Trim().Equals(studentId.ToUpper().Trim()))
+        //                                                        .SumAsync(c => c.QualityPoint);
+        //    return totalPoint;
+        //}
 
         public async Task<double> TotalcreditUnit(string className)
         {
@@ -226,5 +226,18 @@ namespace StAugustine.BusinessLogic
         //    //await db.SaveChangesAsync();
         //}
 
+        //public virtual void Dispose(bool disposing)
+        //{
+        //    if (disposing)
+        //    {
+        //        _db.Dispose();
+        //    }
+        //    Dispose(disposing);
+        //}
+
+        public void Dispose()
+        {
+            _db?.Dispose();
+        }
     }
 }

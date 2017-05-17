@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
 
-namespace StAugustine.Models
+namespace SwiftSkool.Models
 {
     public class IndexViewModel
     {

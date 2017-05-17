@@ -274,8 +274,10 @@
     <Compile Include="Controllers\ClassesController.cs" />
     <Compile Include="Controllers\ContinuousAssessmentsController.cs" />
     <Compile Include="Controllers\ExamRulesController.cs" />
+    <Compile Include="Controllers\FileDownloadController.cs" />
     <Compile Include="Controllers\GradesController.cs" />
     <Compile Include="Controllers\GuardiansController.cs" />
+    <Compile Include="Controllers\HomePageSetUpsController.cs" />
     <Compile Include="Controllers\PrincipalCommentsController.cs" />
     <Compile Include="Controllers\PsychomotorsController.cs" />
     <Compile Include="Controllers\QuestionAnswersController.cs" />
@@ -305,10 +307,6 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201703241447284_Initial_Create.cs" />
-    <Compile Include="Migrations\201703241447284_Initial_Create.Designer.cs">
-      <DependentUpon>201703241447284_Initial_Create.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\Affective.cs" />
@@ -322,6 +320,8 @@
     <Compile Include="Models\CBT\QuestionAnswer.cs" />
     <Compile Include="Models\CBT\StudentQuestion.cs" />
     <Compile Include="Models\Class.cs" />
+    <Compile Include="Models\DownloadFileInformation.cs" />
+    <Compile Include="Models\HomePageSetUp.cs" />
     <Compile Include="Models\SchoolClass.cs" />
     <Compile Include="Models\SubjectRegistration.cs" />
     <Compile Include="Models\Term.cs" />
@@ -333,6 +333,7 @@
     <Compile Include="Models\Result.cs" />
     <Compile Include="Models\SMS.cs" />
     <Compile Include="Services\DiaryEvents.cs" />
+    <Compile Include="Services\DownloadFiles.cs" />
     <Compile Include="Services\ExcelPackageExtension.cs" />
     <Compile Include="Services\ExcelValidation.cs" />
     <Compile Include="Services\Fingerprint.cs" />
@@ -370,6 +371,7 @@
     <Compile Include="ViewModel\ReportViewModel.cs" />
     <Compile Include="ViewModel\ResultSummaryViewModel.cs" />
     <Compile Include="ViewModel\ResultViewModel.cs" />
+    <Compile Include="ViewModel\SetUpVm.cs" />
     <Compile Include="ViewModel\Sms\SendToAllViewModel.cs" />
     <Compile Include="ViewModel\Sms\SendToStaffViewModel.cs" />
     <Compile Include="ViewModel\Sms\SmsViewModel.cs" />
@@ -2153,6 +2155,10 @@
     <Content Include="ckeditor\skins\moono\images\refresh.png" />
     <Content Include="ckeditor\skins\moono\images\spinner.gif" />
     <Content Include="ckeditor\styles.js" />
+    <Content Include="Content\alertify\alertify.bootstrap.css" />
+    <Content Include="Content\alertify\alertify.core.css" />
+    <Content Include="Content\alertify\alertify.default.css" />
+    <Content Include="Content\bootstrap-notify.css" />
     <Content Include="Content\bootstrap-responsive.css" />
     <Content Include="Content\bootstrap-responsive.min.css" />
     <Content Include="Content\bootstrap-theme.css" />
@@ -2165,7 +2171,10 @@
     <Content Include="Content\chosen.css" />
     <Content Include="Content\fullcalendar.css" />
     <Content Include="Content\fullcalendar.print.css" />
+    <Content Include="Content\images\aristocrat.jpeg" />
     <Content Include="Content\images\DSC_7065.JPG" />
+    <Content Include="Content\images\eminentLogo.png" />
+    <Content Include="Content\images\loginImage.png" />
     <Content Include="Content\images\logo.PNG" />
     <Content Include="Content\images\logo2.jpg" />
     <Content Include="Content\images\PSign.jpeg" />
@@ -2176,6 +2185,8 @@
     <Content Include="Content\Money.png" />
     <Content Include="Content\ok.png" />
     <Content Include="Content\Site.css" />
+    <Content Include="Content\styles\alert-bangtidy.css" />
+    <Content Include="Content\styles\alert-blackgloss.css" />
     <Content Include="Content\themes\base\accordion.css" />
     <Content Include="Content\themes\base\all.css" />
     <Content Include="Content\themes\base\autocomplete.css" />
@@ -2523,10 +2534,17 @@
     <Content Include="Content\bootstrap.css.map" />
     <Content Include="Content\bootstrap-theme.min.css.map" />
     <Content Include="Content\bootstrap-theme.css.map" />
+    <None Include="Properties\PublishProfiles\bristow - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\EminentBeaconHighSchool - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\HopeAcademy - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\KingsAndQuensJos - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\PADOPADS - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\StAugustine - Web Deploy.pubxml" />
+    <Content Include="Scripts\alertify\alertify.js" />
+    <Content Include="Scripts\alertify\alertify.min.js" />
     <Content Include="Scripts\angular.js" />
     <Content Include="Scripts\bootstrap-modal.js" />
+    <Content Include="Scripts\bootstrap-notify.js" />
     <Content Include="Scripts\bootstrap-popover.js" />
     <Content Include="Scripts\bootstrap-tooltip.js" />
     <Content Include="Scripts\bootstrap.js" />
@@ -2558,7 +2576,9 @@
     <Content Include="Scripts\moment.js" />
     <None Include="Scripts\_references.js" />
     <Content Include="Scripts\moment.min.js" />
-    <Content Include="Web.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </Content>
@@ -2592,7 +2612,6 @@
     <Content Include="Views\Manage\VerifyPhoneNumber.cshtml" />
     <Content Include="Views\Shared\Lockout.cshtml" />
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
-    <Content Include="Views\Account\UploadStudent.cshtml" />
     <Content Include="Views\Students\Create.cshtml" />
     <Content Include="Views\Students\Delete.cshtml" />
     <Content Include="Views\Students\Details.cshtml" />
@@ -2628,7 +2647,7 @@
     <Content Include="Views\FeePayments\Edit.cshtml" />
     <Content Include="Views\FeePayments\Index.cshtml" />
     <Content Include="Views\FeePayments\DebtorsList.cshtml" />
-    <Content Include="Views\Account\RegisterGuardian.cshtml" />
+    <Content Include="Views\Account\RegisterStudent.cshtml" />
     <Content Include="Views\Staffs\Create.cshtml" />
     <Content Include="Views\Staffs\Delete.cshtml" />
     <Content Include="Views\Staffs\Details.cshtml" />
@@ -2673,11 +2692,8 @@
     <Content Include="Views\ResultSummary\Index.cshtml" />
     <Content Include="Views\SummaryScore\Create.cshtml" />
     <Content Include="Views\SummaryScore\Index.cshtml" />
-    <Content Include="Views\Account\UpLoadGuardian.cshtml" />
+    <Content Include="Views\Account\UpLoadStudent.cshtml" />
     <Content Include="Views\Shared\Error1.cshtml" />
-    <Content Include="Views\Guardians\Details.cshtml" />
-    <Content Include="Views\Guardians\Edit.cshtml" />
-    <Content Include="Views\Guardians\Index.cshtml" />
     <Content Include="Views\Shared\Error2.cshtml" />
     <Content Include="Views\Shared\Error3.cshtml" />
     <Content Include="Views\Students\Dashboard.cshtml" />
@@ -2798,12 +2814,28 @@
     <Content Include="Views\AppointmentDiaries\Details.cshtml" />
     <Content Include="Views\AppointmentDiaries\Edit.cshtml" />
     <Content Include="Views\AppointmentDiaries\Index.cshtml" />
+    <Content Include="Views\FileDownload\Index.cshtml" />
+    <Content Include="Views\Home\SchoolSetUp.cshtml" />
+    <Content Include="Views\Shared\_LayoutLanding.cshtml" />
+    <Content Include="Views\Guardians\Create.cshtml" />
+    <Content Include="Views\Guardians\Delete.cshtml" />
+    <Content Include="Views\Guardians\Details.cshtml" />
+    <Content Include="Views\Guardians\Edit.cshtml" />
+    <Content Include="Views\Guardians\Index.cshtml" />
+    <Content Include="Views\Guardians\UpLoadGuardian.cshtml" />
+    <Content Include="Views\HomePageSetUps\Create.cshtml" />
+    <Content Include="Views\HomePageSetUps\Delete.cshtml" />
+    <Content Include="Views\HomePageSetUps\Details.cshtml" />
+    <Content Include="Views\HomePageSetUps\Edit.cshtml" />
+    <Content Include="Views\HomePageSetUps\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="assets\js\core\cache\" />
     <Folder Include="Content\ExcelUploadedFile\" />
+    <Folder Include="Content\ImageUpload\" />
     <Folder Include="Models\Context\" />
+    <Folder Include="MyFiles\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
@@ -2811,11 +2843,6 @@
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Migrations\201703241447284_Initial_Create.resx">
-      <DependentUpon>201703241447284_Initial_Create.cs</DependentUpon>
-    </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace StAugustine.ViewModel.Sms
+namespace SwiftSkool.ViewModel.Sms
 {
     public class SendToStaffViewModel
     {

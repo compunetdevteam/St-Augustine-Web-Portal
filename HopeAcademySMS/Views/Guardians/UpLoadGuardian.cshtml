@@ -5,7 +5,7 @@
 
 <h2>UploadFile</h2>
 
-@using (Html.BeginForm("UpLoadGuardian", "Account", FormMethod.Post, new {enctype = "multipart/form-data", id= "theform" }))
+@using (Html.BeginForm("UpLoadGuardian", "Guardians", FormMethod.Post, new {enctype = "multipart/form-data", id= "theform" }))
 {
     @Html.Raw(ViewBag.Error)
     <div class="form-group">
@@ -22,8 +22,8 @@
     $(function () {
         $('#theform').submit(function () {
             $("input[type='submit']", this)
-              .val("Uploading Please Wait...")
-              .attr('disabled', 'disabled');
+                .val("Uploading Please Wait...")
+                .attr('disabled', 'disabled');
             return true;
         });
     });

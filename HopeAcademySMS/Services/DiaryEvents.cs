@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using StAugustine;
-using StAugustine.Calender;
-using StAugustine.Models;
+using SwiftSkool;
+using SwiftSkool.Calender;
+using SwiftSkool.Models;
 
 // << dont forget to add this for converting dates to localtime
 

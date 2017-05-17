@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace StAugustine.Models
+namespace SwiftSkool.Models
 {
     public class ReportSummary
     {

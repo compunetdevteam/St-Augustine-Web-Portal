@@ -1,4 +1,4 @@
-﻿@model StAugustine.ViewModel.ReportViewModel
+﻿@model SwiftSkool.ViewModel.ReportViewModel
 @{
     Layout = "~/Views/Shared/_LayoutPrint.cshtml";
     //Layout = "~/Views/Shared/_Layout.cshtml";
@@ -80,13 +80,13 @@
                 @Html.DisplayFor(modelItem => item.SubjectCode)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.ProjectScore)
+                @Html.DisplayFor(modelItem => item.FirstTest)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Assignment)
+                @Html.DisplayFor(modelItem => item.SecondTest)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Test)
+                @Html.DisplayFor(modelItem => item.ThirdTest)
             </td>
 
             <td>

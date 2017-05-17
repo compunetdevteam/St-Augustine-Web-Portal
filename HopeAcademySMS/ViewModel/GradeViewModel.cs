@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Web.Mvc;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace StAugustine.ViewModel
+namespace SwiftSkool.ViewModel
 {
     public class GradeViewModel
     {
@@ -23,18 +21,18 @@ namespace StAugustine.ViewModel
         [Required(ErrorMessage = "Maximum Value is required")]
         public int MaximumValue { get; set; }
 
-        [Display(Name = "Score for Grade Point")]
-        [Range(1, 9)]
-        [Required(ErrorMessage = "Maximum Value is required")]
-        public int GradePoint { get; set; }
+        //[Display(Name = "Score for Grade Point")]
+        //[Range(1, 9)]
+        //[Required(ErrorMessage = "Maximum Value is required")]
+        //public int GradePoint { get; set; }
 
         [Display(Name = "School Remark")]
         [Required(ErrorMessage = "Remark is required")]
         public string Remark { get; set; }
 
-        [Display(Name = "School Remark")]
-        [Required(ErrorMessage = "Remark is required")]
-        public string[] ClassName { get; set; }
+        // [Display(Name = "School Remark")]
+        // [Required(ErrorMessage = "Remark is required")]
+        //// public string[] ClassName { get; set; }
 
     }
 

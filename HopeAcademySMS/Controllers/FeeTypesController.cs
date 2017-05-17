@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
-using StAugustine.Models;
+using SwiftSkool.Models;
 
-namespace StAugustine.Controllers
+namespace SwiftSkool.Controllers
 {
     public class FeeTypesController : Controller
     {

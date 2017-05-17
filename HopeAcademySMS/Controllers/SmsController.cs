@@ -1,11 +1,11 @@
-﻿using StAugustine.Models;
-using StAugustine.Services;
-using StAugustine.ViewModel.Sms;
+﻿using SwiftSkool.Models;
+using SwiftSkool.Services;
 using System;
 using System.Linq;
 using System.Web.Mvc;
+using SwiftSkool.ViewModel.Sms;
 
-namespace StAugustine.Controllers
+namespace SwiftSkool.Controllers
 {
     public class SmsController : Controller
     {
@@ -52,7 +52,7 @@ namespace StAugustine.Controllers
                 foreach (var student in studentList)
                 {
                     var guardianNumber =
-                        db.Students.Where(s => s.StudentId.Equals(student)).Select(x => x.GuardianEmail).ToList();
+                        db.Students.Where(s => s.StudentId.Equals(student)).Select(x => x.PhoneNumber).ToList();
                     foreach (var guardian in guardianNumber)
                     {
                         //var guardianContact = db.Guardians.Where(x => x.GuardianEmail.Equals(guardian))
@@ -163,7 +163,7 @@ namespace StAugustine.Controllers
             {
                 var studentList = db.Students.Where(x => x.Active.Equals(true) &&
                                                          x.IsGraduated.Equals(false))
-                    .Select(y => y.GuardianEmail).ToList();
+                    .Select(y => y.PhoneNumber).ToList();
                 foreach (var student in studentList)
                 {
                     //var guardianList = db.Guardians.Where(x => x.StudentId.Equals(student))

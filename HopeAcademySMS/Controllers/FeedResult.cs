@@ -3,7 +3,7 @@ using System.ServiceModel.Syndication;
 using System.Web.Mvc;
 using System.Xml;
 
-namespace StAugustine.Controllers
+namespace SwiftSkool.Controllers
 {
     public class FeedResult : ActionResult
     {

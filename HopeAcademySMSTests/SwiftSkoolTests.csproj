@@ -55,9 +55,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\HopeAcademySMS\StAugustine.csproj">
+    <ProjectReference Include="..\HopeAcademySMS\SwiftSkool.csproj">
       <Project>{329B451B-1CC9-48BD-8903-906C3BFEA51D}</Project>
-      <Name>StAugustine</Name>
+      <Name>SwiftSkool</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

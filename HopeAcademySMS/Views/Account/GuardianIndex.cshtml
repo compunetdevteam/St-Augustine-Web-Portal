@@ -1,4 +1,4 @@
-﻿@model IEnumerable<StAugustine.Models.ApplicationUser>
+﻿@model IEnumerable<SwiftSkool.Models.ApplicationUser>
 
 @{
     ViewBag.Title = "Users";
@@ -14,9 +14,9 @@
                 <th>
                     <h3>@Html.DisplayNameFor(model => model.Email)</h3>
                 </th>
-                <th>
+                @*<th>
                     <h3>@Html.DisplayNameFor(model => model.PhoneNumber)</h3>
-                </th>
+                </th>*@
                 <th>
                 </th>
             </tr>
@@ -29,9 +29,9 @@
                     <td>
                         @Html.DisplayFor(modelItem => item.Email)
                     </td>
-                    <td>
+                    @*<td>
                         @Html.DisplayFor(modelItem => item.PhoneNumber)
-                    </td>
+                    </td>*@
                     <td>
                         @*@Html.ActionLink("Edit", "Edit", new { id = item.Id }) |*@
                         @Html.ActionLink("Details", "Details", new { id = item.Id }) |

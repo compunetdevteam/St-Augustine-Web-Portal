@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace StAugustine.ViewModel
+namespace SwiftSkool.ViewModel
 {
     public class ResultViewModel
     {
@@ -8,7 +8,7 @@ namespace StAugustine.ViewModel
         //[Display(Name = "Student ID")]
         //[Required(ErrorMessage = "Your Student ID Number is required")]
         //[StringLength(25, ErrorMessage = "Your Student ID is too long")]
-        //public string StudentId { get; set; }
+        public string StudentId { get; set; }
 
         [Display(Name = "Term")]
         [Required(ErrorMessage = "Term is required")]

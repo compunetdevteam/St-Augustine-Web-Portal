@@ -1,4 +1,4 @@
-﻿namespace StAugustine.BusinessLogic
+﻿namespace SwiftSkool.BusinessLogic
 {
     public interface IResultCommandManager
     {

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace StAugustine.ViewModel
+namespace SwiftSkool.ViewModel
 {
     public class ContinuousAssesmentViewModel
     {
@@ -29,26 +29,28 @@ namespace StAugustine.ViewModel
         [Required(ErrorMessage = "Class Name is required")]
         public string ClassName { get; set; }
 
-        [Display(Name = "Score for Project")]
-        [Range(1, 10)]
-        [Required(ErrorMessage = "Project score is required")]
-        public double ProjectScore { get; set; }
 
-        [Display(Name = "Score for Assignment")]
-        [Range(1, 10)]
-        [Required(ErrorMessage = "Assignment is required")]
-        public double Assignment { get; set; }
+        [Display(Name = "Score for First Test")]
+        //[Required(ErrorMessage = "First Test is required")]
+        [Range(0, 10, ErrorMessage = "Enter number between 0 to 10")]
+        public double FirstTest { get; set; }
 
-        [Display(Name = "CA Score")]
-        [Range(1, 20)]
-        [Required(ErrorMessage = "CA Score is required")]
-        public double Test { get; set; }
+        [Display(Name = "Score for Second Test")]
+        //[Required(ErrorMessage = "Second Test is required")]
+        [Range(0, 10, ErrorMessage = "Enter number between 0 to 10")]
+        public double SecondTest { get; set; }
+
+        [Display(Name = "Score Third Test")]
+        //[Required(ErrorMessage = "Third Test score is required")]
+        [Range(0, 10, ErrorMessage = "Enter number between 0 to 10")]
+        public double ThirdTest { get; set; }
 
 
         [Display(Name = "Exam Score")]
-        [Range(1, 60)]
-        [Required(ErrorMessage = "Exam Score is required")]
+        [Range(0, 70, ErrorMessage = "Enter number between 0 to 70")]
+        //[Required(ErrorMessage = "Exam Score is required")]
         public double ExamScore { get; set; }
+
         [Display(Name = "Staff Name")]
         [Required(ErrorMessage = "Staff name is required")]
         public string StaffName { get; set; }

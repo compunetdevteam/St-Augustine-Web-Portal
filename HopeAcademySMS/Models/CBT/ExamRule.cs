@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace StAugustine.Models.CBT
+namespace SwiftSkool.Models.CBT
 {
     public class ExamRule
     {

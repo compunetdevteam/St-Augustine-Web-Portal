@@ -2,8 +2,8 @@
 using Microsoft.AspNet.Identity;
 using OfficeOpenXml;
 using PagedList;
-using StAugustine.Models;
-using StAugustine.ViewModel;
+using SwiftSkool.Models;
+using SwiftSkool.ViewModel;
 using System;
 using System.Data.Entity;
 using System.Linq;
@@ -14,7 +14,7 @@ using System.Web.Mvc;
 
 //using Excel = Microsoft.Office.Interop.Excel;
 
-namespace StAugustine.Controllers
+namespace SwiftSkool.Controllers
 {
     public class ContinuousAssessmentsController : Controller
     {
@@ -193,9 +193,9 @@ namespace StAugustine.Controllers
                     {
                         StudentId = model.StudentId,
                         SubjectCode = model.SubjectCode,
-                        ProjectScore = model.ProjectScore,
-                        Assignment = model.Assignment,
-                        Test = model.Test,
+                        FirstTest = model.FirstTest,
+                        SecondTest = model.SecondTest,
+                        ThirdTest = model.ThirdTest,
                         ExamScore = model.ExamScore,
                         TermName = model.TermName,
                         SessionName = model.SessionName,
@@ -242,9 +242,9 @@ namespace StAugustine.Controllers
             {
                 ContinuousAssessmentId = continuousAssessment.ContinuousAssessmentId,
                 StudentId = continuousAssessment.StudentId,
-                ProjectScore = continuousAssessment.ProjectScore,
-                Assignment = continuousAssessment.Assignment,
-                Test = continuousAssessment.Test,
+                FirstTest = continuousAssessment.FirstTest,
+                SecondTest = continuousAssessment.SecondTest,
+                ThirdTest = continuousAssessment.ThirdTest,
                 ExamScore = continuousAssessment.ExamScore
             };
             return View(model);
@@ -264,9 +264,9 @@ namespace StAugustine.Controllers
                     ContinuousAssessmentId = model.ContinuousAssessmentId,
                     StudentId = model.StudentId,
                     SubjectCode = model.SubjectCode,
-                    ProjectScore = model.ProjectScore,
-                    Assignment = model.Assignment,
-                    Test = model.Test,
+                    FirstTest = model.FirstTest,
+                    SecondTest = model.SecondTest,
+                    ThirdTest = model.ThirdTest,
                     ExamScore = model.ExamScore,
                     TermName = model.TermName.ToString(),
                     SessionName = model.SessionName,
@@ -339,124 +339,112 @@ namespace StAugustine.Controllers
                 ViewBag.Error = "Please Select a excel file <br/>";
                 return View();
             }
-            else
+            HttpPostedFileBase file = Request.Files["excelfile"];
+            if (excelfile.FileName.EndsWith("xls") || excelfile.FileName.EndsWith("xlsx"))
             {
-                HttpPostedFileBase file = Request.Files["excelfile"];
-                if (excelfile.FileName.EndsWith("xls") || excelfile.FileName.EndsWith("xlsx"))
+                string lastrecord = "";
+                int recordCount = 0;
+                string message = "";
+                string fileContentType = file.ContentType;
+                byte[] fileBytes = new byte[file.ContentLength];
+                var data = file.InputStream.Read(fileBytes, 0, Convert.ToInt32(file.ContentLength));
+                // Read data from excel file
+                using (var package = new ExcelPackage(file.InputStream))
                 {
-                    string lastrecord = "";
-                    int recordCount = 0;
-                    string message = "";
-                    string fileContentType = file.ContentType;
-                    byte[] fileBytes = new byte[file.ContentLength];
-                    var data = file.InputStream.Read(fileBytes, 0, Convert.ToInt32(file.ContentLength));
-                    // Read data from excel file
-                    using (var package = new ExcelPackage(file.InputStream))
+                    var currentSheet = package.Workbook.Worksheets;
+                    foreach (var sheet in currentSheet)
                     {
-                        var currentSheet = package.Workbook.Worksheets;
-                        foreach (var sheet in currentSheet)
+                        ExcelValidation myExcel = new ExcelValidation();
+                        //var workSheet = currentSheet.First();
+                        var noOfCol = sheet.Dimension.End.Column;
+                        var noOfRow = sheet.Dimension.End.Row;
+                        int requiredField = 10;
+
+                        string validCheck = myExcel.ValidateExcel(noOfRow, sheet, requiredField);
+                        if (!validCheck.Equals("Success"))
                         {
-                            ExcelValidation myExcel = new ExcelValidation();
-                            //var workSheet = currentSheet.First();
-                            var noOfCol = sheet.Dimension.End.Column;
-                            var noOfRow = sheet.Dimension.End.Row;
-                            int requiredField = 10;
 
-                            string validCheck = myExcel.ValidateExcel(noOfRow, sheet, requiredField);
-                            if (!validCheck.Equals("Success"))
+                            string[] ssizes = validCheck.Split(' ');
+                            string[] myArray = new string[2];
+                            for (int i = 0; i < ssizes.Length; i++)
                             {
-                                //string row = "";
-                                //string column = "";
-                                string[] ssizes = validCheck.Split(' ');
-                                string[] myArray = new string[2];
-                                for (int i = 0; i < ssizes.Length; i++)
-                                {
-                                    myArray[i] = ssizes[i];
-                                    // myArray[i] = ssizes[];
-                                }
-                                string lineError = $"Please Check sheet {sheet}, Line/Row number {myArray[0]}  and column {myArray[1]} is not rightly formatted, Please Check for anomalies ";
-                                //ViewBag.LineError = lineError;
-                                TempData["UserMessage"] = lineError;
-                                TempData["Title"] = "Error.";
-                                return View();
+                                myArray[i] = ssizes[i];
                             }
+                            string lineError = $"Please Check sheet {sheet}, Line/Row number {myArray[0]}  and column {myArray[1]} is not rightly formatted, Please Check for anomalies ";
+                            //ViewBag.LineError = lineError;
+                            TempData["UserMessage"] = lineError;
+                            TempData["Title"] = "Error.";
+                            return View();
+                        }
 
-                            for (int row = 2; row <= noOfRow; row++)
+                        for (int row = 2; row <= noOfRow; row++)
+                        {
+                            string studentId = sheet.Cells[row, 1].Value.ToString().ToUpper().Trim();
+                            string subjectValue = sheet.Cells[row, 2].Value.ToString().ToUpper().Trim();
+                            string termName = sheet.Cells[row, 7].Value.ToString().Trim().ToUpper();
+                            string className = sheet.Cells[row, 10].Value.ToString().Trim().ToUpper();
+                            string sessionName = sheet.Cells[row, 8].Value.ToString().Trim();
+
+                            var subjectName = _db.Subjects.Where(x => x.CourseCode.Equals(subjectValue))
+                                .Select(c => c.CourseName).FirstOrDefault();
+
+                            var CA = _db.ContinuousAssessments.Where(x => x.ClassName.Equals(className)
+                                                                          && x.TermName.Contains(termName)
+                                                                          && x.SessionName.Equals(sessionName)
+                                                                          && x.StudentId.Equals(studentId)
+                                                                          && x.SubjectCode.Equals(subjectName));
+                            var countFromDb = await CA.CountAsync();
+                            if (countFromDb >= 1)
                             {
-                                string studentId = sheet.Cells[row, 1].Value.ToString().ToUpper().Trim();
-                                string subjectValue = sheet.Cells[row, 2].Value.ToString().ToUpper().Trim();
-                                string termName = sheet.Cells[row, 7].Value.ToString().Trim().ToUpper();
-                                string className = sheet.Cells[row, 10].Value.ToString().Trim().ToUpper();
-                                string sessionName = sheet.Cells[row, 8].Value.ToString().Trim();
-
-                                //var mysubjectCategory = db.Subjects.Where(x => x.CourseCode.Equals(subjectValue))
-                                //    .Select(c => c.CategoriesId).FirstOrDefault();
-                                var subjectName = _db.Subjects.Where(x => x.CourseCode.Equals(subjectValue))
-                                    .Select(c => c.CourseName).FirstOrDefault();
-
-                                var CA = _db.ContinuousAssessments.Where(x => x.ClassName.Equals(className)
-                                                                             && x.TermName.Contains(termName)
-                                                                             && x.SessionName.Equals(sessionName)
-                                                                             && x.StudentId.Equals(studentId)
-                                                                             && x.SubjectCode.Equals(subjectName));
-                                var countFromDb = await CA.CountAsync();
-                                if (countFromDb >= 1)
-                                {
-                                    return View("Error2");
-                                }
-                                else
-                                {
-                                    var mycontinuousAssessment = new ContinuousAssessment
-                                    {
-                                        StudentId = studentId,
-                                        SubjectCode = subjectName,
-                                        ProjectScore = double.Parse(sheet.Cells[row, 3].Value.ToString().Trim()),
-                                        Assignment = double.Parse(sheet.Cells[row, 4].Value.ToString().Trim()),
-                                        Test = double.Parse(sheet.Cells[row, 5].Value.ToString().Trim()),
-                                        ExamScore = double.Parse(sheet.Cells[row, 6].Value.ToString().Trim()),
-                                        TermName = termName,
-                                        SessionName = sessionName,
-                                        StaffName = sheet.Cells[row, 9].Value.ToString().Trim().ToUpper(),
-                                        ClassName = className,
-                                        //SubjectCategory = mysubjectCategory
-                                    };
-                                    _db.ContinuousAssessments.Add(mycontinuousAssessment);
-
-                                    recordCount++;
-                                    lastrecord = $"The last Updated record has the Student Id {studentId} and Subject Name is {subjectName}. Please Confirm!!!";
-                                }
-
+                                return View("Error2");
                             }
+                            var mycontinuousAssessment = new ContinuousAssessment
+                            {
+                                StudentId = studentId,
+                                SubjectCode = subjectName,
+                                FirstTest = double.Parse(sheet.Cells[row, 3].Value.ToString().Trim()),
+                                SecondTest = double.Parse(sheet.Cells[row, 4].Value.ToString().Trim()),
+                                ThirdTest = double.Parse(sheet.Cells[row, 5].Value.ToString().Trim()),
+                                ExamScore = double.Parse(sheet.Cells[row, 6].Value.ToString().Trim()),
+                                TermName = termName,
+                                SessionName = sessionName,
+                                StaffName = sheet.Cells[row, 9].Value.ToString().Trim().ToUpper(),
+                                ClassName = className,
+                                //SubjectCategory = mysubjectCategory
+                            };
+                            _db.ContinuousAssessments.Add(mycontinuousAssessment);
+
+                            recordCount++;
+                            lastrecord = $"The last Updated record has the Student Id {studentId} and Subject Name is {subjectName}. Please Confirm!!!";
                         }
                     }
-                    await _db.SaveChangesAsync();
-                    message = $"You have successfully Uploaded {recordCount} records...  and {lastrecord}";
-                    TempData["UserMessage"] = message;
-                    TempData["Title"] = "Success.";
-                    ViewBag.TermName = new SelectList(_db.Terms.AsNoTracking(), "TermName", "TermName");
-                    ViewBag.SessionName = new SelectList(_db.Sessions.AsNoTracking(), "SessionName", "SessionName");
+                }
+                await _db.SaveChangesAsync();
+                message = $"You have successfully Uploaded {recordCount} records...  and {lastrecord}";
+                TempData["UserMessage"] = message;
+                TempData["Title"] = "Success.";
+                ViewBag.TermName = new SelectList(_db.Terms.AsNoTracking(), "TermName", "TermName");
+                ViewBag.SessionName = new SelectList(_db.Sessions.AsNoTracking(), "SessionName", "SessionName");
 
-                    if (User.IsInRole("Teacher"))
-                    {
-                        string name = User.Identity.GetUserName();
-                        var subjectList = _db.AssignSubjectTeachers.AsNoTracking().Where(x => x.StaffName.Equals(name));
-                        ViewBag.SubjectCode = new SelectList(subjectList.AsNoTracking(), "SubjectName", "SubjectName");
-                        ViewBag.ClassName = new SelectList(subjectList.AsNoTracking(), "ClassName", "ClassName");
-                    }
-                    else
-                    {
-                        ViewBag.ClassName = new SelectList(_db.Classes.AsNoTracking(), "FullClassName", "FullClassName");
-                        ViewBag.SubjectCode = new SelectList(_db.Subjects.AsNoTracking(), "CourseName", "CourseName");
-                    }
-                    return View();
+                if (User.IsInRole("Teacher"))
+                {
+                    string name = User.Identity.GetUserName();
+                    var subjectList = _db.AssignSubjectTeachers.AsNoTracking().Where(x => x.StaffName.Equals(name));
+                    ViewBag.SubjectCode = new SelectList(subjectList.AsNoTracking(), "SubjectName", "SubjectName");
+                    ViewBag.ClassName = new SelectList(subjectList.AsNoTracking(), "ClassName", "ClassName");
                 }
                 else
                 {
-                    ViewBag.Error = "File type is Incorrect <br/>";
-                    return View();
+                    ViewBag.ClassName = new SelectList(_db.Classes.AsNoTracking(), "FullClassName", "FullClassName");
+                    ViewBag.SubjectCode = new SelectList(_db.Subjects.AsNoTracking(), "CourseName", "CourseName");
                 }
+                return View();
             }
-
+            else
+            {
+                ViewBag.Error = "File type is Incorrect <br/>";
+                return View();
+            }
         }
     }
 }

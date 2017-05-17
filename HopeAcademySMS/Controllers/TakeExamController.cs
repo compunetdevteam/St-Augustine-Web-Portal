@@ -1,13 +1,13 @@
-﻿using StAugustine.Models;
-using StAugustine.Models.CBT;
-using StAugustine.ViewModel.CBTE;
+﻿using SwiftSkool.Models;
+using SwiftSkool.Models.CBT;
+using SwiftSkool.ViewModel.CBTE;
 using System;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 
-namespace StAugustine.Controllers
+namespace SwiftSkool.Controllers
 {
     public class TakeExamController : Controller
     {

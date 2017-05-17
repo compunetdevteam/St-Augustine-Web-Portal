@@ -1,11 +1,11 @@
-﻿using StAugustine.Models;
+﻿using SwiftSkool.Models;
 using System;
 using System.IO;
 using System.Net;
 using System.Web;
 using System.Web.Caching;
 
-namespace StAugustine.Services
+namespace SwiftSkool.Services
 {
     public class SmsServiceTemp
     {

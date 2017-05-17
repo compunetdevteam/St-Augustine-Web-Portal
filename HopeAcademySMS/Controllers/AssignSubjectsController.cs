@@ -1,6 +1,6 @@
 ﻿using PagedList;
-using StAugustine.Models;
-using StAugustine.ViewModel;
+using SwiftSkool.Models;
+using SwiftSkool.ViewModel;
 using System;
 using System.Data.Entity;
 using System.Linq;
@@ -8,7 +8,7 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 
-namespace StAugustine.Controllers
+namespace SwiftSkool.Controllers
 {
     public class AssignSubjectsController : Controller
     {

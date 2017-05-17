@@ -1,5 +1,5 @@
-﻿using StAugustine.Models;
-using StAugustine.Models.Objects;
+﻿using SwiftSkool.Models;
+using SwiftSkool.Models.Objects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +8,7 @@ using System.Text;
 using System.Web;
 using System.Web.Mvc;
 
-namespace StAugustine.Controllers
+namespace SwiftSkool.Controllers
 {
     public class PostsController : Controller
     {
